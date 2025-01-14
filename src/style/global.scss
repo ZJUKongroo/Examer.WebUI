@@ -1,0 +1,151 @@
+html {
+    --text-shadow-color: #b3b3b3ae;
+    --bg-color-solid: #fcfcfc;
+    --bg-color-alter: #ffffff;
+    --bg-color: #ffffffae;
+    --bg-color-shallow:#fefefe;
+    --bg-color-darker:#f6f6f6;
+    --text-color: #1c1c1c;
+    --bd-color: #bbbbbbce;
+    --login-button-bg: #9acdff;
+    --login-button-bd: #c8c8c8;
+    --login-button-hover: #7db7f0;
+    --branch-viewing-color: rgb(122, 212, 215);
+    --branch-viewing-hover-color: rgb(102, 177, 180);
+    --delete-box-left-border: #f56c6c;
+    --delete-box-bg: #f56c6c42;
+    --delete-box-title: #511f1f;
+    --delete-box-text: black;
+    --inset-shadow: inset 0px 0px 17px #f7f7f710;
+    --out-shadow: 0px 0px 17px #f3f3f310;
+    --question-completed-bg: #67924d;
+}
+
+html.dark {
+    --text-shadow-color: #686868af;
+    --bg-color-solid: #2a2a2a;
+    --bg-color-alter: #2d2d2d;
+    --bg-color-shallow:#2f2f2f;
+    --bg-color-darker:#1f1f1f;
+    --bg-color: #2a2a2ace;
+    --text-color: #c0c0c0;
+    --bd-color: #7f7f7f7c;
+    --navi-bg-color: #131313e2;
+    --login-button-bg: #409EFF;
+    --login-button-bd: #999;
+    --login-button-hover: #327ecb;
+    --branch-viewing-color: rgb(95, 158, 160);
+    --branch-viewing-hover-color: rgb(63, 131, 134);
+    --delete-box-left-border: #b74949;
+    --delete-box-bg: #823737;
+    --delete-box-title: #f7b2b2;
+    --delete-box-text: white;
+    --inset-shadow: inset 0px 0px 17px #00000010;
+    --out-shadow: 0px 0px 17px #0000001a;
+    --question-completed-bg: #355722;
+}
+
+body {
+    font-family: 
+      -apple-system, /* macOS, iOS */
+      BlinkMacSystemFont, /* Chrome macOS */
+      "Segoe UI", /* Windows */
+      Roboto, /* Android */
+      "Helvetica Neue", /* 一些 macOS 和 iOS 系统 */
+      Arial, /* 常见替代字体 */
+      "Noto Sans", /* 国际化字体 */
+      "Liberation Sans", /* Linux 系统的替代字体 */
+      sans-serif; /* 默认字体 */
+}
+  
+
+.rowbox {
+    display: flex;
+    flex-direction: column;
+}
+
+.colbox {
+    display: flex;
+    flex-direction: row;
+}
+
+.container {
+    height: 100%;
+    width: 100%;
+}
+
+.wrapper {
+    height: 100%;
+    width: 100%;
+}
+
+.markdown-body {
+    font-size: 15px;
+    font-weight: 300;
+}
+
+.global-dialog-container {
+    display: flex;
+    margin: 20px;
+    flex-direction: column;
+}
+
+.global-dialog-button {
+    align-self: flex-end;
+}
+
+.global-stat{
+    opacity: 0;
+    height: 0;
+    margin-top: 5px;
+    padding-bottom: 5px;
+    transition: .3s ease-in-out;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.global-stat .global-stat-wrapper {
+    border: solid 1px var(--bd-color);
+    background-color: var(--el-bg-color-overlay);
+    border-radius: 9px;
+    width: fit-content;
+    padding: 0 20px 0 20px;
+    min-height: 100px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 10px;
+}
+
+.global-stat .global-stat-table{
+    td,th{
+        white-space: nowrap;
+        padding: 4px 12px 4px 12px;
+    }
+    border-collapse: collapse;
+    margin: 10px;
+    border-color: var(--bd-color);
+    background-color: var(--el-bg-color-overlay);
+}
+
+// .el-dropdown {
+//     background-color: var(--bg-color-solid);
+// }
+
+.el-table {
+    border-radius: 7px;
+    --el-bg-color: var(--bg-color-solid);
+}
+
+.el-menu--vertical {
+    display: flex;
+    flex-direction: column;
+}
+
+.license-item {
+    margin-bottom: 10px;
+}
