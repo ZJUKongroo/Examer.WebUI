@@ -17,7 +17,7 @@ import { entry } from "~/ts/entry";
 const router = useRouter();
 
 const backHome = () => {
-  router.push("/");
+  router.back();
 };
 
 onMounted(() => {

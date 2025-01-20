@@ -8,7 +8,7 @@
       <SidebarCell v-ripple v-for="option in options" :name="option.name" :iconClass="option.iconClass" @click="open(option.path)"></SidebarCell>
     </div>
     <div id="sidebar-exam">
-      <ExamCell v-ripple v-for="exam in exams" :name="exam.name" @click="open('/exam/commit',{
+      <ExamCell v-ripple v-for="exam in exams" :name="exam.name" @click="open('/exam/review',{
         id:exam.path
       })"></ExamCell>
     </div>
@@ -26,7 +26,6 @@ import { entry } from '~/ts/entry';
 const router = useRouter();
 const store = useMainStore();
 const options = ref([
-  { name: 'Home', iconClass: 'el-icon-s-home',path:'home' },
   { name: 'Exam', iconClass: 'el-icon-s-order',path:'exam' },
   { name: 'Settings', iconClass: 'el-icon-s-tools',path:'settings' },
 ]);

@@ -136,7 +136,7 @@ function login() {
   logining.value = true;
   setTimeout(() => {
     logining.value = false;
-    store.login("1","User");
+    store.login("1","Administrator");
     const login_main = document.getElementById("login-main");
     const login_sidebar = document.getElementById("login-sidebar");
     if (login_main) leave("left", login_main);

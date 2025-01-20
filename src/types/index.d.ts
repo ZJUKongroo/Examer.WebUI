@@ -66,4 +66,4 @@ export interface Counsellor{
     id:string
 }
 
-export type UserRole = "SuperAdministrator" | "Administartor" | "User";
+export type UserRole = "SuperAdministrator" | "Administrator" | "User";

@@ -4,14 +4,14 @@ import { onMounted } from "vue";
 import { entry } from "~/ts/entry";
 
 const router = useRouter();
-function backHome() {
-  router.push("/");
-}
+const backHome = () => {
+  router.back();
+};
 onMounted(() => {
   const content = document.getElementById(
-    "not-found-view-content"
-  ) as HTMLElement;
-  entry("left", content, 50);
+    "unauthorized-view-content"
+  ) 
+  if (content) entry("left", content, 50);
 });
 </script>
 

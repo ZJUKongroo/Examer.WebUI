@@ -1,13 +1,14 @@
 <template>
   <div id="main-view">
     <div id="main-view-sidebar">
-      <MainSidebar />
+      <AdminSidebar v-if="store.userRole==='Administrator'"/>
+      <MainSidebar v-else/>
     </div>
     <div id="main-view-content">
       <div id="main-view-header">
         <v-menu transition="scale-transition">
           <template v-slot:activator="{ props }">
-            <v-btn v-bind="props"> 张三 </v-btn>
+            <v-btn v-bind="props" variant="tonal"> 张三 </v-btn>
           </template>
           <v-list>
             <v-list-item @click="logout">
@@ -25,12 +26,15 @@
 
 <script lang="ts" setup>
 import { onMounted } from "vue";
+import { useRouter } from "vue-router";
 import MainSidebar from "~/components/MainSidebar.vue";
-import router from "~/router";
+import AdminSidebar from "~/components/AdminSidebar.vue";
 import { useMainStore } from "~/store/mainStore";
 import { entry } from "~/ts/entry";
 
 const store = useMainStore();
+const router = useRouter();
+
 function logout() {
   store.logout();
   router.push("/login");
