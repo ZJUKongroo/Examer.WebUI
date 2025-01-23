@@ -3,9 +3,11 @@ import type { RouteRecordRaw } from "vue-router";
 const Home = () => import("~/views/HomeView.vue");
 const ExamCommit = () => import("~/views/Exam/CommitView.vue");
 const ExamReview = () => import("~/views/Exam/ReviewView.vue");
+const ExamEdit = () => import("~/views/Exam/EditView.vue");
 const Dashboard = () => import("~/views/DashboardView.vue");
 const ProblemCommit = () => import("~/views/Problem/CommitView.vue");
 const ProblemReview = () => import("~/views/Problem/ReviewView.vue");
+const ProblemEdit = () => import("~/views/Problem/EditView.vue");
 
 export const coreRoutes: RouteRecordRaw[] = [
   {
@@ -22,12 +24,12 @@ export const coreRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "status",
+        path: "commit",
         component: ExamCommit,
         meta: {
           requiresAuth: true,
           roles: ["Administrator", "User"],
-          title: "Exam Status",
+          title: "Exam Commit",
         },
       },
       {
@@ -39,6 +41,15 @@ export const coreRoutes: RouteRecordRaw[] = [
           title: "Exam Review",
         },
       },
+      {
+        path: "edit",
+        component: ExamEdit,
+        meta: {
+          requiresAuth: true,
+          roles: ["Administrator"],
+          title: "Exam Edit",
+        },
+      }
     ],
   },
   {
@@ -59,12 +70,12 @@ export const coreRoutes: RouteRecordRaw[] = [
     },
     children: [
       {
-        path: "status",
+        path: "commit",
         component: ProblemCommit,
         meta: {
           requiresAuth: true,
           roles: ["Administrator", "User"],
-          title: "Exam Status",
+          title: "Problem Commit",
         },
       },
       {
@@ -73,7 +84,16 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator"],
-          title: "Exam Review",
+          title: "Problem Review",
+        },
+      },
+      {
+        path: "edit",
+        component: ProblemEdit,
+        meta: {
+          requiresAuth: true,
+          roles: ["Administrator"],
+          title: "Problem Edit",
         },
       },
     ],

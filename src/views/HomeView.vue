@@ -12,12 +12,26 @@
 </template>
 
 <script lang="ts" setup>
-import HomeSidebar from "~/components/MainSidebar.vue";
+import anime from 'animejs';
+import { onMounted } from 'vue';
+
+onMounted(()=>{
+  anime({
+    targets: "#home-view *",
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(50),
+  })
+})
 </script>
 
 <style >
 #home-view{
   height: 100%;
   width: 100%;
+}
+
+#home-view h1,h2,h3,h4{
+  margin-bottom: 10px;
 }
 </style>

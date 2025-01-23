@@ -32,4 +32,6 @@ app.use(vuetify);
 
 useDarkMode();
 
+export const context = app._context;
+
 app.mount("#app");

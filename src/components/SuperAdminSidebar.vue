@@ -9,7 +9,7 @@
     </div>
     <div id="sidebar-exam">
       <ExamCell v-ripple v-for="exam in exams" :name="exam.name" @click="open('/exam/review',{
-        id:exam.path
+        id:exam.id
       })"></ExamCell>
     </div>
   </div>
@@ -26,14 +26,11 @@ import { entry } from '~/ts/entry';
 const router = useRouter();
 const store = useMainStore();
 const options = ref([
-  { name: 'Dashboard', iconClass: 'mdi-home',path:'/dashboard' },
+  { name: 'Exam', iconClass: 'mdi-home',path:'/exam/edit' },
   { name: 'Settings', iconClass: 'mdi-cog',path:'/settings' },
 ]);
 
-const exams = ref([
-  { name: '报名表', path:'home' },
-  { name: '实践面', path:'exam' },
-]);
+const exams = store.examData;
 
 function open(path: string,query?:any) {
   router.push({

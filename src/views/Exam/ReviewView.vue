@@ -1,62 +1,70 @@
 <template>
   <v-container>
-    <h1>提交记录</h1>
-    <div class="colbox" id="review-filter">
+    <h1 class="exam-review-header">提交记录</h1>
+    <div class="colbox exam-review-header" id="exam-review-filter">
       <v-autocomplete
         v-model="selectedOption.name"
         :items="options.name"
         label="题目"
-        class="mb-4 review-filter-item"
+        class="mb-4 exam-review-filter-item"
       ></v-autocomplete>
       <v-autocomplete
         v-model="selectedOption.viewer"
         :items="options.viewer"
         label="评卷人"
-        class="mb-4 review-filter-item"
+        class="mb-4 exam-review-filter-item"
       ></v-autocomplete>
       <v-select
         v-model="selectedOption.status"
         :items="options.status"
         label="评测状态"
-        class="mb-4 review-filter-item"
+        class="mb-4 exam-review-filter-item"
       >
       </v-select>
     </div>
-    <div class="review-results-container">
-      <v-card
+    <div class="exam-review-results-container">
+      <div
+        class="exam-review-record-card mb-4"
         v-for="record in filteredRecords"
         :key="record.id"
-        :color="record.reviewed ? 'var(--question-completed-bg)' : 'var(--bg-color-shallow)'"
-        class="mb-4 review-record-card"
-        :title="`ID ${record.id}`"
-        :subtitle="`提交时间: ${record.time}`"
-        link
-        @click="openRecord(record)"
       >
-        <template v-slot:append>
-          <v-text>{{ record.score }}</v-text>
-        </template>
-        <v-card-text>
-          <div class="record-subtitle">题目名称: {{ record.title }}</div>
-          <div class="record-subtitle">评卷人: {{ record.reviewer }}</div>
-        </v-card-text>
-      </v-card>
+        <v-card
+          :color="
+            record.reviewed
+              ? 'var(--question-completed-bg)'
+              : 'var(--bg-color-shallow)'
+          "
+          :title="`ID ${record.id}`"
+          :subtitle="`提交时间: ${record.time}`"
+          link
+          @click="openRecord(record)"
+        >
+          <template v-slot:append>
+            <div>{{ record.score }}</div>
+          </template>
+          <v-card-text>
+            <div>题目名称: {{ record.title }}</div>
+            <div>评卷人: {{ record.reviewer }}</div>
+          </v-card-text>
+        </v-card>
+      </div>
     </div>
   </v-container>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, type Ref } from "vue";
+import anime from "animejs";
+import { ref, computed, type Ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 type OptionKeys = "name" | "viewer" | "status";
 interface Records {
-    id: number;
-    title: string;
-    score: number;
-    reviewer: string;
-    reviewed: boolean;
-    time: string;
+  id: number;
+  title: string;
+  score: number;
+  reviewer: string;
+  reviewed: boolean;
+  time: string;
 }
 const router = useRouter();
 
@@ -100,11 +108,11 @@ const records: Ref<Records[]> = ref([
 
 function openRecord(record: Records) {
   router.push({
-    path:'/problem/review',
+    path: "/problem/review",
     query: {
       id: record.id,
     },
-  })
+  });
 }
 
 const filteredRecords = computed(() => {
@@ -116,25 +124,39 @@ const filteredRecords = computed(() => {
     return records.value;
   }
 });
+
+onMounted(()=>{
+  anime({
+    targets: ".exam-review-header",
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100),
+  });
+  anime({
+    targets: ".exam-review-record-card",
+    translateY: [-20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100),
+  });
+})
 </script>
 
 <style>
-#review-filter {
+#exam-review-filter {
   margin-top: 10px;
 }
-.review-filter-item {
+.exam-review-filter-item {
   margin-right: 10px;
 }
-.review-results-container {
+.exam-review-results-container {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  gap: 20px;
 }
 
-.review-record-card {
-  width: calc(30% - 10px);
-  margin-right: 10px;
-  margin-bottom: 10px;
+.exam-review-record-card {
+  width: calc(33% - 20px);
 }
 
 .not-reviewed {

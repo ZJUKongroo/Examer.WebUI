@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar-cell">
-    <i :class="iconClass"></i>
+    <v-icon :icon="iconClass"></v-icon>
     <span>{{ name }}</span>
   </div>
 </template>

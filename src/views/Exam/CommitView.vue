@@ -1,48 +1,51 @@
 <template>
-  <container id="exam-container">
-    <header height="80px">
-      <div class="header-content">
-        <h1>考试名称</h1>
-      </div>
-    </header>
+  <div id="exam-container">
+    <div class="exam-commit-header exam-commit-first-in">
+      <h1>考试名称</h1>
+    </div>
     <container id="exam-wrapper">
       <main id="exam-main">
-        <div class="left-column">
+        <div class="exam-commit-left-column">
           <div
             v-ripple
             @click="openProblem(exam)"
-            v-for="(exam, index) in exams"
+            v-for="(exam, index) in problems"
             :key="index"
-            :class="['exam-card', { 'completed': exam.completed, 'not-completed': !exam.completed }]"
+            :class="[
+              'exam-commit-card',
+              { completed: exam.completed, 'not-completed': !exam.completed },
+            ]"
           >
-            <div class="exam-number">试题 {{ exam.number }}</div>
-            <div class="exam-status"> {{ exam.completed?"已经提交":"尚未提交" }}</div>
+            <div class="exam-commit-number">试题 {{ exam.number }}</div>
+            <div class="exam-commit-status">
+              {{ exam.completed ? "已经提交" : "尚未提交" }}
+            </div>
           </div>
         </div>
       </main>
-      <aside id="exam-aside">
-        <div class="right-column">
-          <div class="team-info">
-            <div class="team-info-title">队伍信息</div>
-            <TeamCell v-ripple v-for="member in members" :info="member"/>
+      <aside id="exam-commit-aside" class="exam-commit-first-in">
+        <div class="exam-commit-right-column">
+          <div class="exam-commit-team-info">
+            <div class="exam-commit-team-info-title">队伍信息</div>
+            <TeamCell v-ripple v-for="member in members" :info="member" />
           </div>
-          <div class="score-card">
-            <div class="score-title">分数</div>
-            <div class="score-value">{{ score }}</div>
+          <div class="exam-commit-score-card">
+            <div class="exam-commit-score-title">分数</div>
+            <div class="exam-commit-score-value">{{ score }}</div>
           </div>
         </div>
       </aside>
     </container>
-  </container>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import TeamCell from '~/components/TeamCell.vue';
+import anime from "animejs";
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import TeamCell from "~/components/TeamCell.vue";
 
-
-const exams = ref([
+const problems = ref([
   { number: 1, completed: true },
   { number: 2, completed: false },
   { number: 3, completed: true },
@@ -55,25 +58,49 @@ const exams = ref([
 
 const router = useRouter();
 
-function openProblem(exam: any) {
-  router.push('/problem');
+function openProblem(problem: any) {
+  router.push({
+    path: "/problem/commit",
+    query: {
+      id: problem.number,
+    },
+  });
 }
 
 const members = ref([
-  { name: '张三', phoneNumber: '1234567890', studentNumber: 'S001' },
-  { name: '李四', phoneNumber: '0987654321', studentNumber: 'S002' },
-  { name: '王五', phoneNumber: '1122334455', studentNumber: 'S003' },
-  { name: '赵六', phoneNumber: '5566778899', studentNumber: 'S004' },
+  { name: "张三", phoneNumber: "1234567890", studentNumber: "S001" },
+  { name: "李四", phoneNumber: "0987654321", studentNumber: "S002" },
+  { name: "王五", phoneNumber: "1122334455", studentNumber: "S003" },
+  { name: "赵六", phoneNumber: "5566778899", studentNumber: "S004" },
   // Add more member items as needed
 ]);
 
 const score = ref(85); // Example score value
+
+onMounted(() => {
+  anime({
+    targets: ".exam-commit-first-in",
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100),
+  })
+  anime({
+    targets: ".exam-commit-card",
+    translateY: [-20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(50,{
+      start:250
+    }),
+  });
+});
 </script>
 
 <style>
 #exam-container {
   width: 100%;
   height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 #exam-wrapper {
@@ -88,34 +115,33 @@ const score = ref(85); // Example score value
   box-sizing: border-box;
 }
 
-#exam-aside {
+#exam-commit-aside {
   width: 350px;
   padding: 20px;
   box-sizing: border-box;
   overflow: visible;
 }
 
-.header-content {
-  height: 100%;
+.exam-commit-header {
   font-size: 24px;
   font-weight: bold;
   text-align: left;
   line-height: 80px;
 }
 
-.header-content h1{
-  margin: 0;
+.exam-commit-header h1 {
+  margin-left: 20px;
   text-wrap: nowrap;
   text-overflow: ellipsis;
 }
 
-.left-column {
+.exam-commit-left-column {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
 }
 
-.right-column {
+.exam-commit-right-column {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -128,32 +154,31 @@ const score = ref(85); // Example score value
   border-radius: 20px;
 }
 
-.exam-card {
+.exam-commit-card {
   width: 130px;
   height: 130px;
   display: flex;
   flex-direction: column;
-  justify-content:space-around;
+  justify-content: space-around;
   align-items: center;
   text-align: center;
   font-size: 16px;
   border-radius: 8px;
   box-sizing: border-box;
-  transition: .3s;
 }
 
-.exam-card:hover {
+.exam-commit-card:hover {
   cursor: pointer;
   transform: scale(1.03);
   filter: brightness(0.9);
 }
 
-.exam-card:active{
+.exam-commit-card:active {
   transform: scale(1);
   filter: brightness(1);
 }
 
-.exam-number{
+.exam-commit-number {
   font-size: 24px;
   font-weight: bold;
 }
@@ -166,7 +191,7 @@ const score = ref(85); // Example score value
   background-color: var(--bg-color-darker);
 }
 
-.score-card {
+.exam-commit-score-card {
   flex-grow: 5;
   width: 100%;
   text-align: center;
@@ -177,17 +202,17 @@ const score = ref(85); // Example score value
   margin-bottom: 10px;
 }
 
-.score-value {
+.exam-commit-score-value {
   font-size: 48px;
   font-weight: bold;
 }
 
-.team-info {
+.exam-commit-team-info {
   flex-grow: 5;
   width: 100%;
   text-align: center;
 }
-.team-info-title {
+.exam-commit-team-info-title {
   font-size: 24px;
   margin-bottom: 10px;
   font-weight: bold;

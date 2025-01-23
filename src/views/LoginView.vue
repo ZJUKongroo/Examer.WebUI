@@ -44,9 +44,9 @@
         </button>
       </div>
       <div id="toggle-register-wrapper">
-        <el-link id="toggle-register-button" @click="toggleRegister">
+        <v-btn variant="plain" id="toggle-register-button" @click="toggleRegister">
           {{ isRegistering ? "已有账号？登录" : "没有账号？注册" }}
-        </el-link>
+        </v-btn>
       </div>
     </div>
   </div>
@@ -136,7 +136,7 @@ function login() {
   logining.value = true;
   setTimeout(() => {
     logining.value = false;
-    store.login("1","Administrator");
+    store.login("1","User");
     const login_main = document.getElementById("login-main");
     const login_sidebar = document.getElementById("login-sidebar");
     if (login_main) leave("left", login_main);

@@ -12,7 +12,7 @@ const routes:readonly RouteRecordRaw[] = [
   {
     path: "/",
     component: Main,
-    meta: { requiresAuth: true, title: "Main" },
+    meta: { requiresAuth: true, title: "Main",roles: ["Administrator", "User"] },
     children: coreRoutes
   },
   {

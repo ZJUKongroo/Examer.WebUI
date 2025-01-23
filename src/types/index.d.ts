@@ -67,3 +67,10 @@ export interface Counsellor{
 }
 
 export type UserRole = "SuperAdministrator" | "Administrator" | "User";
+
+export interface Exam{
+    name:string,
+    id:string,
+    start:string,
+    end:string,
+}

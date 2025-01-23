@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <div id="problem-review-header">
+    <div class="problem-review-header" id="problem-review-header">
       <v-btn
         @click="back"
         icon="mdi-arrow-left"
@@ -10,7 +10,7 @@
       <p id="problem-review-title">题目A</p>
       <v-btn @click="submitReview">提交</v-btn>
     </div>
-    <div class="content">
+    <div class="problem-review-content problem-review-header">
       <v-card class="mb-4" variant="tonal">
         <v-card-title>作答信息</v-card-title>
         <v-card-text>
@@ -32,9 +32,11 @@
         </v-card-text>
       </v-card>
     </div>
+    <h2 class="problem-review-file-title problem-review-header mb-4">文件列表</h2>
     <div id="problem-review-file">
-      <h2 class="problem-review-file-title">文件列表</h2>
-      <v-card
+      <div class="problem-review-file-card mb-4" v-for="(file, index) in answerInfo.files"
+      :key="index">
+        <v-card
         class="problem-review-file-cards"
         :title="file.name"
         :subtitle="file.size"
@@ -42,15 +44,15 @@
         prepend-icon="mdi-file"
         append-icon="mdi-open-in-new"
         variant="tonal"
-        v-for="(file, index) in answerInfo.files"
-        :key="index"
       />
+      </div>
     </div>
   </v-container>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import anime from "animejs";
+import { onMounted, ref } from "vue";
 
 interface File {
   name: string;
@@ -86,6 +88,23 @@ const submitReview = () => {
   // 提交评测逻辑
   console.log("提交评测:", answerInfo.value);
 };
+
+onMounted(()=>{
+  anime({
+    targets: ".problem-review-header",
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100),
+  });
+  anime({
+    targets: ".problem-review-file-card",
+    translateY: [-20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100,{
+      start:400
+    }),
+  })
+})
 </script>
 
 <style>
@@ -103,13 +122,5 @@ const submitReview = () => {
   font-weight: bold;
   margin-left: 12px;
   flex-grow: 1;
-}
-
-#problem-review-file h2 {
-  margin-bottom: 10px;
-}
-
-#problem-review-file .v-card{
-  margin-bottom: 10px;
 }
 </style>

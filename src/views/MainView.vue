@@ -1,7 +1,8 @@
 <template>
   <div id="main-view">
     <div id="main-view-sidebar">
-      <AdminSidebar v-if="store.userRole==='Administrator'"/>
+      <SuperAdminSidebar v-if="store.userRole==='SuperAdministrator'"/>
+      <AdminSidebar v-else-if="store.userRole==='Administrator'"/>
       <MainSidebar v-else/>
     </div>
     <div id="main-view-content">
@@ -29,6 +30,7 @@ import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import MainSidebar from "~/components/MainSidebar.vue";
 import AdminSidebar from "~/components/AdminSidebar.vue";
+import SuperAdminSidebar from "~/components/SuperAdminSidebar.vue";
 import { useMainStore } from "~/store/mainStore";
 import { entry } from "~/ts/entry";
 

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref } from "vue";
+import anime from "animejs";
+import { onMounted, ref } from "vue";
 
 const files = ref<File[]>([]);
 const problemInfo = ref<{ title: string; description: string } | null>({
@@ -36,11 +37,20 @@ function handleFileSelect() {
     handleFileUpload(newFiles);
   }
 }
+
+onMounted(()=>{
+  anime({
+    targets: ".problem-commit-animation",
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100),
+  })
+})
 </script>
 
 <template>
   <v-container>
-    <div id="problem-commit-header">
+    <div id="problem-commit-header" class="problem-commit-animation">
       <v-btn
         @click="back"
         icon="mdi-arrow-left"
@@ -50,7 +60,7 @@ function handleFileSelect() {
       <p id="problem-commit-title">题目A</p>
       <v-btn>提交</v-btn>
     </div>
-    <div id="problem-commit-info">
+    <div id="problem-commit-info" class="problem-commit-animation">
       <v-card>
         <v-card-title>Problem Information</v-card-title>
         <v-card-text>
@@ -64,7 +74,7 @@ function handleFileSelect() {
       </v-card>
     </div>
     <div id="problem-commit-upload">
-      <div id="problem-commit-upload-title">提交</div>
+      <div id="problem-commit-upload-title" class="problem-commit-animation">提交</div>
       <div id="problem-commit-upload-file">
         <v-card
           class="problem-commit-upload-cards"
@@ -82,7 +92,7 @@ function handleFileSelect() {
         </v-card>
       </div>
       <div
-        class="problem-commit-drop-zone"
+        class="problem-commit-drop-zone problem-commit-animation"
         @drop.prevent="handleDrop"
         @dragover.prevent="isDragging = true"
         @dragleave.prevent="isDragging = false"

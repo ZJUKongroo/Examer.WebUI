@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
-import type { UserRole } from '~/types';
+import { ref, computed} from 'vue';
+import type { Exam, UserRole } from '~/types';
 
 export const useMainStore = defineStore('main', () => {
-  const token = ref(localStorage.getItem('token') || '');
-  const userRole = ref(localStorage.getItem('userRole') || '');
-  const isDarkMode = ref(false); // Add isDarkMode state
+  const token = ref<string>(localStorage.getItem('token') || '');
+  const userRole = ref<UserRole|"">(localStorage.getItem('userRole') as UserRole || '');
+  const isDarkMode = ref<boolean>(false); // Add isDarkMode state
+  const examData = ref<Exam[]>([]); // Add examData state
 
   const login = (newToken: string, role: UserRole) => {
     token.value = newToken;
@@ -24,6 +25,12 @@ export const useMainStore = defineStore('main', () => {
   const setDarkMode = (value: boolean) => {
     isDarkMode.value = value;
   };
+  const addExamData = (data: Exam) => {
+    examData.value.push(data);
+  };
+  const deleteExamData = (index: number) => {
+    examData.value.splice(index, 1);
+  }
 
   const isLoggedIn = computed(() => !!token.value);
 
@@ -35,5 +42,8 @@ export const useMainStore = defineStore('main', () => {
     logout,
     setDarkMode,
     isLoggedIn,
+    examData,
+    addExamData,
+    deleteExamData
   };
 });

@@ -26,9 +26,9 @@ import { entry } from '~/ts/entry';
 const router = useRouter();
 const store = useMainStore();
 const options = ref([
-  { name: 'Home', iconClass: 'el-icon-s-home',path:'home' },
-  { name: 'Exam', iconClass: 'el-icon-s-order',path:'exam' },
-  { name: 'Settings', iconClass: 'el-icon-s-tools',path:'settings' },
+  { name: 'Home', iconClass: 'el-icon-s-home',path:'/home' },
+  { name: 'Exam', iconClass: 'el-icon-s-order',path:'/exam' },
+  { name: 'Settings', iconClass: 'el-icon-s-tools',path:'/settings' },
 ]);
 
 const exams = ref([
