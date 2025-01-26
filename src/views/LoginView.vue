@@ -56,10 +56,10 @@
 import type { LoginDto } from "~/types";
 import { ref, onMounted } from "vue";
 import { entry, leave, fadeOut, fadeIn } from "~/ts/entry";
-// import { ElMessage } from "element-plus";
-// import axios from "~/ts/request";
 import { useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
+import axios from '~/ts/request';
+import { ElMessage } from "element-plus";
 
 const form = ref({
   username: "",
@@ -79,76 +79,71 @@ function check(payload: LoginDto): boolean {
   return true;
 }
 
-// function login(): void {
-//   let payload: LoginDto = {
-//     studentNo: form.value.username,
-//     password: form.value.password,
-//   };
-//   if (check(payload)) {
-//     logining.value = true;
-//     let request = axios.post("/Authentication/login", payload);
-//     if (request)
-//       request
-//         .then((res: { status: number; data: any }) => {
-//           if (res.status == 200) {
-//             ElMessage({
-//               type: "success",
-//               message: "登录成功",
-//             });
-//             const data = res.data;
-//             if (data.token) localStorage.setItem("token", data.token);
-//             if (data.expiration)
-//               localStorage.setItem("expiration", data.expiration);
-//             if (data.role) localStorage.setItem("role", data.role);
-//             if (data.id) localStorage.setItem("userId", data.id);
-//             if (data.managerId)
-//               localStorage.setItem("managerId", data.managerId);
-//             const login_main = document.getElementById("login-main");
-//             const login_sidebar = document.getElementById("login-sidebar");
-//             if (login_main) leave("left", login_main);
-//             if (login_sidebar)
-//               leave("right", login_sidebar, 200, () => {
-//                 const container = document.getElementById("login-container");
-//                 if (container)
-//                   fadeOut(container, 300, () => useRouter().push("/"));
-//               });
-//           }
-//         })
-//         .catch((e: any) => {
-//           console.log(e);
-//           logining.value = false;
-//           ElMessage({
-//             type: "error",
-//             message: `登录失败`,
-//           });
-//         });
-//   } else
-//     ElMessage({
-//       type: "error",
-//       message: "用户名或密码格式错误",
-//     });
-// }
-
 const store = useMainStore();
 const router = useRouter();
 
-function login() {
-  logining.value = true;
-  setTimeout(() => {
-    logining.value = false;
-    store.login("1","User");
-    const login_main = document.getElementById("login-main");
-    const login_sidebar = document.getElementById("login-sidebar");
-    if (login_main) leave("left", login_main);
-    if (login_sidebar)
-      leave("right", login_sidebar, 200, () => {
-        const container = document.getElementById("login-container");
-        if (container) fadeOut(container, 300, () => {
-          router.push("/");
+function login(): void {
+  let payload: LoginDto = {
+    studentNo: form.value.username,
+    password: form.value.password,
+  };
+  if (check(payload)) {
+    logining.value = true;
+    let request = axios.post("/Authentication?studentNo=3230100001", payload);
+    if (request)
+      request
+        .then((res: { status: number; data: any }) => {
+          if (res.status == 200) {
+            ElMessage({
+              type: "success",
+              message: "登录成功",
+            });
+            const data = res.data;
+            store.login(data)
+            store.refreshExamData();
+            const login_main = document.getElementById("login-main");
+            const login_sidebar = document.getElementById("login-sidebar");
+            if (login_main) leave("left", login_main);
+            if (login_sidebar)
+              leave("right", login_sidebar, 200, () => {
+                const container = document.getElementById("login-container");
+                if (container)
+                  fadeOut(container, 300, () => router.push("/"));
+              });
+          }
+        })
+        .catch((e: any) => {
+          console.log(e);
+          logining.value = false;
+          ElMessage({
+            type: "error",
+            message: `登录失败`,
+          });
         });
-      });
-  }, 1000);
+  } else
+    ElMessage({
+      type: "error",
+      message: "用户名或密码格式错误",
+    });
 }
+
+// function login() {
+//   logining.value = true;
+//   setTimeout(() => {
+//     logining.value = false;
+//     store.login("1","User");
+//     const login_main = document.getElementById("login-main");
+//     const login_sidebar = document.getElementById("login-sidebar");
+//     if (login_main) leave("left", login_main);
+//     if (login_sidebar)
+//       leave("right", login_sidebar, 200, () => {
+//         const container = document.getElementById("login-container");
+//         if (container) fadeOut(container, 300, () => {
+//           router.push("/");
+//         });
+//       });
+//   }, 1000);
+// }
 
 const register = () => {
   // 注册逻辑

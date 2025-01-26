@@ -1,12 +1,12 @@
 import type { Router } from "vue-router";
 import { useMainStore } from "../store/mainStore";
-import type { UserRole } from "~/types";
+import { UserRole } from "../enums/";
 
 export function routerSetup(router: Router) {
   const homepageMap: Record<UserRole, string> = {
-    SuperAdministrator: "/dashboard",
-    Administrator: "/dashboard",
-    User: "/home",
+    [UserRole.SuperAdministrator]: "/dashboard",
+    [UserRole.Administrator]: "/dashboard",
+    [UserRole.User]: "/home",
   };
 
   router.beforeEach((to, _, next) => {
@@ -14,14 +14,14 @@ export function routerSetup(router: Router) {
       const store = useMainStore();
       const isLoggedIn = store.isLoggedIn;
       const userRole = store.userRole;
-      if (isLoggedIn && userRole) {
+      if (isLoggedIn && userRole!=null) {
         if (to.path === "/") {
           next(homepageMap[userRole]);
         } else if (
           to.matched.some(
             (record) =>
-              userRole != "SuperAdministrator" &&
-              !record.meta.roles?.includes(userRole)
+              userRole &&
+              !record.meta.roles?.filter((role) => UserRole[role as keyof typeof UserRole] === userRole).length
           )
         ) {
           next("/unauthorized");

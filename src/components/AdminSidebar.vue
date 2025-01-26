@@ -9,14 +9,14 @@
     </div>
     <div id="sidebar-exam">
       <ExamCell v-ripple v-for="exam in exams" :name="exam.name" @click="open('/exam/review',{
-        id:exam.path
+        id:exam.name
       })"></ExamCell>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, } from 'vue';
+import { computed, onMounted, ref, } from 'vue';
 import { useRouter } from 'vue-router';
 import SidebarCell from './SidebarCell.vue';
 import ExamCell from './ExamCell.vue';
@@ -30,10 +30,7 @@ const options = ref([
   { name: 'Settings', iconClass: 'mdi-cog',path:'/settings' },
 ]);
 
-const exams = ref([
-  { name: '报名表', path:'home' },
-  { name: '实践面', path:'exam' },
-]);
+const exams = computed(() => store.examData);
 
 function open(path: string,query?:any) {
   router.push({

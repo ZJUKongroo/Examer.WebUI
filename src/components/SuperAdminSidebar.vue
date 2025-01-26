@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, } from 'vue';
+import { computed, onMounted, ref, } from 'vue';
 import { useRouter } from 'vue-router';
 import SidebarCell from './SidebarCell.vue';
 import ExamCell from './ExamCell.vue';
@@ -30,7 +30,7 @@ const options = ref([
   { name: 'Settings', iconClass: 'mdi-cog',path:'/settings' },
 ]);
 
-const exams = store.examData;
+const exams = computed(() => store.examData);
 
 function open(path: string,query?:any) {
   router.push({

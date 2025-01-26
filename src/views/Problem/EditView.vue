@@ -1,9 +1,10 @@
 <template>
   <v-container>
-    <div id="problem-edit-header">
-      <h1>题目列表</h1>
-      <v-btn variants="tonal" @click="createProblem">新建题目</v-btn>
-    </div>
+    <UniversalHeader title="题目列表">
+      <template #append>
+        <v-btn variants="tonal" @click="createProblem">新建题目</v-btn>
+      </template>
+    </UniversalHeader>
     <div id="problem-edit-content">
       <div
         class="problem-edit-card"
@@ -66,10 +67,12 @@
 <script lang="ts" setup>
 import anime from "animejs";
 import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import { useMainStore } from "~/store/mainStore";
 import deleteConfirm from "~/ts/deleteConfirm";
+import axios from "~/ts/request";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 
 interface Problem {
   id: string;
@@ -80,6 +83,7 @@ interface Problem {
 const store = useMainStore();
 const problems = ref<Problem[]>([]);
 const router = useRouter();
+const route = useRoute();
 const problemCreateVisible = ref(false);
 
 const default_problem_value = {
@@ -120,8 +124,16 @@ function open(path: string, query?: any) {
   });
 }
 
+async function getProblems() {
+  const id = route.query.id;
+  console.log(id);
+  return (await axios.get<Problem[]>(`/Problem/${id}`)).data;
+}
+
 onMounted(() => {
-  anime({
+  getProblems().then((res)=>{
+    problems.value = res;
+    anime({
     targets: "#problem-edit-header",
     opacity: [0, 1],
     translateX: [20, 0],
@@ -136,6 +148,7 @@ onMounted(() => {
     duration: 500,
     delay: anime.stagger(100),
   });
+  })
 });
 </script>
 

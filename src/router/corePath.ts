@@ -1,10 +1,14 @@
 import type { RouteRecordRaw } from "vue-router";
 
 const Home = () => import("~/views/HomeView.vue");
+
 const ExamCommit = () => import("~/views/Exam/CommitView.vue");
 const ExamReview = () => import("~/views/Exam/ReviewView.vue");
 const ExamEdit = () => import("~/views/Exam/EditView.vue");
+const ExamGroup = () => import("~/views/Exam/GroupView.vue");
+
 const Dashboard = () => import("~/views/DashboardView.vue");
+
 const ProblemCommit = () => import("~/views/Problem/CommitView.vue");
 const ProblemReview = () => import("~/views/Problem/ReviewView.vue");
 const ProblemEdit = () => import("~/views/Problem/EditView.vue");
@@ -49,6 +53,15 @@ export const coreRoutes: RouteRecordRaw[] = [
           roles: ["Administrator"],
           title: "Exam Edit",
         },
+      },
+      {
+        path:"group",
+        component: ExamGroup,
+        meta: {
+          requiresAuth: true,
+          roles: ["Administrator"],
+          title: "Exam Group",
+        },
       }
     ],
   },
@@ -89,6 +102,7 @@ export const coreRoutes: RouteRecordRaw[] = [
       },
       {
         path: "edit",
+        props: true,
         component: ProblemEdit,
         meta: {
           requiresAuth: true,

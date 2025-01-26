@@ -1,15 +1,10 @@
 <template>
   <v-container>
-    <div class="problem-review-header" id="problem-review-header">
-      <v-btn
-        @click="back"
-        icon="mdi-arrow-left"
-        variant="text"
-        density="comfortable"
-      ></v-btn>
-      <p id="problem-review-title">题目A</p>
-      <v-btn @click="submitReview">提交</v-btn>
-    </div>
+    <UniversalHeader title="题目A" class="problem-review-header">
+      <template #append>
+        <v-btn @click="submitReview">提交</v-btn>
+      </template>
+    </UniversalHeader>
     <div class="problem-review-content problem-review-header">
       <v-card class="mb-4" variant="tonal">
         <v-card-title>作答信息</v-card-title>
@@ -80,10 +75,6 @@ const answerInfo = ref({
   ] as File[],
 });
 
-function back() {
-  window.history.back();
-}
-
 const submitReview = () => {
   // 提交评测逻辑
   console.log("提交评测:", answerInfo.value);
@@ -106,21 +97,3 @@ onMounted(()=>{
   })
 })
 </script>
-
-<style>
-#problem-review-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 20px;
-  width: 100%;
-}
-
-#problem-review-title {
-  font-size: 22px;
-  font-weight: bold;
-  margin-left: 12px;
-  flex-grow: 1;
-}
-</style>

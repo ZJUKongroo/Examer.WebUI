@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import anime from "animejs";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 import { onMounted, ref } from "vue";
 
 const files = ref<File[]>([]);
@@ -22,10 +23,6 @@ const handleDrop = (event: DragEvent) => {
     handleFileUpload(droppedFiles);
   }
 };
-
-function back() {
-  window.history.back();
-}
 
 function removeFile(index: number) {
   files.value.splice(index, 1);
@@ -50,16 +47,11 @@ onMounted(()=>{
 
 <template>
   <v-container>
-    <div id="problem-commit-header" class="problem-commit-animation">
-      <v-btn
-        @click="back"
-        icon="mdi-arrow-left"
-        variant="text"
-        density="comfortable"
-      ></v-btn>
-      <p id="problem-commit-title">题目A</p>
-      <v-btn>提交</v-btn>
-    </div>
+    <UniversalHeader title="题目A" class="problem-commit-animation">
+      <template #append>
+        <v-btn>提交</v-btn>
+      </template>
+    </UniversalHeader>
     <div id="problem-commit-info" class="problem-commit-animation">
       <v-card>
         <v-card-title>Problem Information</v-card-title>
@@ -113,22 +105,6 @@ onMounted(()=>{
 </template>
 
 <style>
-#problem-commit-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 20px;
-  width: 100%;
-}
-
-#problem-commit-title {
-  font-size: 22px;
-  font-weight: bold;
-  margin-left: 12px;
-  flex-grow: 1;
-}
-
 #problem-commit-info {
   margin-bottom: 20px;
 }

@@ -1,25 +1,36 @@
+import axios from '~/ts/request';
 import { defineStore } from 'pinia';
 import { ref, computed} from 'vue';
-import type { Exam, UserRole } from '~/types';
+import { UserRole } from '~/enums';
+import type { Exam } from '~/types';
 
 export const useMainStore = defineStore('main', () => {
   const token = ref<string>(localStorage.getItem('token') || '');
-  const userRole = ref<UserRole|"">(localStorage.getItem('userRole') as UserRole || '');
+  const userRole = ref<UserRole|null>(localStorage.getItem('userRole')?Number(localStorage.getItem('userRole')) as UserRole:null);
+  const expirationTime = ref<Date>(new Date(localStorage.getItem('expirationTime') || ''));
   const isDarkMode = ref<boolean>(false); // Add isDarkMode state
   const examData = ref<Exam[]>([]); // Add examData state
 
-  const login = (newToken: string, role: UserRole) => {
-    token.value = newToken;
-    userRole.value = role;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('userRole', role);
+  const login = (data:{
+    token: string,
+    expirationTime: string,
+    role: UserRole,
+  }) => {
+    token.value = data.token;
+    userRole.value = data.role;
+    expirationTime.value = new Date(data.expirationTime);
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('userRole', data.role.toString());
+    localStorage.setItem('expirationTime', data.expirationTime);
   };
 
   const logout = () => {
     token.value = '';
-    userRole.value = '';
+    userRole.value = UserRole.User;
+    expirationTime.value = new Date();
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('expirationTime');
   };
 
   const setDarkMode = (value: boolean) => {
@@ -34,9 +45,17 @@ export const useMainStore = defineStore('main', () => {
 
   const isLoggedIn = computed(() => !!token.value);
 
+  const refreshExamData = () => {
+    // Fetch exam data from the server
+    axios.get<Exam[]>('/Exam').then((response) => {
+      examData.value = response.data;
+    })
+  }
+
   return {
     token,
     userRole,
+    expirationTime,
     isDarkMode,
     login,
     logout,
@@ -44,6 +63,7 @@ export const useMainStore = defineStore('main', () => {
     isLoggedIn,
     examData,
     addExamData,
-    deleteExamData
+    deleteExamData,
+    refreshExamData
   };
 });

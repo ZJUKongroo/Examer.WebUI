@@ -1,8 +1,8 @@
 <template>
   <div id="main-view">
     <div id="main-view-sidebar">
-      <SuperAdminSidebar v-if="store.userRole==='SuperAdministrator'"/>
-      <AdminSidebar v-else-if="store.userRole==='Administrator'"/>
+      <SuperAdminSidebar v-if="store.userRole===UserRole.SuperAdministrator"/>
+      <AdminSidebar v-else-if="store.userRole===UserRole.Administrator"/>
       <MainSidebar v-else/>
     </div>
     <div id="main-view-content">
@@ -33,6 +33,7 @@ import AdminSidebar from "~/components/AdminSidebar.vue";
 import SuperAdminSidebar from "~/components/SuperAdminSidebar.vue";
 import { useMainStore } from "~/store/mainStore";
 import { entry } from "~/ts/entry";
+import { UserRole } from "~/enums";
 
 const store = useMainStore();
 const router = useRouter();

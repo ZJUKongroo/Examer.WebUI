@@ -5,30 +5,29 @@
       <v-btn variants="tonal" @click="createExam">新建考试</v-btn>
     </div>
     <div id="exam-edit-content">
-      <div class="exam-edit-card" v-for="(exam, index) in exams"
-      :key="exam.id">
+      <div class="exam-edit-card" v-for="(exam, index) in exams" :key="exam.id">
         <v-card
-        class="mb-2"
-        link
-        :title="`${exam.name}`"
-        :subtitle="`${exam.start} - ${exam.end}`"
-        @click="open('/problem/edit', { id: exam.id })"
-      >
-        <!-- <v-card-subtitle>{{ exam.description }}</v-card-subtitle> -->
-        <template #append>
-          <v-btn
-            variants="plain"
-            @click.stop="deleteExam(index)"
-            icon="mdi-text-box-edit-outline"
-          />
-          <v-btn
-            color="error"
-            class="ml-2"
-            @click.stop="deleteExam(index)"
-            icon="mdi-delete"
-          />
-        </template>
-      </v-card>
+          class="mb-2"
+          link
+          :title="`${exam.name}`"
+          :subtitle="`${(new Date(exam.startTime+'Z')).toLocaleString()} - ${(new Date(exam.endTime+'Z')).toLocaleString()}`"
+          @click="open('/problem/edit', { id: exam.id })"
+        >
+          <!-- <v-card-subtitle>{{ exam.description }}</v-card-subtitle> -->
+          <template #append>
+            <v-btn
+              variants="plain"
+              @click.stop="editGroup(index)"
+              icon="mdi-text-box-edit-outline"
+            />
+            <v-btn
+              color="error"
+              class="ml-2"
+              @click.stop="deleteExam(index)"
+              icon="mdi-delete"
+            />
+          </template>
+        </v-card>
       </div>
     </div>
   </v-container>
@@ -56,7 +55,7 @@
           >
             <template #activator="{ props }">
               <v-text-field
-                v-model="form.start"
+                v-model="form.startTime"
                 label="开始时间"
                 readonly
                 v-bind="props"
@@ -65,7 +64,7 @@
               ></v-text-field>
             </template>
             <v-date-picker
-              v-model="form.start"
+              v-model="form.startTime"
               @input="menuStart = false"
               no-title
               scrollable
@@ -80,7 +79,7 @@
           >
             <template #activator="{ props }">
               <v-text-field
-                v-model="form.end"
+                v-model="form.endTime"
                 label="结束时间"
                 readonly
                 v-bind="props"
@@ -89,7 +88,7 @@
               ></v-text-field>
             </template>
             <v-date-picker
-              v-model="form.end"
+              v-model="form.endTime"
               @input="menuEnd = false"
               no-title
               scrollable
@@ -103,40 +102,46 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import { useMainStore } from "~/store/mainStore";
 import deleteConfirm from "~/ts/deleteConfirm";
 import anime from "animejs";
+import axios from "~/ts/request";
+import { ElMessage } from "element-plus";
 
 const store = useMainStore();
-const exams = store.examData;
+const exams = computed(() => store.examData);
 const router = useRouter();
 const examCreateVisible = ref(false);
 
 const form = ref({
   name: "",
-  start: new Date(),
-  end: new Date(),
+  startTime: new Date(),
+  endTime: new Date(),
 });
 const menuStart = ref(false);
 const menuEnd = ref(false);
 
 const submitForm = () => {
   const newExam = {
-    id: `${exams.length + 1}`,
     name: form.value.name,
-    start: form.value.start.toLocaleString(),
-    end: form.value.end.toLocaleString(),
+    startTime: form.value.startTime.toISOString(),
+    endTime: form.value.endTime.toISOString(),
   };
-  store.addExamData(newExam);
-  examCreateVisible.value = false;
-  form.value = {
-    name: "",
-    start: new Date(),
-    end: new Date(),
-  };
+  axios.post("/Exam", newExam).then(() => {
+    store.refreshExamData();
+    examCreateVisible.value = false;
+    ElMessage.success("已新建考试");
+    form.value = {
+      name: "",
+      startTime: new Date(),
+      endTime: new Date(),
+    };
+  }).catch(() => {
+    ElMessage.error("新建考试失败");
+  });
 };
 
 const createExam = () => {
@@ -146,9 +151,18 @@ const createExam = () => {
 const deleteExam = (index: number) => {
   deleteConfirm("确认删除考试？", false).then((res) => {
     if (res) {
-      store.deleteExamData(index);
+      axios.delete(`/Exam/${exams.value[index].id}`).then(() => {
+        store.refreshExamData();
+        ElMessage.success("已删除考试");
+      }).catch(() => {
+        ElMessage.error("删除考试失败");
+      });
     }
   });
+};
+
+const editGroup = (index: number) => {
+  open("/exam/group", { id: exams.value[index].id });
 };
 
 function open(path: string, query?: any) {
@@ -162,18 +176,18 @@ onMounted(() => {
   anime({
     targets: "#exam-edit-header",
     opacity: [0, 1],
-    translateX: [20,0],
+    translateX: [20, 0],
     loop: false,
     duration: 500,
   });
   anime({
     targets: ".exam-edit-card",
     opacity: [0, 1],
-    translateY: [20,0],
+    translateY: [20, 0],
     loop: false,
     duration: 500,
-    delay:anime.stagger(100),
-  })
+    delay: anime.stagger(100),
+  });
 });
 </script>
 
