@@ -66,9 +66,17 @@ export interface Counsellor{
     id:string
 }
 
+export interface Problem {
+    id: string;
+    name: string;
+    description: string;
+    problemType: number;
+  }
+
 export interface Exam{
     name:string,
     id:string,
     startTime:string,
     endTime:string,
+    problems:Problem[]
 }

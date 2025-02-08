@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <UniversalHeader title="分组管理">
+    <UniversalHeader title="分组管理" class="exam-group-header">
       <template #append>
         <v-btn>提交</v-btn>
       </template>
@@ -81,9 +81,10 @@
         </div>
       </div>
       <div class="exam-group-users-container">
-        <v-card
+        <div class="exam-group-undistributed-card">
+          <v-card
           title="等待分配的用户"
-          class="exam-group-group-card"
+          
           @dragover.prevent="draggingOver = 'undistributed'"
           :class="{ 'exam-group-dragging': draggingOver === 'undistributed' }"
           @drop="onDropUndistributed"
@@ -101,14 +102,18 @@
             </v-card>
           </v-card-text>
         </v-card>
+        </div>
       </div>
     </div>
   </v-container>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import anime from "animejs";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import UniversalHeader from "~/components/UniversalHeader.vue";
+import axios from '~/ts/request';
 
 interface User {
   id: string;
@@ -139,6 +144,7 @@ const draggingInfo = ref<{
 const draggingOver = ref("");
 const editingGroup = ref<string>("");
 const newName = ref<string>("");
+const route = useRoute();
 
 const onDragStart = (user: User, from?: Group) => {
   draggingInfo.value = {
@@ -202,6 +208,35 @@ const confirmChangeGroupName = (index: number) => {
   groups.value[index].name = newName.value;
   editingGroup.value = "";
 };
+
+function getExamUser(){
+  const examId = route.query.id as string;
+  debugger
+  axios.get(`/exam/userorgroups/${examId}`).then(res=>{
+    console.log(res.data)
+  })
+}
+
+onMounted(()=>{
+  getExamUser()
+  anime({
+    targets: '.exam-group-header',
+    translateX: [20, 0],
+    opacity: [0, 1],
+  })
+  anime({
+    targets: '.exam-group-group-card',
+    translateY: [20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100),
+  })
+  anime({
+    targets: '.exam-group-undistributed-card',
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay:200
+  })
+})
 </script>
 
 <style scoped>
@@ -210,9 +245,15 @@ const confirmChangeGroupName = (index: number) => {
   gap: 20px;
 }
 
-.exam-group-users-container,
+.exam-group-users-container{
+  flex-grow: 2;
+}
 .exam-group-groups-container {
-  flex: 1;
+  flex-grow: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  box-sizing: border-box;
 }
 
 .exam-group-user-card,
@@ -222,16 +263,21 @@ const confirmChangeGroupName = (index: number) => {
   transition: background-color 0.3s;
 }
 
+.exam-group-group-card{
+  width: calc(50% - 20px);
+}
+
 .exam-group-user-card {
   cursor: move;
 }
 
 .exam-group-new-zone {
+  width: calc(50% - 20px);
   border: 2px dashed var(--bd-color);
-  border-radius: 8px;
+  box-sizing: border-box;
+  border-radius: 6px;
   padding: 20px;
   text-align: center;
-  cursor: pointer;
   transition: background-color 0.3s;
 }
 

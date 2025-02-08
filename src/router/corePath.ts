@@ -6,6 +6,7 @@ const ExamCommit = () => import("~/views/Exam/CommitView.vue");
 const ExamReview = () => import("~/views/Exam/ReviewView.vue");
 const ExamEdit = () => import("~/views/Exam/EditView.vue");
 const ExamGroup = () => import("~/views/Exam/GroupView.vue");
+const ExamCandidate = () => import("~/views/Exam/CandidateView.vue");
 
 const Dashboard = () => import("~/views/DashboardView.vue");
 
@@ -61,6 +62,15 @@ export const coreRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
           roles: ["Administrator"],
           title: "Exam Group",
+        },
+      },
+      {
+        path:"candidate",
+        component: ExamCandidate,
+        meta: {
+          requiresAuth: true,
+          roles: ["Administrator"],
+          title: "Exam Candidate",
         },
       }
     ],

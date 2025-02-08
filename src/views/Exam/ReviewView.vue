@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <h1 class="exam-review-header">提交记录</h1>
+    <UniversalHeader title="提交记录" class="exam-review-header"/>
     <div class="colbox exam-review-header" id="exam-review-filter">
       <v-autocomplete
         v-model="selectedOption.name"
@@ -55,7 +55,9 @@
 <script lang="ts" setup>
 import anime from "animejs";
 import { ref, computed, type Ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import UniversalHeader from "~/components/UniversalHeader.vue";
+import axios from '~/ts/request';
 
 type OptionKeys = "name" | "viewer" | "status";
 interface Records {
@@ -67,6 +69,7 @@ interface Records {
   time: string;
 }
 const router = useRouter();
+const route = useRoute();
 
 const options: Ref<Record<OptionKeys, string[]>> = ref({
   name: ["All", "1", "2", "3"],
@@ -125,7 +128,15 @@ const filteredRecords = computed(() => {
   }
 });
 
+function getExamCommits() {
+  // Fetch exam commits from the server
+  axios.get('/commit').then((response) => {
+    console.log(response.data)
+  });
+}
+
 onMounted(()=>{
+  getExamCommits();
   anime({
     targets: ".exam-review-header",
     translateX: [20, 0],

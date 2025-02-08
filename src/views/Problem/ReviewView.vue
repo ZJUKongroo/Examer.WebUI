@@ -47,7 +47,9 @@
 
 <script lang="ts" setup>
 import anime from "animejs";
+import axios from '~/ts/request';
 import { onMounted, ref } from "vue";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 
 interface File {
   name: string;
@@ -80,7 +82,16 @@ const submitReview = () => {
   console.log("提交评测:", answerInfo.value);
 };
 
+function getCommits () {
+  // 获取提交记录
+  debugger
+  // axios.get('/commits').then((res) => {
+  //   console.log(res.data);
+  // });
+}
+
 onMounted(()=>{
+  getCommits();
   anime({
     targets: ".problem-review-header",
     translateX: [20, 0],

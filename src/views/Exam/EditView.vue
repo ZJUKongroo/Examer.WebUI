@@ -10,7 +10,9 @@
           class="mb-2"
           link
           :title="`${exam.name}`"
-          :subtitle="`${(new Date(exam.startTime+'Z')).toLocaleString()} - ${(new Date(exam.endTime+'Z')).toLocaleString()}`"
+          :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
+            exam.endTime
+          ).toLocaleString()}`"
           @click="open('/problem/edit', { id: exam.id })"
         >
           <!-- <v-card-subtitle>{{ exam.description }}</v-card-subtitle> -->
@@ -46,6 +48,18 @@
             label="考试名称"
             required
           ></v-text-field>
+          <v-switch
+            v-model="form.type"
+            :true-value="'group'"
+            :false-value="'solo'"
+          >
+            <template #label>
+              <span>小组赛</span>
+            </template>
+            <template #prepend>
+              <span>个人赛</span>
+            </template>
+          </v-switch>
           <v-menu
             v-model="menuStart"
             :close-on-content-click="false"
@@ -111,6 +125,11 @@ import anime from "animejs";
 import axios from "~/ts/request";
 import { ElMessage } from "element-plus";
 
+enum ExamType {
+  Solo = 0,
+  Group = 1,
+}
+
 const store = useMainStore();
 const exams = computed(() => store.examData);
 const router = useRouter();
@@ -120,6 +139,7 @@ const form = ref({
   name: "",
   startTime: new Date(),
   endTime: new Date(),
+  type: ExamType.Solo,
 });
 const menuStart = ref(false);
 const menuEnd = ref(false);
@@ -130,18 +150,26 @@ const submitForm = () => {
     startTime: form.value.startTime.toISOString(),
     endTime: form.value.endTime.toISOString(),
   };
-  axios.post("/Exam", newExam).then(() => {
-    store.refreshExamData();
-    examCreateVisible.value = false;
-    ElMessage.success("已新建考试");
-    form.value = {
-      name: "",
-      startTime: new Date(),
-      endTime: new Date(),
-    };
-  }).catch(() => {
-    ElMessage.error("新建考试失败");
-  });
+  axios
+    .post("/Exam", newExam)
+    .then(() => {
+      store.refreshExamData();
+      examCreateVisible.value = false;
+      ElMessage.success("已新建考试");
+      if(form.value.type === ExamType.Group) {
+        open("/exam/group", { id: exams.value[exams.value.length - 1].id });
+      }
+      else open("/exam/candidate", { id: exams.value[exams.value.length - 1].id });
+      // form.value = {
+      //   name: "",
+      //   startTime: new Date(),
+      //   endTime: new Date(),
+      //   type: ExamType.Solo,
+      // };
+    })
+    .catch(() => {
+      ElMessage.error("新建考试失败");
+    });
 };
 
 const createExam = () => {
@@ -151,12 +179,15 @@ const createExam = () => {
 const deleteExam = (index: number) => {
   deleteConfirm("确认删除考试？", false).then((res) => {
     if (res) {
-      axios.delete(`/Exam/${exams.value[index].id}`).then(() => {
-        store.refreshExamData();
-        ElMessage.success("已删除考试");
-      }).catch(() => {
-        ElMessage.error("删除考试失败");
-      });
+      axios
+        .delete(`/Exam/${exams.value[index].id}`)
+        .then(() => {
+          store.refreshExamData();
+          ElMessage.success("已删除考试");
+        })
+        .catch(() => {
+          ElMessage.error("删除考试失败");
+        });
     }
   });
 };

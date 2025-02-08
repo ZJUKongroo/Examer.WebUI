@@ -1,8 +1,6 @@
 <template>
   <div id="exam-container">
-    <div class="exam-commit-header exam-commit-first-in">
-      <h1>考试名称</h1>
-    </div>
+    <UniversalHeader title="考试名称" class="exam-commit-header exam-commit-first-in"/>
     <container id="exam-wrapper">
       <main id="exam-main">
         <div class="exam-commit-left-column">
