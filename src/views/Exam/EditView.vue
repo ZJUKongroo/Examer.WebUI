@@ -19,14 +19,16 @@
           <template #append>
             <v-btn
               variants="plain"
-              @click.stop="editGroup(index)"
+              @click.stop="editExam(index, exam.examType)"
               icon="mdi-text-box-edit-outline"
+              v-tooltip:top="'编辑考生'"
             />
             <v-btn
               color="error"
               class="ml-2"
               @click.stop="deleteExam(index)"
               icon="mdi-delete"
+              v-tooltip:top="'删除考试'"
             />
           </template>
         </v-card>
@@ -49,9 +51,9 @@
             required
           ></v-text-field>
           <v-switch
-            v-model="form.type"
-            :true-value="'group'"
-            :false-value="'solo'"
+            v-model="form.examType"
+            :true-value="ExamType.GroupExam"
+            :false-value="ExamType.UserExam"
           >
             <template #label>
               <span>小组赛</span>
@@ -124,11 +126,7 @@ import deleteConfirm from "~/ts/deleteConfirm";
 import anime from "animejs";
 import axios from "~/ts/request";
 import { ElMessage } from "element-plus";
-
-enum ExamType {
-  Solo = 0,
-  Group = 1,
-}
+import { ExamType } from "~/enums/index";
 
 const store = useMainStore();
 const exams = computed(() => store.examData);
@@ -139,7 +137,7 @@ const form = ref({
   name: "",
   startTime: new Date(),
   endTime: new Date(),
-  type: ExamType.Solo,
+  examType: ExamType.UserExam,
 });
 const menuStart = ref(false);
 const menuEnd = ref(false);
@@ -147,6 +145,7 @@ const menuEnd = ref(false);
 const submitForm = () => {
   const newExam = {
     name: form.value.name,
+    examType: form.value.examType,
     startTime: form.value.startTime.toISOString(),
     endTime: form.value.endTime.toISOString(),
   };
@@ -156,7 +155,7 @@ const submitForm = () => {
       store.refreshExamData();
       examCreateVisible.value = false;
       ElMessage.success("已新建考试");
-      if(form.value.type === ExamType.Group) {
+      if(form.value.examType === ExamType.GroupExam) {
         open("/exam/group", { id: exams.value[exams.value.length - 1].id });
       }
       else open("/exam/candidate", { id: exams.value[exams.value.length - 1].id });
@@ -192,8 +191,12 @@ const deleteExam = (index: number) => {
   });
 };
 
-const editGroup = (index: number) => {
-  open("/exam/group", { id: exams.value[index].id });
+const editExam = (index: number,type:ExamType) => {
+  if (type === ExamType.UserExam) {
+    open("/exam/candidate", { id: exams.value[index].id });
+  } else {
+    open("/exam/group", { id: exams.value[index].id });
+  }
 };
 
 function open(path: string, query?: any) {

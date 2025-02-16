@@ -33,10 +33,32 @@ export interface UserInfo{
     youthLeagueAdmitted: boolean
 }
 
-interface User{
+import { UserRole } from "~/enums";
+
+export interface User{
     id:string,
     name:string,
-    role:"SuperAdministrator" | "Counsellor" | "ParTimeCounsellor" | "Student"
+    role:UserRole,
+    studentNo: string,
+    description: string,
+    gender: number,
+    ethnicGroup: number,
+    dateOfBirth: string,
+    phoneNo: string,
+    college: string,
+    major: string,
+    class: string,
+    campus: string,
+    dormitory: string,
+    politicalStatus: number,
+    homeAddress: string
+}
+
+export interface Group{
+    id: string,
+    name: string,
+    description: string,
+    users: User[],
 }
 
 export interface _Class{
@@ -71,11 +93,14 @@ export interface Problem {
     name: string;
     description: string;
     problemType: number;
-  }
+}
+
+import { ExamType } from "~/enums";
 
 export interface Exam{
     name:string,
     id:string,
+    examType: ExamType,
     startTime:string,
     endTime:string,
     problems:Problem[]
