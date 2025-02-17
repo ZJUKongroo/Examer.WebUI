@@ -7,37 +7,40 @@
     </UniversalHeader>
     <div class="exam-candidate-flex-container">
       <div class="exam-candidate-list-container exam-candidate-content">
-        <v-text-field v-model="searchQuery" label="Search candidates..." solo></v-text-field>
-        <v-btn @click="selectAllCandidates" class="mb-4">全选</v-btn>
+        <v-text-field v-model="searchQuery.candidates" label="Search candidates..." solo></v-text-field>
+        <v-btn class="mb-4" @click="handleAllParticipate">全部添加</v-btn>
         <template v-if="loading">
           <v-skeleton-loader type="list-item-two-line" class="mb-4" v-for="n in 4" :key="n" />
         </template>
         <!-- Show actual content when loaded -->
         <template v-else>
           <v-list>
-            <v-list-item v-for="candidate in filteredCandidates" :key="candidate.id">
+            <v-list-item v-for="(candidate,index) in filteredCandidates" :key="candidate.id">
               <v-list-item-content>
                 <v-list-item-title>{{ candidate.name }}</v-list-item-title>
               </v-list-item-content>
               <template v-slot:append>
-                <v-btn icon="mdi-plus" variant="plain" @click="toggleCandidateSelection(candidate)"></v-btn>
+                <v-btn icon="mdi-plus" variant="plain" @click="handleParticipate(candidate,index)"></v-btn>
               </template>
             </v-list-item>
           </v-list>
         </template>
       </div>
       <div class="exam-candidate-selected-container exam-candidate-content">
+        <v-text-field v-model="searchQuery.participants" label="Search participants..." solo></v-text-field>
         <template v-if="loading">
           <v-skeleton-loader type="list-item-two-line" class="mb-4" v-for="n in 3" :key="n" />
         </template>
         <!-- Show actual content when loaded -->
         <template v-else>
           <v-list>
-            <v-list-item v-for="candidate in filteredParticipants" :key="candidate.id"
-              @click="toggleCandidateSelection(candidate)" :class="{ 'selected': isSelected(candidate) }">
+            <v-list-item v-for="(participant,index) in filteredParticipants" :key="participant.id">
               <v-list-item-content>
-                <v-list-item-title>{{ candidate.name }}</v-list-item-title>
+                <v-list-item-title>{{ participant.name }}</v-list-item-title>
               </v-list-item-content>
+              <template v-slot:append>
+                <v-btn icon="mdi-minus" variant="plain" @click="handleCandidate(participant,index)"></v-btn>
+              </template>
             </v-list-item>
           </v-list>
         </template>
@@ -48,6 +51,7 @@
 
 <script setup lang="ts">
 import anime from 'animejs';
+import { ElMessage } from 'element-plus';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import UniversalHeader from '~/components/UniversalHeader.vue';
@@ -56,8 +60,10 @@ import axios from '~/ts/request';
 import type { User } from '~/types';
 
 const route = useRoute();
-const searchQuery = ref('');
-const selectedSearchQuery = ref('');
+const searchQuery = ref({
+  participants: '',
+  candidates: ''
+});
 const candidates = ref<User[]>([]);
 const participants = ref<User[]>([]);
 const examId = computed(() => route.query.id as string);
@@ -67,37 +73,41 @@ const loading = ref(true);
 
 const filteredCandidates = computed(() => {
   return candidates.value.filter(candidate =>
-    candidate.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    candidate.name.toLowerCase().includes(searchQuery.value.candidates.toLowerCase())
   );
 });
 
 const filteredParticipants = computed(() => {
   return participants.value.filter(candidate =>
-    candidate.name.toLowerCase().includes(selectedSearchQuery.value.toLowerCase())
+    candidate.name.toLowerCase().includes(searchQuery.value.participants.toLowerCase())
   );
 });
 
-const toggleCandidateSelection = (candidate: User) => {
-  const index = participants.value.findIndex(c => c.id === candidate.id);
-  if (index === -1) {
-    participants.value.push(candidate);
-    candidates.value = candidates.value.filter(c => c.id !== candidate.id);
-  } else {
-    candidates.value.push(candidate);
-    participants.value.splice(index, 1);
-  }
-};
+function handleParticipate(candidate: User,index:number) {
+  axios.post(`/exam/assignment/${examId.value}`, [candidate.id]).then(()=>{
+    participants.value.push(candidate); 
+    candidates.value = candidates.value.splice(index,1);
+    ElMessage.success("操作成功")
+  });
+}
 
-const isSelected = (candidate: User) => {
-  return participants.value.some(c => c.id === candidate.id);
-};
+function handleAllParticipate(){
+  axios.post(`/exam/assignment/${examId.value}`, candidates.value.map(candidate => candidate.id)).then(()=>{
+    participants.value = participants.value.concat(candidates.value);
+    candidates.value = [];
+    ElMessage.success("操作成功")
+  });
+}
 
-const selectAllCandidates = () => {
-  participants.value = [...filteredCandidates.value];
-  candidates.value = candidates.value.filter(candidate =>
-    !filteredCandidates.value.includes(candidate)
-  );
-};
+function handleCandidate(participant: User,index:number) {
+  axios.delete(`/exam/assignment/${examId.value}`, {
+    data: [participant.id]
+  }).then(()=>{
+    candidates.value.push(participant);
+    participants.value = participants.value.splice(index,1);
+    ElMessage.success("操作成功")
+  });
+}
 
 async function getAllUser() {
   const res = await axios.get<User[]>(`/user`);
@@ -148,9 +158,5 @@ onMounted(async () => {
 .exam-candidate-list-container,
 .exam-candidate-selected-container {
   flex: 1;
-}
-
-.selected {
-  background-color: #e0e0e0;
 }
 </style>

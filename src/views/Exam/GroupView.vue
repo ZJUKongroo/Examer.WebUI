@@ -125,18 +125,18 @@ const handleNewGroup = () => {
       description: ""
     };
 
-    const options = {
-      method: 'POST',
-      url: 'https://localhost:7048/api/group',
-      headers: { 'Content-Type': 'application/json' }
-    };
+    // const options = {
+    //   method: 'POST',
+    //   url: 'https://localhost:7048/api/group',
+    //   headers: { 'Content-Type': 'application/json' }
+    // };
 
-    try {
-      const { data } = await axios.request(options);
-      console.log(data);
-    } catch (error) {
-      console.error(error);
-    }
+    // try {
+    //   const { data } = await axios.request(options);
+    //   console.log(data);
+    // } catch (error) {
+    //   console.error(error);
+    // }
     
     group.users.push(user);
     if (from) from.users = from.users.filter((u) => u.id !== user.id);
