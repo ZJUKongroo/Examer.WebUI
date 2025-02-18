@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="problem-review-container">
     <UniversalHeader title="题目A" class="problem-review-header">
       <template #append>
         <v-btn @click="submitReview">提交</v-btn>
@@ -108,3 +108,9 @@ onMounted(()=>{
   })
 })
 </script>
+
+<style>
+.problem-review-container {
+  padding: 20px;
+}
+</style>

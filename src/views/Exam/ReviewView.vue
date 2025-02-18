@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div class="exam-review-container">
     <UniversalHeader title="提交记录" class="exam-review-header"/>
     <div class="colbox exam-review-header" id="exam-review-filter">
       <v-autocomplete
@@ -49,7 +49,7 @@
         </v-card>
       </div>
     </div>
-  </v-container>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -70,6 +70,7 @@ interface Records {
 }
 const router = useRouter();
 const route = useRoute();
+const examId = computed(() => route.query.id as string);
 
 const options: Ref<Record<OptionKeys, string[]>> = ref({
   name: ["All", "1", "2", "3"],
@@ -153,6 +154,9 @@ onMounted(()=>{
 </script>
 
 <style>
+.exam-review-container{
+  padding: 40px;
+}
 #exam-review-filter {
   margin-top: 10px;
 }

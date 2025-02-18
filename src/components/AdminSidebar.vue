@@ -11,7 +11,7 @@
       <template v-if="exams.length === 0">
         <v-skeleton-loader  type="list-item-two-line" class="mb-4" v-for="n in 2" :key="n" />
       </template>
-      <ExamCell v-else v-ripple v-for="exam in exams" :info="exam" @click="open('/exam/commit',{
+      <ExamCell v-else v-ripple v-for="exam in exams" :info="exam" @click="open('/exam/review',{
         id:exam.id
       })"></ExamCell>
     </div>
@@ -26,6 +26,7 @@ import SidebarCell from './SidebarCell.vue';
 import ExamCell from './ExamCell.vue';
 import { useMainStore } from '~/store/mainStore';
 import { entry } from '~/ts/entry';
+import SidebarFooter from './SidebarFooter.vue';
 
 const router = useRouter();
 const store = useMainStore();

@@ -70,7 +70,7 @@ onMounted(() => {
   background-color: var(--bg-color-solid);
   box-sizing: border-box;
   height: calc(100% - 50px);
-  padding: 20px;
+  /* padding: 20px; */
   overflow-y: auto;
   border-radius: 17px;
   box-shadow: var(--inset-shadow);

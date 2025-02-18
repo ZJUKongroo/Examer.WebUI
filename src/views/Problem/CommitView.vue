@@ -7,6 +7,7 @@ import { useMainStore } from "~/store/mainStore";
 import axios from '~/ts/request'
 import { ElMessage } from "element-plus";
 import type { Commit } from "~/types";
+import CDialog from "~/components/UI/CDialog.vue";
 
 const files = ref<File[]>([]);
 const route = useRoute();
@@ -29,6 +30,8 @@ const problem = computed(() => {
   }
   return res;
 });
+const uploading = ref(false);
+const uploadProgress = ref(0);
 
 const handleFileUpload = (newFiles: FileList) => {
   for (let i = 0; i < newFiles.length; i++) {
@@ -75,25 +78,30 @@ function submit() {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-    }).then(() => {
-        router.back();
-        ElMessage.success("提交成功")
-      })
-      .catch(() => {
-        ElMessage.error("提交失败")
-      });
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        }
+      }
+    })
+  }).then(() => {
+    router.back();
+    ElMessage.success("提交成功")
   })
+    .catch(() => {
+      ElMessage.error("提交失败")
+    });
 }
 </script>
 
 <template>
-  <v-container>
+  <div class="problem-commit-container">
     <UniversalHeader :title="`试题 ${problem ? problem.name : ''}`" class="problem-commit-animation">
       <template #append>
         <v-btn @click="submit">提交</v-btn>
       </template>
     </UniversalHeader>
-    <v-alert type="info" class="problem-commit-animation">
+    <v-alert variant="tonal" type="info" class="problem-commit-animation">
       注意: 确认提交后你将无法修改此次提交。请使用新提交覆盖
     </v-alert>
     <div id="problem-commit-info" class="problem-commit-animation">
@@ -125,10 +133,19 @@ function submit() {
       </div>
       <input ref="fileInputRef" type="file" @change="handleFileSelect" multiple style="display: none" />
     </div>
-  </v-container>
+  </div>
+  <CDialog v-model:visible="uploading" title="上传中">
+    <v-progress-circular :value="uploadProgress" size="70" width="7" color="primary">
+      {{ uploadProgress }}%
+    </v-progress-circular>
+  </CDialog>
 </template>
 
 <style>
+.problem-commit-container{
+  padding: 20px;
+}
+
 #problem-commit-info {
   margin-bottom: 20px;
 }

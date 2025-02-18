@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div class="exam-group-container">
     <UniversalHeader title="分组管理" class="exam-group-header">
       <template #append>
         <v-btn>提交</v-btn>
@@ -56,7 +56,7 @@
         </div>
       </div>
     </div>
-  </v-container>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -213,7 +213,11 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style>
+.exam-group-container {
+  padding: 20px;
+}
+
 .exam-group-flex-container {
   display: flex;
   gap: 20px;

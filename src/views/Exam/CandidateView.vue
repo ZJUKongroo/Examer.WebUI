@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div class="exam-candidate-container">
     <UniversalHeader title="参试人员管理" class="exam-candidate-header">
     </UniversalHeader>
     <div class="exam-candidate-flex-container">
@@ -43,7 +43,7 @@
         </template>
       </div>
     </div>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -144,7 +144,11 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
+<style>
+.exam-candidate-container {
+  padding: 20px;
+}
+
 .exam-candidate-flex-container {
   display: flex;
   gap: 20px;

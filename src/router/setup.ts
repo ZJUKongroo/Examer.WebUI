@@ -10,7 +10,7 @@ export function routerSetup(router: Router) {
   };
 
   router.beforeEach((to, _, next) => {
-    if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (to.matched.every((record) => record.meta.requiresAuth)) {
       const store = useMainStore();
       const isLoggedIn = store.isLoggedIn;
       const userRole = store.userRole;

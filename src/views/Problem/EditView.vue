@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="problem-edit-container">
     <UniversalHeader title="题目列表" id="problem-edit-header">
       <template #append>
         <v-btn variants="tonal" @click="createProblem">新建题目</v-btn>
@@ -159,6 +159,10 @@ onMounted(() => {
 </script>
 
 <style>
+.problem-edit-container{
+  padding: 20px;
+}
+
 #exam-create-dialog-container {
   padding: 20px;
   box-sizing: border-box;

@@ -89,7 +89,7 @@ function login(): void {
   };
   if (check(payload)) {
     logining.value = true;
-    let request = axios.post("/Authentication?studentNo=3240100001", payload);
+    let request = axios.post(`/Authentication?studentNo=${form.value.username}`, payload);
     if (request)
       request
         .then((res: { status: number; data: any }) => {

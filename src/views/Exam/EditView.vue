@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div class="exam-edit-container">
     <div id="exam-edit-header">
       <h1>考试列表</h1>
       <v-btn variants="tonal" @click="createExam">新建考试</v-btn>
@@ -34,7 +34,7 @@
         </v-card>
       </div>
     </div>
-  </v-container>
+  </div>
   <CDialog
     v-model:visible="examCreateVisible"
     title="新建考试"
@@ -226,6 +226,10 @@ onMounted(() => {
 </script>
 
 <style>
+.exam-edit-container{
+  padding: 20px;
+}
+
 #exam-create-dialog-container {
   padding: 20px;
   box-sizing: border-box;
