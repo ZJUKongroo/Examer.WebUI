@@ -1,9 +1,6 @@
 <template>
   <v-container>
     <UniversalHeader title="参试人员管理" class="exam-candidate-header">
-      <template #append>
-        <v-btn>Save</v-btn>
-      </template>
     </UniversalHeader>
     <div class="exam-candidate-flex-container">
       <div class="exam-candidate-list-container exam-candidate-content">
@@ -85,8 +82,7 @@ const filteredParticipants = computed(() => {
 
 function handleParticipate(candidate: User,index:number) {
   axios.post(`/exam/assignment/${examId.value}`, [candidate.id]).then(()=>{
-    participants.value.push(candidate); 
-    candidates.value = candidates.value.splice(index,1);
+    participants.value = participants.value.concat(candidates.value.splice(index,1));
     ElMessage.success("操作成功")
   });
 }
@@ -103,8 +99,7 @@ function handleCandidate(participant: User,index:number) {
   axios.delete(`/exam/assignment/${examId.value}`, {
     data: [participant.id]
   }).then(()=>{
-    candidates.value.push(participant);
-    participants.value = participants.value.splice(index,1);
+    candidates.value = candidates.value.concat(participants.value.splice(index,1));
     ElMessage.success("操作成功")
   });
 }

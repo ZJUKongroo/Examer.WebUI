@@ -4,8 +4,8 @@
       {{ info.name }}
     </div>
     <div v-if="isExpanded" class="team-cell-details">
-      <div>手机: {{ info.phoneNumber }}</div>
-      <div>学号: {{ info.studentNumber }}</div>
+      <div>手机: {{ info.phoneNo }}</div>
+      <div>学号: {{ info.studentNo }}</div>
     </div>
   </div>
 </template>
@@ -13,10 +13,11 @@
 <script setup lang="ts">
 import { ref, type PropType } from 'vue';
 import { defineProps } from 'vue';
+import type { User } from '~/types';
 
 defineProps({
   info: {
-    type: Object as PropType<{name: string, phoneNumber: string, studentNumber: string}>,
+    type: Object as PropType<User>,
     required: true,
   }
 });

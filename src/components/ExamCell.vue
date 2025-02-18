@@ -1,15 +1,24 @@
 <template>
   <div class="exam-cell">
-    {{ name }}
+    <div class="exam-cell-icon">
+      <v-icon v-if="info.examType==ExamType.UserExam">mdi-account-outline</v-icon>
+      <v-icon v-else>mdi-account-group-outline</v-icon>
+    </div>
+    <div class="exam-cell-content">
+      <div class="exam-cell-content-name">{{ info.name }}</div>
+      <small class="exam-cell-content-time">{{ (new Date(info.startTime)).toLocaleDateString() }} - {{ (new Date(info.endTime)).toLocaleDateString() }}</small>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { defineProps } from "vue";
+import { defineProps,type PropType } from "vue";
+import { ExamType } from "~/enums";
+import type { Exam } from "~/types";
 
 defineProps({
-  name: {
-    type: String,
+  info: {
+    type: Object as PropType<Exam>,
     required: true,
   },
 });
@@ -19,17 +28,45 @@ defineProps({
 .exam-cell {
   border-radius: 12px;
   width: 100%;
-  height: 40px;
-  font-size: 15px;
-  font-weight: 500;
+  height: 50px;
   box-sizing: border-box;
   padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
   cursor: pointer;
   margin-bottom: 5px;
   text-align: center;
-  line-height: 30px;
+  display: flex;
+  flex-direction: row;
+}
+
+.exam-cell-icon{
+  display: flex;
+  place-content: center;
+  margin-right: 10px;
+  align-content: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.exam-cell-content {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
   text-wrap: nowrap;
   text-overflow: ellipsis;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.exam-cell-content-name{
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.exam-cell-content-time{
+  font-size: 10px;
+  font-weight: 300;
 }
 
 .exam-cell:hover {

@@ -3,10 +3,12 @@ import { defineStore } from 'pinia';
 import { ref, computed} from 'vue';
 import { UserRole } from '~/enums';
 import type { Exam } from '~/types';
+import { ElMessage } from 'element-plus';
 
 export const useMainStore = defineStore('main', () => {
   const token = ref<string>(localStorage.getItem('token') || '');
   const userRole = ref<UserRole|null>(localStorage.getItem('userRole')?Number(localStorage.getItem('userRole')) as UserRole:null);
+  const userId = ref<string>(localStorage.getItem('userId') || '');
   const expirationTime = ref<Date>(new Date(localStorage.getItem('expirationTime') || ''));
   const isDarkMode = ref<boolean>(false); // Add isDarkMode state
   const examData = ref<Exam[]>([]); // Add examData state
@@ -15,13 +17,16 @@ export const useMainStore = defineStore('main', () => {
     token: string,
     expirationTime: string,
     role: UserRole,
+    userId:string
   }) => {
     token.value = data.token;
     userRole.value = data.role;
     expirationTime.value = new Date(data.expirationTime);
+    userId.value = data.userId;
     localStorage.setItem('token', data.token);
     localStorage.setItem('userRole', data.role.toString());
     localStorage.setItem('expirationTime', data.expirationTime);
+    localStorage.setItem('userId', data.userId);
   };
 
   const logout = () => {
@@ -49,12 +54,13 @@ export const useMainStore = defineStore('main', () => {
     // Fetch exam data from the server
     axios.get<Exam[]>('/Exam').then((response) => {
       examData.value = response.data;
-    })
+    }).catch(()=>ElMessage.error('Failed to fetch exam data'));
   }
 
   return {
     token,
     userRole,
+    userId,
     expirationTime,
     isDarkMode,
     login,

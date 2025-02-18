@@ -1,15 +1,34 @@
 <script lang="ts" setup>
 import anime from "animejs";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import { onMounted, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useMainStore } from "~/store/mainStore";
+import axios from '~/ts/request'
+import { ElMessage } from "element-plus";
+import type { Commit } from "~/types";
 
 const files = ref<File[]>([]);
-const problemInfo = ref<{ title: string; description: string } | null>({
-  title: "title",
-  description: "description",
-});
+const route = useRoute();
+const router = useRouter();
 const isDragging = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
+const store = useMainStore();
+const examId = computed(() => route.query.examid as string);
+const exam = computed(() => store.examData.find((exam) => exam.id === examId.value));
+const problemId = computed(() => route.query.problemid as string);
+const problem = computed(() => {
+  const res = exam.value?.problems.find((problem) => problem.id === problemId.value);
+  if (res) {
+    nextTick(() => anime({
+      targets: ".problem-commit-animation",
+      translateX: [20, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(100),
+    }))
+  }
+  return res;
+});
 
 const handleFileUpload = (newFiles: FileList) => {
   for (let i = 0; i < newFiles.length; i++) {
@@ -35,32 +54,57 @@ function handleFileSelect() {
   }
 }
 
-onMounted(()=>{
-  anime({
-    targets: ".problem-commit-animation",
-    translateX: [20, 0],
-    opacity: [0, 1],
-    delay: anime.stagger(100),
+function submit() {
+  if (files.value.length === 0) {
+    ElMessage.warning("请先选择文件")
+    return;
+  }
+
+  const formData = new FormData();
+  files.value.forEach((file) => {
+    formData.append('files', file);
+  });
+
+  axios.post<Commit>("/commit", {
+    examId: examId.value,
+    problemId: problemId.value,
+    userId: store.userId
+  }).then((res) => {
+    const commitId = res.data.id;
+    axios.post(`/commit/file/${commitId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }).then(() => {
+        router.back();
+        ElMessage.success("提交成功")
+      })
+      .catch(() => {
+        ElMessage.error("提交失败")
+      });
   })
-})
+}
 </script>
 
 <template>
   <v-container>
-    <UniversalHeader title="题目A" class="problem-commit-animation">
+    <UniversalHeader :title="`试题 ${problem ? problem.name : ''}`" class="problem-commit-animation">
       <template #append>
-        <v-btn>提交</v-btn>
+        <v-btn @click="submit">提交</v-btn>
       </template>
     </UniversalHeader>
+    <v-alert type="info" class="problem-commit-animation">
+      注意: 确认提交后你将无法修改此次提交。请使用新提交覆盖
+    </v-alert>
     <div id="problem-commit-info" class="problem-commit-animation">
       <v-card>
-        <v-card-title>Problem Information</v-card-title>
+        <v-card-title>题目信息</v-card-title>
         <v-card-text>
-          <div v-if="problemInfo">
-            <p><strong>Description:</strong> {{ problemInfo.description }}</p>
+          <div v-if="problem?.description">
+            <p><strong>描述:</strong> {{ problem.description }}</p>
           </div>
           <div v-else>
-            <p>No problem information available.</p>
+            <p>没有题目信息</p>
           </div>
         </v-card-text>
       </v-card>
@@ -68,38 +112,18 @@ onMounted(()=>{
     <div id="problem-commit-upload">
       <div id="problem-commit-upload-title" class="problem-commit-animation">提交</div>
       <div id="problem-commit-upload-file">
-        <v-card
-          class="problem-commit-upload-cards"
-          :title="file.name"
-          v-for="(file, index) in files"
-          :key="index"
-        >
+        <v-card class="problem-commit-upload-cards" :title="file.name" v-for="(file, index) in files" :key="index">
           <template v-slot:append>
-            <v-btn
-              @click="removeFile(index)"
-              icon="mdi-close"
-              variant="text"
-            ></v-btn>
+            <v-btn @click="removeFile(index)" icon="mdi-close" variant="text"></v-btn>
           </template>
         </v-card>
       </div>
-      <div
-        class="problem-commit-drop-zone problem-commit-animation"
-        @drop.prevent="handleDrop"
-        @dragover.prevent="isDragging = true"
-        @dragleave.prevent="isDragging = false"
-        @click="fileInputRef?.click()"
-        :class="{ dragging: isDragging }"
-      >
-        <p>Drag and drop a file here, or click to select a file</p>
+      <div class="problem-commit-drop-zone problem-commit-animation" @drop.prevent="handleDrop"
+        @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @click="fileInputRef?.click()"
+        :class="{ dragging: isDragging }">
+        <p>拖入文件，或单击选择文件</p>
       </div>
-      <input
-        ref="fileInputRef"
-        type="file"
-        @change="handleFileSelect"
-        multiple
-        style="display: none"
-      />
+      <input ref="fileInputRef" type="file" @change="handleFileSelect" multiple style="display: none" />
     </div>
   </v-container>
 </template>

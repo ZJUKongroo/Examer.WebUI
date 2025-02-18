@@ -1,29 +1,29 @@
 <template>
   <div id="exam-container">
-    <UniversalHeader title="考试名称" class="exam-commit-header exam-commit-first-in"/>
+    <UniversalHeader :title="exam? exam.name:''" class="exam-commit-header exam-commit-second-in"/>
     <container id="exam-wrapper">
       <main id="exam-main">
         <div class="exam-commit-left-column">
           <div
             v-ripple
-            @click="openProblem(exam)"
-            v-for="(exam, index) in problems"
+            @click="openProblem(problem)"
+            v-for="(problem, index) in problems"
             :key="index"
+            class="exam-commit-second-in exam-commit-card"
             :class="[
-              'exam-commit-card',
-              { completed: exam.completed, 'not-completed': !exam.completed },
+              { completed: problem.completed, 'not-completed': !problem.completed },
             ]"
           >
-            <div class="exam-commit-number">试题 {{ exam.number }}</div>
+            <div class="exam-commit-number">试题 {{ problem.name }}</div>
             <div class="exam-commit-status">
-              {{ exam.completed ? "已经提交" : "尚未提交" }}
+              {{ problem.completed ? "已经提交" : "尚未提交" }}
             </div>
           </div>
         </div>
       </main>
       <aside id="exam-commit-aside" class="exam-commit-first-in">
         <div class="exam-commit-right-column">
-          <div class="exam-commit-team-info">
+          <div v-if="exam?.examType == ExamType.GroupExam" class="exam-commit-team-info">
             <div class="exam-commit-team-info-title">队伍信息</div>
             <TeamCell v-ripple v-for="member in members" :info="member" />
           </div>
@@ -39,57 +39,51 @@
 
 <script lang="ts" setup>
 import anime from "animejs";
-import { onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import TeamCell from "~/components/TeamCell.vue";
-
-const problems = ref([
-  { number: 1, completed: true },
-  { number: 2, completed: false },
-  { number: 3, completed: true },
-  { number: 4, completed: false },
-  { number: 5, completed: false },
-  { number: 6, completed: true },
-  { number: 7, completed: false },
-  // Add more exam items as needed
-]);
+import { ExamType } from "~/enums";
+import { useMainStore } from "~/store/mainStore";
+import type { Problem, User } from "~/types";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 
 const router = useRouter();
+const store = useMainStore();
+const examId = computed(() => router.currentRoute.value.query.id as string);
+const exam = computed(() => {
+  const res = store.examData.find((exam) => exam.id === examId.value)
+  nextTick(()=>anime({
+    targets: ".exam-commit-second-in",
+    translateY: [-20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(50,{
+      start:250
+    }),
+  }))
+  return res;
+});
+const problems = computed(() => exam.value?.problems);
 
-function openProblem(problem: any) {
+function openProblem(problem: Problem) {
   router.push({
     path: "/problem/commit",
     query: {
-      id: problem.number,
+      examid: examId.value,
+      problemid: problem.id,
     },
   });
 }
 
-const members = ref([
-  { name: "张三", phoneNumber: "1234567890", studentNumber: "S001" },
-  { name: "李四", phoneNumber: "0987654321", studentNumber: "S002" },
-  { name: "王五", phoneNumber: "1122334455", studentNumber: "S003" },
-  { name: "赵六", phoneNumber: "5566778899", studentNumber: "S004" },
-  // Add more member items as needed
-]);
+const members = ref<User[]>([]);
+const score = ref<number>(0); // Example score value
 
-const score = ref(85); // Example score value
-
-onMounted(() => {
+onMounted(async () => {
   anime({
     targets: ".exam-commit-first-in",
     translateX: [20, 0],
     opacity: [0, 1],
     delay: anime.stagger(100),
   })
-  anime({
-    targets: ".exam-commit-card",
-    translateY: [-20, 0],
-    opacity: [0, 1],
-    delay: anime.stagger(50,{
-      start:250
-    }),
-  });
 });
 </script>
 
@@ -118,13 +112,6 @@ onMounted(() => {
   padding: 20px;
   box-sizing: border-box;
   overflow: visible;
-}
-
-.exam-commit-header {
-  font-size: 24px;
-  font-weight: bold;
-  text-align: left;
-  line-height: 80px;
 }
 
 .exam-commit-header h1 {

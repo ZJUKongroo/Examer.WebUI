@@ -8,10 +8,14 @@
       <SidebarCell v-ripple v-for="option in options" :name="option.name" :iconClass="option.iconClass" @click="open(option.path)"></SidebarCell>
     </div>
     <div id="sidebar-exam">
-      <ExamCell v-ripple v-for="exam in exams" :name="exam.name" @click="open('/exam/commit',{
-        id:exam.name
+      <template v-if="exams.length === 0">
+        <v-skeleton-loader  type="list-item-two-line" class="mb-4" v-for="n in 2" :key="n" />
+      </template>
+      <ExamCell v-else v-ripple v-for="exam in exams" :info="exam" @click="open('/exam/commit',{
+        id:exam.id
       })"></ExamCell>
     </div>
+    <SidebarFooter></SidebarFooter>
   </div>
 </template>
 
@@ -22,13 +26,12 @@ import SidebarCell from './SidebarCell.vue';
 import ExamCell from './ExamCell.vue';
 import { useMainStore } from '~/store/mainStore';
 import { entry } from '~/ts/entry';
+import SidebarFooter from './SidebarFooter.vue';
 
 const router = useRouter();
 const store = useMainStore();
 const options = ref([
   { name: 'Home', iconClass: 'el-icon-s-home',path:'/home' },
-  { name: 'Exam', iconClass: 'el-icon-s-order',path:'/exam' },
-  { name: 'Settings', iconClass: 'el-icon-s-tools',path:'/settings' },
 ]);
 
 const exams = computed(() => store.examData);
