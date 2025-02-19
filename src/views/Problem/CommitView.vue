@@ -143,7 +143,7 @@ function submit() {
 
 <style>
 .problem-commit-container{
-  padding: 20px;
+  padding: 40px;
 }
 
 #problem-commit-info {

@@ -44,7 +44,7 @@
     top: 0;
     left: 0;
     background-image: url('~/assets/img/homepage_background.png');
-    background-size: contain;
+    background-size: 100%;
     background-position: bottom;
   }
   

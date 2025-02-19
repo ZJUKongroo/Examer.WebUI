@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/lokijs':
-        specifier: ^1.5.14
-        version: 1.5.14
       animejs:
         specifier: ^3.2.2
         version: 3.2.2
@@ -45,6 +42,9 @@ importers:
       '@types/animejs':
         specifier: ^3.1.12
         version: 3.1.12
+      '@types/lokijs':
+        specifier: ^1.5.14
+        version: 1.5.14
       '@types/node':
         specifier: ^22.10.5
         version: 22.10.5

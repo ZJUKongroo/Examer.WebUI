@@ -52,7 +52,7 @@ onMounted(() => {
   font-size: 16px;
   width: 100%;
     box-sizing: border-box;
-    padding: 15px;
+    padding: 30px;
 }
 
 #terms-container h1,

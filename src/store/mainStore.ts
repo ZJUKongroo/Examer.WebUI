@@ -50,11 +50,14 @@ export const useMainStore = defineStore('main', () => {
 
   const isLoggedIn = computed(() => !!token.value);
 
-  const refreshExamData = () => {
+  const refreshExamData = async () => {
     // Fetch exam data from the server
-    axios.get<Exam[]>('/Exam').then((response) => {
+    try {
+      const response = await axios.get<Exam[]>('/Exam');
       examData.value = response.data;
-    }).catch(()=>ElMessage.error('Failed to fetch exam data'));
+    }catch(err){
+      ElMessage.error('Failed to fetch exam data')
+    };
   }
 
   return {

@@ -6,55 +6,27 @@
     </div>
     <div id="exam-edit-content">
       <div class="exam-edit-card" v-for="(exam, index) in exams" :key="exam.id">
-        <v-card
-          class="mb-2"
-          link
-          :title="`${exam.name}`"
-          :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
-            exam.endTime
-          ).toLocaleString()}`"
-          @click="open('/problem/edit', { id: exam.id })"
-        >
+        <v-card class="mb-2" link :title="`${exam.name}`" :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
+          exam.endTime
+        ).toLocaleString()}`" @click="open('/problem/edit', { id: exam.id })">
           <!-- <v-card-subtitle>{{ exam.description }}</v-card-subtitle> -->
           <template #append>
-            <v-btn
-              variants="plain"
-              @click.stop="editExam(index, exam.examType)"
-              icon="mdi-text-box-edit-outline"
-              v-tooltip:top="'编辑考生'"
-            />
-            <v-btn
-              color="error"
-              class="ml-2"
-              @click.stop="deleteExam(index)"
-              icon="mdi-delete"
-              v-tooltip:top="'删除考试'"
-            />
+            <v-btn variants="plain" @click.stop="editExam(index, exam.examType)" icon="mdi-text-box-edit-outline"
+              v-tooltip:top="'编辑考生'" />
+            <v-btn color="error" class="ml-2" @click.stop="deleteExam(index)" icon="mdi-delete"
+              v-tooltip:top="'删除考试'" />
           </template>
         </v-card>
       </div>
     </div>
   </div>
-  <CDialog
-    v-model:visible="examCreateVisible"
-    title="新建考试"
-    width="700px"
-    height="500px"
-  >
+  <CDialog v-model:visible="examCreateVisible" title="新建考试" width="700px" height="500px">
     <template #content>
       <div id="exam-create-dialog-container">
         <h1 class="mb-4">新建考试</h1>
         <v-form @submit.prevent="submitForm">
-          <v-text-field
-            v-model="form.name"
-            label="考试名称"
-            required
-          ></v-text-field>
-          <v-switch
-            v-model="form.examType"
-            :true-value="ExamType.GroupExam"
-            :false-value="ExamType.UserExam"
-          >
+          <v-text-field v-model="form.name" label="考试名称" required></v-text-field>
+          <v-switch v-model="form.examType" :true-value="ExamType.GroupExam" :false-value="ExamType.UserExam">
             <template #label>
               <span>小组赛</span>
             </template>
@@ -62,53 +34,21 @@
               <span>个人赛</span>
             </template>
           </v-switch>
-          <v-menu
-            v-model="menuStart"
-            :close-on-content-click="false"
-            transition="scale-transition"
-            offset-y
-            min-width="290px"
-          >
+          <v-menu v-model="menuStart" :close-on-content-click="false" transition="scale-transition" offset-y
+            min-width="290px">
             <template #activator="{ props }">
-              <v-text-field
-                v-model="form.startTime"
-                label="开始时间"
-                readonly
-                v-bind="props"
-                append-inner-icon="mdi-calendar-clock"
-                hint="选择开始时间"
-              ></v-text-field>
+              <v-text-field v-model="form.startTime" label="开始时间" readonly v-bind="props"
+                append-inner-icon="mdi-calendar-clock" hint="选择开始时间"></v-text-field>
             </template>
-            <v-date-picker
-              v-model="form.startTime"
-              @input="menuStart = false"
-              no-title
-              scrollable
-            ></v-date-picker>
+            <v-date-picker v-model="form.startTime" @input="menuStart = false" no-title scrollable></v-date-picker>
           </v-menu>
-          <v-menu
-            v-model="menuEnd"
-            :close-on-content-click="false"
-            transition="scale-transition"
-            offset-y
-            min-width="290px"
-          >
+          <v-menu v-model="menuEnd" :close-on-content-click="false" transition="scale-transition" offset-y
+            min-width="290px">
             <template #activator="{ props }">
-              <v-text-field
-                v-model="form.endTime"
-                label="结束时间"
-                readonly
-                v-bind="props"
-                append-inner-icon="mdi-calendar-clock"
-                hint="选择结束时间"
-              ></v-text-field>
+              <v-text-field v-model="form.endTime" label="结束时间" readonly v-bind="props"
+                append-inner-icon="mdi-calendar-clock" hint="选择结束时间"></v-text-field>
             </template>
-            <v-date-picker
-              v-model="form.endTime"
-              @input="menuEnd = false"
-              no-title
-              scrollable
-            ></v-date-picker>
+            <v-date-picker v-model="form.endTime" @input="menuEnd = false" no-title scrollable></v-date-picker>
           </v-menu>
           <v-btn variants="tonal" type="submit">提交</v-btn>
         </v-form>
@@ -152,13 +92,15 @@ const submitForm = () => {
   axios
     .post("/Exam", newExam)
     .then(() => {
-      store.refreshExamData();
-      examCreateVisible.value = false;
-      ElMessage.success("已新建考试");
-      if(form.value.examType === ExamType.GroupExam) {
-        open("/exam/group", { id: exams.value[exams.value.length - 1].id });
-      }
-      else open("/exam/candidate", { id: exams.value[exams.value.length - 1].id });
+      store.refreshExamData().then(() => {
+        examCreateVisible.value = false;
+        ElMessage.success("已新建考试");
+        if (form.value.examType === ExamType.GroupExam) {
+          open("/exam/group", { id: exams.value[exams.value.length - 1].id });
+        }
+        else open("/exam/candidate", { id: exams.value[exams.value.length - 1].id });
+      });
+
       // form.value = {
       //   name: "",
       //   startTime: new Date(),
@@ -191,7 +133,7 @@ const deleteExam = (index: number) => {
   });
 };
 
-const editExam = (index: number,type:ExamType) => {
+const editExam = (index: number, type: ExamType) => {
   if (type === ExamType.UserExam) {
     open("/exam/candidate", { id: exams.value[index].id });
   } else {
@@ -226,14 +168,15 @@ onMounted(() => {
 </script>
 
 <style>
-.exam-edit-container{
-  padding: 20px;
+.exam-edit-container {
+  padding: 40px;
 }
 
 #exam-create-dialog-container {
   padding: 20px;
   box-sizing: border-box;
 }
+
 #exam-edit-header {
   display: flex;
   justify-content: space-between;

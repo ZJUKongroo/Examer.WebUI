@@ -3,7 +3,7 @@
         <h1 class="mb-4 license-anime-element">ACEE 试题提交系统</h1>
         <p class="mb-2 license-anime-element">By ZJUKongroo 工作室</p>
         <h2 class="mb-2 license-anime-element">Developers 开发者</h2>
-        <div  class="colbox license-anime-element">
+        <div class="colbox license-anime-element">
             <div class="developer-card colbox">
                 <img src="@/assets/img/developer-avatar/daimolean.jpg" class="developer-card-avatar">
                 <div class="developer-card-info">
@@ -109,14 +109,29 @@ const usedProjects = ref<Project[]>([{
     licenseUrl: "https://github.com/vuejs/vue-router?tab=MIT-1-ov-file#readme"
 },
 {
-    name: "marked",
-    license: "MIT",
-    licenseUrl: "https://github.com/markedjs/marked?tab=License-1-ov-file#readme"
-},
-{
     name: "sqlite",
     license: "Public domain",
     licenseUrl: "https://github.com/sqlite/sqlite?tab=License-1-ov-file#readme"
+},{
+    name: "animejs",
+    license: "MIT",
+    licenseUrl: "https://github.com/juliangarnier/anime/?tab=MIT-1-ov-file"
+},{
+    name: "axios",
+    license: "MIT",
+    licenseUrl: "https://github.com/axios/axios?tab=MIT-1-ov-file"
+},{
+    name: "pinia",
+    license: "MIT",
+    licenseUrl: "https://github.com/vuejs/pinia?tab=MIT-1-ov-file"
+},{
+    name:"vuetify",
+    license:"MIT",
+    licenseUrl:"https://github.com/vuetifyjs/vuetify?tab=MIT-1-ov-file"
+},{
+    name:"LokiJS",
+    license:"MIT",
+    licenseUrl:"https://github.com/techfort/LokiJS?tab=MIT-1-ov-file"
 }])
 </script>
 
@@ -125,7 +140,7 @@ const usedProjects = ref<Project[]>([{
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    padding: 20px 40px 100px 40px;
+    padding: 40px;
     overflow: hidden auto;
 }
 

@@ -1,67 +1,88 @@
 <template>
   <div class="exam-group-container">
-    <UniversalHeader title="分组管理" class="exam-group-header">
+    <UniversalHeader title="分组管理" class="exam-group-header exam-group-view-anime">
       <template #append>
         <v-btn>提交</v-btn>
       </template>
     </UniversalHeader>
     <div class="exam-group-flex-container">
-      <div class="exam-group-groups-container">
-        <v-card v-for="(group, index) in examGroup" :key="group.id" class="exam-group-group-card"
-          :class="{ 'exam-group-dragging': draggingOver === group.id }" @dragover.prevent="draggingOver = group.id"
-          @dragleave.prevent="draggingOver = ''" @drop="onDrop(group)">
-          <template v-slot:title>
-            <div class="exam-group-group-title">
-              <template v-if="editingGroup !== group.id">
-                {{ group.name }}
-              </template>
-              <template v-else>
-                <v-text-field v-model="newName" placeholder="新组名" persistent-hint density="compact" hint="输入新组名，回车确认"
-                  @keydown.enter="confirmChangeGroupName(index)">
-                  <template #append-inner>
-                    <v-btn variant="text" @click="editingGroup = ''" icon="mdi-close" size="small" />
-                  </template>
-                </v-text-field>
-              </template>
-            </div>
-          </template>
-          <template v-slot:append>
-            <v-btn @click="changeGroupName(index)" icon="mdi-text-box-edit-outline" variant="tonal" class="mr-2"
-              size="small"></v-btn>
-            <v-btn @click="deleteGroup(index)" icon="mdi-delete" variant="tonal" size="small"></v-btn>
-          </template>
-          <v-card-text>
-            <v-card v-for="member in group.users" :key="member.id" class="exam-group-user-card" draggable="true"
-              @dragstart="onDragStart(member, group)" variant="tonal">
-              <v-card-title>{{ member.name }}</v-card-title>
-            </v-card>
-          </v-card-text>
-        </v-card>
-        <div class="exam-group-new-zone" @drop.prevent="handleNewGroup" @dragover.prevent="draggingOver = 'new'"
-          @dragleave.prevent="draggingOver = ''" :class="{ 'exam-group-dragging': draggingOver === 'new' }">
-          <p>放下以新建组</p>
+      <template v-if="loading">
+        <div class="exam-group-skeleton">
+          <v-skeleton-loader type="list-item-two-line" class="mb-4" v-for="n in 3" :key="n" />
         </div>
-      </div>
-      <div class="exam-group-users-container">
-        <div class="exam-group-undistributed-card">
-          <v-card title="等待分配的用户" @dragover.prevent="draggingOver = 'undistributed'"
-            :class="{ 'exam-group-dragging': draggingOver === 'undistributed' }" @drop="onDropUndistributed">
+      </template>
+      <template v-else>
+        <div class="exam-group-users-container">
+          <div class="exam-group-undistributed-card">
+            <v-card title="等待分配的用户" @dragover.prevent="draggingOver = 'undistributed'"
+              :class="{ 'exam-group-dragging': draggingOver === 'undistributed' }" @drop="onDropUndistributed">
+              <v-card-text>
+                <v-card v-for="user in users" :key="user.id" class="exam-group-user-card" draggable="true"
+                  @dragstart="onDragStart(user)" variant="tonal">
+                  <v-card-title>{{ user.name }}</v-card-title>
+                </v-card>
+              </v-card-text>
+            </v-card>
+          </div>
+        </div>
+      </template>
+
+      <div class="exam-group-divider"></div>
+
+      <template v-if="loading">
+        <div class="exam-group-skeleton">
+          <v-skeleton-loader type="list-item-two-line" class="mb-4" v-for="n in 5" :key="n" />
+        </div>
+      </template>
+      <template v-else>
+        <div class="exam-group-groups-container">
+          <div class="exam-group-new-zone" @drop.prevent="handleNewGroup" @dragover.prevent="draggingOver = 'new'"
+            @dragleave.prevent="draggingOver = ''" :class="{ 'exam-group-dragging': draggingOver === 'new' }">
+            <p>放下以新建组</p>
+          </div>
+          <v-card v-for="group in paginatedExamGroup" :key="group.id" class="exam-group-group-card"
+            :class="{ 'exam-group-dragging': draggingOver === group.id }" @dragover.prevent="draggingOver = group.id"
+            @dragleave.prevent="draggingOver = ''" @drop="onDrop(group)">
+            <template v-slot:title>
+              <div class="exam-group-group-title">
+                <template v-if="editingGroup !== group.id">
+                  {{ group.name }}
+                </template>
+                <template v-else>
+                  <v-text-field v-model="newName" placeholder="新组名" persistent-hint density="compact" hint="输入新组名，回车确认"
+                    @keydown.enter="confirmChangeGroupName(group.id)">
+                    <template #append-inner>
+                      <v-btn variant="text" @click="editingGroup = ''" icon="mdi-close" size="small" />
+                    </template>
+                  </v-text-field>
+                </template>
+              </div>
+            </template>
+            <template v-slot:append>
+              <v-btn @click="changeGroupName(group.id)" icon="mdi-text-box-edit-outline" variant="tonal" class="mr-2"
+                size="small"></v-btn>
+              <v-btn @click="deleteGroup(group.id)" icon="mdi-delete" variant="tonal" size="small"></v-btn>
+            </template>
             <v-card-text>
-              <v-card v-for="user in users" :key="user.id" class="exam-group-user-card" draggable="true"
-                @dragstart="onDragStart(user)" variant="tonal">
-                <v-card-title>{{ user.name }}</v-card-title>
+              <v-card v-for="member in group.users" :key="member.id" class="exam-group-user-card" draggable="true"
+                @dragstart="onDragStart(member, group)" variant="tonal">
+                <v-card-title>{{ member.name }}</v-card-title>
               </v-card>
             </v-card-text>
           </v-card>
         </div>
-      </div>
+      </template>
+    </div>
+    <div class="exam-group-view-anime">
+      <v-pagination v-if="totalPages >= 1" v-model="currentPage" :length="totalPages" circle class="mt-4" />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import anime from "animejs";
-import { computed, onMounted, ref } from "vue";
+import { ElMessage } from "element-plus";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import type { ExamType } from "~/enums";
@@ -69,10 +90,9 @@ import axios from '~/ts/request';
 import type { Group, User } from '~/types';
 
 const users = ref<User[]>([]);
-
 const groups = ref<Group[]>([]);
-
 const examGroup = ref<Group[]>([]);
+const loading = ref(false);
 
 const draggingInfo = ref<{
   user: User;
@@ -81,8 +101,17 @@ const draggingInfo = ref<{
 const draggingOver = ref("");
 const editingGroup = ref<string>("");
 const newName = ref<string>("");
-const examId = computed(() => route.query.id as string);
 const route = useRoute();
+const examId = computed(() => route.query.id as string);
+
+// Pagination controls
+const currentPage = ref(1);
+const pageSize = 4;
+const paginatedExamGroup = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return examGroup.value.slice(start, start + pageSize);
+});
+const totalPages = computed(() => Math.ceil(examGroup.value.length / pageSize));
 
 const onDragStart = (user: User, from?: Group) => {
   draggingInfo.value = {
@@ -91,75 +120,113 @@ const onDragStart = (user: User, from?: Group) => {
   };
 };
 
-const onDrop = (group: Group) => {
+const onDrop = async (group: Group) => {
   const user = draggingInfo.value?.user;
   const from = draggingInfo.value?.from;
   if (user && from?.id !== group.id) {
-    group.users.push(user);
-    if (from) from.users = from.users.filter((u) => u.id !== user.id);
-    else users.value = users.value.filter((u) => u.id !== user.id);
+    try {
+      if (from) {
+        await axios.delete(`/group/distribution/${from.id}`, {
+          data: [user.id]
+        }); // Remove from Group
+        from.users = from.users.filter((u) => u.id !== user.id);
+      }
+      else users.value = users.value.filter((u) => u.id !== user.id);
+      group.users.push(user);
+      await axios.post(`/group/distribution/${group.id}`, [user.id]); // Assign to Group
+    }
+    catch (error) {
+      ElMessage.error("分配组失败");
+    }
   }
   draggingInfo.value = null;
   draggingOver.value = "";
 };
 
-const onDropUndistributed = () => {
+const onDropUndistributed = async () => {
   const user = draggingInfo.value?.user;
   const from = draggingInfo.value?.from;
   if (user && from) {
-    users.value.push(user);
-    from.users = from.users.filter((u) => u.id !== user.id);
+    try {
+      users.value.push(user);
+      await axios.delete(`/group/distribution/${from.id}`, {
+        data: [user.id]
+      }); // Remove from Group
+      from.users = from.users.filter((u) => u.id !== user.id);
+    }
+    catch (error) {
+      ElMessage.error("移出组失败");
+    }
   }
   draggingInfo.value = null;
   draggingOver.value = "";
 };
 
-const handleNewGroup = () => {
+const handleNewGroup = async () => {
   const user = draggingInfo.value?.user;
   const from = draggingInfo.value?.from;
   if (user) {
-    const group: Group = {
-      id: String(groups.value.length + 1),
-      name: "新组",
-      users: [],
-      description: ""
-    };
+    try {
+      if (from) {
+        await axios.delete(`/group/distribution/${from.id}`, {
+          data: [user.id]
+        }); // Remove from Group
+        from.users = from.users.filter((u) => u.id !== user.id)
+      }
+      else users.value = users.value.filter((u) => u.id !== user.id);
+      const { data } = await axios.post<Group>(`/group`, {
+        name: "新组",
+        description: ""
+      });// New Group
+      await axios.post(`/group/distribution/${data.id}`, [user.id]); // Assign to Group
+      await axios.post(`/exam/assignment/${examId.value}`, [data.id]); // Assign to Exam
+      data.users.push(user);
+      examGroup.value.push(data);
 
-    // const options = {
-    //   method: 'POST',
-    //   url: 'https://localhost:7048/api/group',
-    //   headers: { 'Content-Type': 'application/json' }
-    // };
-
-    // try {
-    //   const { data } = await axios.request(options);
-    //   console.log(data);
-    // } catch (error) {
-    //   console.error(error);
-    // }
-    
-    group.users.push(user);
-    if (from) from.users = from.users.filter((u) => u.id !== user.id);
-    else users.value = users.value.filter((u) => u.id !== user.id);
-    groups.value.push(group);
+      ElMessage.success("新建组成功");
+    } catch (error) {
+      ElMessage.error("新建组失败");
+    }
   }
   draggingInfo.value = null;
   draggingOver.value = "";
 };
 
-const deleteGroup = (index: number) => {
-  users.value = users.value.concat(groups.value[index].users);
-  groups.value.splice(index, 1);
+const deleteGroup = (id: string) => {
+  const groupIndex = examGroup.value.findIndex((group) => group.id === id);
+  const [group] = examGroup.value.splice(groupIndex, 1);
+  if (group) {
+    axios.delete(`/group/${group.id}`).then(() => {
+      users.value = users.value.concat(group.users);
+      ElMessage.success("删除组成功");
+    }).catch(() => {
+      ElMessage.error("删除组失败");
+    });
+  }
 };
 
-const changeGroupName = (index: number) => {
-  editingGroup.value = groups.value[index].id;
-  newName.value = groups.value[index].name;
+const changeGroupName = (id: string) => {
+  const group = examGroup.value.find((group) => group.id === id);
+  if (group) {
+    newName.value = group.name;
+    editingGroup.value = id;
+  }
 };
 
-const confirmChangeGroupName = (index: number) => {
-  groups.value[index].name = newName.value;
-  editingGroup.value = "";
+const confirmChangeGroupName = async (id: string) => {
+  const group = examGroup.value.find((group) => group.id === id)
+  if (group) try {
+    await axios.put(`/group/${group.id}`, {
+      name: newName.value,
+      description: null
+    });
+    group.name = newName.value;
+    editingGroup.value = "";
+    ElMessage.success("修改组名成功");
+  }
+    catch (error) {
+      ElMessage.error("修改组名失败");
+    }
 };
 
 async function getAllUser() {
@@ -190,15 +257,18 @@ async function getExamGroup() {
 }
 
 onMounted(async () => {
-  await Promise.all([getAllUser(), getAllGroup()]);
-  console.log(groups.value, users.value)
-  await getExamGroup();
   anime({
-    targets: '.exam-group-header',
+    targets: '.exam-group-view-anime',
     translateX: [20, 0],
     opacity: [0, 1],
   })
-  anime({
+  loading.value = true;
+  await Promise.all([getAllUser(), getAllGroup()]);
+  console.log(groups.value, users.value)
+  await getExamGroup();
+  loading.value = false;
+  nextTick(()=>{
+    anime({
     targets: '.exam-group-group-card',
     translateY: [20, 0],
     opacity: [0, 1],
@@ -206,16 +276,17 @@ onMounted(async () => {
   })
   anime({
     targets: '.exam-group-undistributed-card',
-    translateX: [20, 0],
+    translateX: [-20, 0],
     opacity: [0, 1],
     delay: 200
+  })
   })
 })
 </script>
 
 <style>
 .exam-group-container {
-  padding: 20px;
+  padding: 40px;
 }
 
 .exam-group-flex-container {
@@ -262,5 +333,14 @@ onMounted(async () => {
 
 .exam-group-dragging {
   background-color: var(--bg-color-shallow);
+}
+
+.exam-group-divider{
+  width: 0;
+  border-right: 2px solid var(--bd-color);
+}
+
+.exam-group-skeleton{
+  flex-grow: 1;
 }
 </style>

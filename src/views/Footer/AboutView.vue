@@ -26,7 +26,7 @@ onMounted(() => {
 <style>
 #about-container {
   font-size: 16px;
-  padding: 30px;
+  padding: 40px;
 }
 
 #about-container h1,

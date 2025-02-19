@@ -25,26 +25,26 @@
     <div class="exam-review-results-container">
       <div
         class="exam-review-record-card mb-4"
-        v-for="record in filteredRecords"
-        :key="record.id"
+        v-for="commit in commits"
+        :key="commit.id"
       >
         <v-card
           :color="
-            record.reviewed
+            commit.reviewed
               ? 'var(--question-completed-bg)'
               : 'var(--bg-color-shallow)'
           "
-          :title="`ID ${record.id}`"
-          :subtitle="`提交时间: ${record.time}`"
+          :title="`ID ${commit.id}`"
+          :subtitle="`提交时间: ${new Date(commit).toLocaleString()}`"
           link
-          @click="openRecord(record)"
+          @click="openCommit(commit)"
         >
           <template v-slot:append>
-            <div>{{ record.score }}</div>
+            <div>{{ commit.score }}</div>
           </template>
           <v-card-text>
-            <div>题目名称: {{ record.title }}</div>
-            <div>评卷人: {{ record.reviewer }}</div>
+            <div>题目名称: {{ commit.problem.name }}</div>
+            <!-- <div>评卷人: {{ commit.reviewer }}</div> -->
           </v-card-text>
         </v-card>
       </div>
@@ -54,23 +54,17 @@
 
 <script lang="ts" setup>
 import anime from "animejs";
-import { ref, computed, type Ref, onMounted } from "vue";
+import { ref, computed, type Ref, onMounted, watch, watchEffect, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import axios from '~/ts/request';
+import { useCommitStore } from "~/store/commitStore";
+import type { Commit } from "~/types";
 
 type OptionKeys = "name" | "viewer" | "status";
-interface Records {
-  id: number;
-  title: string;
-  score: number;
-  reviewer: string;
-  reviewed: boolean;
-  time: string;
-}
 const router = useRouter();
 const route = useRoute();
 const examId = computed(() => route.query.id as string);
+const commitStore = useCommitStore();
 
 const options: Ref<Record<OptionKeys, string[]>> = ref({
   name: ["All", "1", "2", "3"],
@@ -83,61 +77,26 @@ const selectedOption: Ref<Record<OptionKeys, string>> = ref({
   status: "All",
 });
 
-const records: Ref<Records[]> = ref([
-  {
-    id: 1,
-    title: "题目 1",
-    score: 85,
-    reviewer: "张三",
-    reviewed: true,
-    time: "2023-10-01 10:00",
-  },
-  {
-    id: 2,
-    title: "题目 2",
-    score: 90,
-    reviewer: "李四",
-    reviewed: false,
-    time: "2023-10-02 11:00",
-  },
-  {
-    id: 3,
-    title: "题目 3",
-    score: 75,
-    reviewer: "王五",
-    reviewed: true,
-    time: "2023-10-03 12:00",
-  },
-]);
+const commits = ref<Commit[]>([]);
 
-function openRecord(record: Records) {
+watchEffect(async ()=>{
+  commits.value = await commitStore.queryExamCommit(examId.value,{
+    userName:selectedOption.value.viewer==="All"?undefined:selectedOption.value.viewer,
+    problemName:selectedOption.value.name==="All"?undefined:selectedOption.value.name,
+  });
+  nextTick(()=>init());
+})
+
+function openCommit(commit: Commit) {
   router.push({
     path: "/problem/review",
     query: {
-      id: record.id,
+      id: commit.id,
     },
   });
 }
 
-const filteredRecords = computed(() => {
-  if (selectedOption.value.status === "Reviewed") {
-    return records.value.filter((record) => record.reviewed);
-  } else if (selectedOption.value.status === "Not Reviewed") {
-    return records.value.filter((record) => !record.reviewed);
-  } else {
-    return records.value;
-  }
-});
-
-function getExamCommits() {
-  // Fetch exam commits from the server
-  axios.get('/commit').then((response) => {
-    console.log(response.data)
-  });
-}
-
-onMounted(()=>{
-  getExamCommits();
+function init() {
   anime({
     targets: ".exam-review-header",
     translateX: [20, 0],
@@ -150,7 +109,9 @@ onMounted(()=>{
     opacity: [0, 1],
     delay: anime.stagger(100),
   });
-})
+}
+
+onMounted(()=>init())
 </script>
 
 <style>

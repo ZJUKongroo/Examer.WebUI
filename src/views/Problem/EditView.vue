@@ -160,7 +160,7 @@ onMounted(() => {
 
 <style>
 .problem-edit-container{
-  padding: 20px;
+  padding: 40px;
 }
 
 #exam-create-dialog-container {

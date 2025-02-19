@@ -146,7 +146,7 @@ onMounted(async () => {
 
 <style>
 .exam-candidate-container {
-  padding: 20px;
+  padding: 40px;
 }
 
 .exam-candidate-flex-container {

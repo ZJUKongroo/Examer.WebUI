@@ -91,7 +91,7 @@ onMounted(async () => {
 #exam-container {
   width: 100%;
   height: 100%;
-  padding: 30px;
+  padding: 40px;
   box-sizing: border-box;
 }
 
