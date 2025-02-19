@@ -6,15 +6,33 @@
     </div>
     <div id="exam-edit-content">
       <div class="exam-edit-card" v-for="(exam, index) in exams" :key="exam.id">
-        <v-card class="mb-2" link :title="`${exam.name}`" :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
+        <v-card class="mb-2" :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
           exam.endTime
-        ).toLocaleString()}`" @click="open('/problem/edit', { id: exam.id })">
+        ).toLocaleString()}`">
+        <template v-slot:title>
+              <div class="exam-group-group-title">
+                <template v-if="editingExam !== exam.id">
+                  {{ exam.name }}
+                  <v-btn @click.stop="changeExamName(exam)" icon="mdi-pencil" variant="plain"></v-btn>
+                </template>
+                <template v-else>
+                  <v-text-field v-model="newName" placeholder="新考试名" persistent-hint density="compact" hint="输入新考试名，回车确认"
+                    @keydown.enter="confirmChangeExamName(exam)">
+                    <template #append-inner>
+                      <v-btn variant="text" @click="editingExam = ''" icon="mdi-close" size="small" />
+                    </template>
+                  </v-text-field>
+                </template>
+              </div>
+            </template>
           <!-- <v-card-subtitle>{{ exam.description }}</v-card-subtitle> -->
           <template #append>
             <v-btn variants="plain" @click.stop="editExam(index, exam.examType)" icon="mdi-text-box-edit-outline"
               v-tooltip:top="'编辑考生'" />
             <v-btn color="error" class="ml-2" @click.stop="deleteExam(index)" icon="mdi-delete"
               v-tooltip:top="'删除考试'" />
+            <v-btn variant="text"  class="ml-2" @click.stop="open('/problem/edit', { id: exam.id })" icon="mdi-chevron-right"
+              v-tooltip:top="'编辑题目'" />
           </template>
         </v-card>
       </div>
@@ -67,11 +85,14 @@ import anime from "animejs";
 import axios from "~/ts/request";
 import { ElMessage } from "element-plus";
 import { ExamType } from "~/enums/index";
+import type { Exam } from "~/types";
 
 const store = useMainStore();
 const exams = computed(() => store.examData);
 const router = useRouter();
 const examCreateVisible = ref(false);
+const editingExam = ref("");
+const newName = ref("");
 
 const form = ref({
   name: "",
@@ -112,6 +133,28 @@ const submitForm = () => {
       ElMessage.error("新建考试失败");
     });
 };
+
+function changeExamName(exam:Exam){
+    newName.value = exam.name;
+    editingExam.value = exam.id;
+}
+
+function confirmChangeExamName(exam:Exam) {
+  axios
+    .put(`/Exam/${exam.id}`, { 
+      name: newName.value,
+      startTime: exam.startTime,
+      endTime: exam.endTime,
+     })
+    .then(() => {
+      store.refreshExamData();
+      editingExam.value = "";
+      ElMessage.success("已修改考试名");
+    })
+    .catch(() => {
+      ElMessage.error("修改考试名失败");
+    });
+}
 
 const createExam = () => {
   examCreateVisible.value = true;

@@ -65,9 +65,11 @@ function submit() {
 
   const formData = new FormData();
   files.value.forEach((file) => {
-    formData.append('files', file);
+    formData.append(file.name, file);
   });
 
+  uploading.value = true;
+  uploadProgress.value = 0;
   axios.post<Commit>("/commit", {
     examId: examId.value,
     problemId: problemId.value,
@@ -83,14 +85,15 @@ function submit() {
           uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
         }
       }
+    }).then(() => {
+      uploading.value = false;
+      router.back();
+      ElMessage.success("提交成功")
     })
-  }).then(() => {
-    router.back();
-    ElMessage.success("提交成功")
+      .catch(() => {
+        ElMessage.error("提交失败")
+      });
   })
-    .catch(() => {
-      ElMessage.error("提交失败")
-    });
 }
 </script>
 
@@ -135,14 +138,24 @@ function submit() {
     </div>
   </div>
   <CDialog v-model:visible="uploading" title="上传中">
-    <v-progress-circular :value="uploadProgress" size="70" width="7" color="primary">
-      {{ uploadProgress }}%
-    </v-progress-circular>
+    <template #content>
+      <h1 class="mb-4">正在提交</h1>
+      <div class="problem-commit-dialog-content">
+        <template v-if="uploadProgress !== 0">
+          <v-progress-circular :model-value="uploadProgress" :rotate="360" :size="100" :width="15" color="teal">
+            <template v-slot:default> {{ uploadProgress }} % </template>
+          </v-progress-circular>
+        </template>
+        <template v-else>
+          创建提交中……
+        </template>
+      </div>
+    </template>
   </CDialog>
 </template>
 
 <style>
-.problem-commit-container{
+.problem-commit-container {
   padding: 40px;
 }
 
@@ -180,5 +193,12 @@ function submit() {
 
 .problem-commit-upload-cards {
   margin-bottom: 15px;
+}
+
+.problem-commit-dialog-content{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 </style>

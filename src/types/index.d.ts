@@ -106,6 +106,7 @@ export interface Problem {
   name: string;
   description: string;
   problemType: number;
+  score:number;
 }
 
 import { ExamType } from "~/enums";
