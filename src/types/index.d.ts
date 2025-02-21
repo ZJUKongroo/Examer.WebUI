@@ -106,7 +106,7 @@ export interface Problem {
   name: string;
   description: string;
   problemType: number;
-  score:number;
+  score: number;
 }
 
 import { ExamType } from "~/enums";
@@ -127,4 +127,12 @@ export interface Commit {
   user: User;
   exam: Exam;
   problem: Problem;
+  markings: Marking[];
+}
+
+export interface Marking {
+  id: string
+  commitId: string
+  reviewUserId: string
+  score: number
 }

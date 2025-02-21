@@ -30,17 +30,17 @@
       >
         <v-card
           :color="
-            commit.reviewed
+            commit.markings.length > 0
               ? 'var(--question-completed-bg)'
               : 'var(--bg-color-shallow)'
           "
           :title="`ID ${commit.id}`"
-          :subtitle="`提交时间: ${new Date(commit).toLocaleString()}`"
+          :subtitle="`提交时间: ${new Date(commit.commitTime).toLocaleString()}`"
           link
           @click="openCommit(commit)"
         >
           <template v-slot:append>
-            <div>{{ commit.score }}</div>
+            <div>{{ commit.markings.map((marking=>marking.score)) }}</div>
           </template>
           <v-card-text>
             <div>题目名称: {{ commit.problem.name }}</div>
@@ -54,7 +54,7 @@
 
 <script lang="ts" setup>
 import anime from "animejs";
-import { ref, computed, type Ref, onMounted, watch, watchEffect, nextTick } from "vue";
+import { ref, computed, type Ref, onMounted, watchEffect, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useCommitStore } from "~/store/commitStore";
@@ -80,10 +80,11 @@ const selectedOption: Ref<Record<OptionKeys, string>> = ref({
 const commits = ref<Commit[]>([]);
 
 watchEffect(async ()=>{
-  commits.value = await commitStore.queryExamCommit(examId.value,{
+  const query = {
     userName:selectedOption.value.viewer==="All"?undefined:selectedOption.value.viewer,
     problemName:selectedOption.value.name==="All"?undefined:selectedOption.value.name,
-  });
+  }
+  commits.value = await commitStore.queryExamCommit(examId.value,query);
   nextTick(()=>init());
 })
 

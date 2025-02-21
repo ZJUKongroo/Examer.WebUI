@@ -65,7 +65,7 @@ function submit() {
 
   const formData = new FormData();
   files.value.forEach((file) => {
-    formData.append(file.name, file);
+    formData.append("formFile", file);
   });
 
   uploading.value = true;
