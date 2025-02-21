@@ -6,7 +6,7 @@
             </div> -->
       <div id="login-sidebar-title">
         <!-- ZJUKongroo<small>.StartUp</small> -->
-        Examer
+        <strong>ACEE</strong> 试题提交系统
       </div>
     </div>
     <div class="rowbox" id="login-main" :class="{ registering: isRegistering }">
@@ -14,7 +14,7 @@
       <div id="login-title">
         {{ isRegistering ? "注册" : "登录" }}
       </div>
-      <v-form ref="formRef" v-model="valid" lazy-validation>
+      <v-form ref="formRef" lazy-validation>
         <v-text-field
           v-model="form.username"
           label="用户名"
@@ -69,7 +69,8 @@ const logining = ref(false);
 const isRegistering = ref(false);
 
 const toggleRegister = () => {
-  isRegistering.value = !isRegistering.value;
+  // isRegistering.value = !isRegistering.value;
+  ElMessage.error("暂不支持注册");
 };
 
 function check(payload: LoginDto): boolean {
@@ -145,9 +146,9 @@ function login(): void {
 //   }, 1000);
 // }
 
-const register = () => {
-  // 注册逻辑
-};
+// const register = () => {
+//   // 注册逻辑
+// };
 
 onMounted(() => {
   const container = document.getElementById("login-container");
@@ -182,7 +183,7 @@ onMounted(() => {
 }
 
 #login-sidebar {
-  background-image: url("@/assets/img/login_sidebar_pic.jpg");
+  background-image: url("@/assets/img/login_page.jpg");
   flex-grow: 1;
   background-size: cover;
   position: relative;
@@ -191,7 +192,7 @@ onMounted(() => {
 #login-sidebar-title {
   position: absolute;
   bottom: 20px;
-  left: 90px;
+  left: 50px;
   font-size: 56px;
   color: white;
   text-shadow: 8px 5px 0px rgba(239, 239, 239, 0.2);
@@ -209,9 +210,9 @@ onMounted(() => {
   transition: 0.5s;
 }
 
-#login-main.registering {
-  width: 50%;
-}
+// #login-main.registering {
+//   width: 50%;
+// }
 
 #login-title {
   font-size: 50px;

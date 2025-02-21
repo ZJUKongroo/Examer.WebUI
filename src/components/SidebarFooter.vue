@@ -1,22 +1,22 @@
 <template>
     <div class="sidebar-footer">
-        <v-btn variant="plain" @click="open('/term-of-use')">
+        <v-btn size="small" variant="plain" @click="open('/term-of-use')">
             <v-icon left>mdi-file-document</v-icon>
             <div class="sidebar-footer-button-text">Terms of Use</div>
             <v-icon>mdi-open-in-new</v-icon>
         </v-btn>
-        <v-btn variant="plain" @click="open('/license')">
-            <v-icon left>mdi-license</v-icon>
-            <div class="sidebar-footer-button-text">License</div>
-            <v-icon>mdi-open-in-new</v-icon>
-        </v-btn>
-        <v-btn variant="plain" @click="open('/about')">
+        <v-btn size="small" variant="plain" @click="open('/about')">
             <v-icon left>mdi-information</v-icon>
             <div class="sidebar-footer-button-text">About</div>
             <v-icon>mdi-open-in-new</v-icon>
         </v-btn>
+        <v-btn size="small" variant="plain" @click="open('/license')">
+            <v-icon left>mdi-license</v-icon>
+            <div class="sidebar-footer-button-text">License</div>
+            <v-icon>mdi-open-in-new</v-icon>
+        </v-btn>
         <div class="mt-2 sidebar-footer-copyright">
-            &copy; 2025 ACEE <br/> All rights reserved.
+            &copy; 2025 ACEE 
         </div>
     </div>
 </template>
@@ -32,6 +32,7 @@ function open(path: string) {
 
 <style>
 .sidebar-footer {
+    width: 100%;
     padding: 16px;
     padding-top: 0;
     display: flex;
@@ -51,6 +52,6 @@ function open(path: string) {
 .sidebar-footer-copyright{
     font-size: 12px;   
     font-weight: 600;
-    padding-left: 16px;
+    padding-left: 12px;
 }
 </style>

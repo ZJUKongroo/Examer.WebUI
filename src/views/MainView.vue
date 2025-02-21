@@ -6,18 +6,6 @@
       <MainSidebar v-else/>
     </div>
     <div id="main-view-content">
-      <div id="main-view-header">
-        <v-menu transition="scale-transition">
-          <template v-slot:activator="{ props }">
-            <v-btn v-bind="props" variant="tonal"> 张三 </v-btn>
-          </template>
-          <v-list>
-            <v-list-item @click="logout">
-              <v-list-item-title>退出</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </div>
       <div id="main-view-wrapper">
         <router-view />
       </div>
@@ -27,7 +15,6 @@
 
 <script lang="ts" setup>
 import { onMounted } from "vue";
-import { useRouter } from "vue-router";
 import MainSidebar from "~/components/MainSidebar.vue";
 import AdminSidebar from "~/components/AdminSidebar.vue";
 import SuperAdminSidebar from "~/components/SuperAdminSidebar.vue";
@@ -36,12 +23,6 @@ import { entry } from "~/ts/entry";
 import { UserRole } from "~/enums";
 
 const store = useMainStore();
-const router = useRouter();
-
-function logout() {
-  store.logout();
-  router.push("/login");
-}
 
 onMounted(() => {
   const main = document.getElementById("main-view-content");
@@ -69,7 +50,7 @@ onMounted(() => {
 #main-view-wrapper {
   background-color: var(--bg-color-solid);
   box-sizing: border-box;
-  height: calc(100% - 50px);
+  height: 100%;
   /* padding: 20px; */
   overflow-y: auto;
   border-radius: 17px;

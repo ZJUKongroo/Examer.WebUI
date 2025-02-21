@@ -25,14 +25,14 @@ defineProps({
   display: flex;
   border-radius: 17px;
   width: 100%;
-  height: 46px;
-  font-size: 17px;
+  height: 41px;
+  font-size: 15px;
   font-weight: 700;
   box-sizing: border-box;
   padding: 5px;
   align-items: center;
   cursor: pointer;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .sidebar-cell:hover {

@@ -30,7 +30,7 @@
   
   <style>
   #dashboard-view {
-    padding: 20px;
+    padding: 40px;
     height: 100%;
     width: 100%;
     position: relative;

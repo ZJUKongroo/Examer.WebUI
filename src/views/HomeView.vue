@@ -36,7 +36,7 @@ onMounted(() => {
 <style>
 
 #home-view {
-  padding: 30px;
+  padding: 40px;
   height: 100%;
   width: 100%;
   position: relative;

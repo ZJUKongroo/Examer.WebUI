@@ -7,7 +7,7 @@
     </UniversalHeader>
     <div id="problem-edit-content">
       <div class="problem-edit-card" v-for="problem in problems" :key="problem.id">
-        <v-card link :title="`${problem.name}`" @click="open('/problem/edit', { id: problem.id })">
+        <v-card :title="`${problem.name}`">
           <!-- <v-card-subtitle>{{ exam.description }}</v-card-subtitle> -->
           <template #append>
             <v-btn variants="plain" @click.stop="editProblem(problem)" icon="mdi-text-box-edit-outline" />
@@ -51,7 +51,7 @@
 <script lang="ts" setup>
 import anime from "animejs";
 import { computed, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute} from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import deleteConfirm from "~/ts/deleteConfirm";
 import axios from "~/ts/request";
@@ -60,7 +60,6 @@ import type { Exam, Problem } from "~/types";
 import { ElMessage } from "element-plus";
 
 const problems = ref<Problem[]>([]);
-const router = useRouter();
 const route = useRoute();
 const problemCreateVisible = ref(false);
 const problemEditVisible = ref(false);
@@ -143,13 +142,6 @@ const deleteProblem = (problem: Problem) => {
   });
 };
 
-function open(path: string, query?: any) {
-  router.push({
-    path,
-    query,
-  });
-}
-
 async function getProblems() {
   const id = route.query.id;
   problems.value = (await axios.get<Exam>(`/Exam/${id}`)).data.problems;
@@ -162,14 +154,12 @@ function init() {
       opacity: [0, 1],
       translateX: [20, 0],
       loop: false,
-      duration: 500,
     });
     anime({
       targets: ".problem-edit-card",
       opacity: [0, 1],
       translateY: [20, 0],
       loop: false,
-      duration: 500,
       delay: anime.stagger(100),
     });
   });

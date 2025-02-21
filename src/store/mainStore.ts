@@ -4,6 +4,7 @@ import { ref, computed} from 'vue';
 import { UserRole } from '~/enums';
 import type { Exam } from '~/types';
 import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
 
 export const useMainStore = defineStore('main', () => {
   const token = ref<string>(localStorage.getItem('token') || '');
@@ -12,6 +13,7 @@ export const useMainStore = defineStore('main', () => {
   const expirationTime = ref<Date>(new Date(localStorage.getItem('expirationTime') || ''));
   const isDarkMode = ref<boolean>(false); // Add isDarkMode state
   const examData = ref<Exam[]>([]); // Add examData state
+  const router = useRouter();
 
   const login = (data:{
     token: string,
@@ -36,6 +38,7 @@ export const useMainStore = defineStore('main', () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
     localStorage.removeItem('expirationTime');
+    router.push('/login')
   };
 
   const setDarkMode = (value: boolean) => {

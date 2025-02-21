@@ -142,6 +142,9 @@ const usedProjects = ref<Project[]>([{
     box-sizing: border-box;
     padding: 40px;
     overflow: hidden auto;
+    width: 100%;
+    padding-left: 10%;
+    padding-right: 10%;
 }
 
 .developer-card {

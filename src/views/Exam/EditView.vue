@@ -197,14 +197,12 @@ onMounted(() => {
     opacity: [0, 1],
     translateX: [20, 0],
     loop: false,
-    duration: 500,
   });
   anime({
     targets: ".exam-edit-card",
     opacity: [0, 1],
     translateY: [20, 0],
     loop: false,
-    duration: 500,
     delay: anime.stagger(100),
   });
 });

@@ -5,50 +5,57 @@
         <v-btn @click="submitReview">提交</v-btn>
       </template>
     </UniversalHeader>
-    <div v-if="answerInfo" class="problem-review-content problem-review-header">
-      <v-card class="mb-4" variant="tonal">
-        <v-card-title>作答信息</v-card-title>
-        <v-card-text>
-          <div class="mb-2"><strong>提交时间:</strong> {{ (new Date(answerInfo.commitTime)).toLocaleString() }}</div>
-          <div class="mb-2"><strong>题目名称:</strong> {{ answerInfo.problem.name }}</div>
-          <div class="mb-2">
-            <strong>是否已经评测:</strong>
-            {{ reviewed ? "是" : "否" }}
-          </div>
-          <div v-if="reviewed">
-            <strong>分数:</strong> {{ answerInfo.markings[0].score }}
-          </div>
-          <v-text-field
-            v-else
-            v-model="score"
-            label="打分"
-            type="number"
-          ></v-text-field>
-        </v-card-text>
-      </v-card>
-    </div>
-    <h2 class="problem-review-file-title problem-review-header mb-4">文件列表</h2>
-    <div id="problem-review-file">
-      <div class="problem-review-file-card mb-4" v-for="(file, index) in files"
-      :key="index">
-        <v-card
-        class="problem-review-file-cards"
-        :title="file.name"
-        :subtitle="file.size"
-        link
-        prepend-icon="mdi-file"
-        append-icon="mdi-open-in-new"
-        variant="tonal"
-      />
+    <template v-if="loading">
+      <v-skeleton-loader type="list-item-two-line" class="mb-4" v-for="n in 5" :key="n" />
+    </template>
+    <template v-else>
+      <div v-if="answerInfo" class="problem-review-content problem-review-anime">
+        <v-card class="mb-4" variant="tonal">
+          <v-card-text>
+            <div class="problem-review-content-wrapper">
+              <div>
+                <h1 class="mb-1">作答信息</h1>
+                <div class="mb-2"><strong>提交时间:</strong> {{ (new Date(answerInfo.commitTime)).toLocaleString() }}</div>
+                <div class="mb-2"><strong>题目名称:</strong> {{ answerInfo.problem.name }}</div>
+                <div class="mb-2">
+                  <strong>是否已经评测:</strong>
+                  {{ reviewed ? "是" : "否" }}
+                </div>
+                <div v-if="reviewed" class="mb-4">
+                  <strong>分数:</strong> {{answerInfo.markings.map((marking) => marking.score)}}
+                </div>
+              </div>
+              <div>
+                <h1 class="mb-1">题目信息</h1>
+                <div class="mb-2"><strong>题目名称:</strong> {{ answerInfo.problem.name }}</div>
+                <div class="mb-2"><strong>题目描述:</strong> {{ answerInfo.problem.description }}</div>
+              </div>
+              <div>
+                <h1 class="mb-1">考试信息</h1>
+                <div class="mb-2"><strong>考试名称:</strong> {{ answerInfo.exam.name }}</div>
+                <div class="mb-2"><strong>考试时间:</strong> {{ (new Date(answerInfo.exam.startTime)).toLocaleDateString()
+                  }} - {{ (new Date(answerInfo.exam.endTime)).toLocaleDateString() }}</div>
+              </div>
+            </div>
+            <v-text-field variants="tonal" v-model="score" label="打分" type="number"></v-text-field>
+          </v-card-text>
+        </v-card>
       </div>
-    </div>
+      <h2 class="problem-review-file-title problem-review-anime mb-4">文件列表</h2>
+      <div id="problem-review-file">
+        <div class="problem-review-file-card mb-4" v-for="(file, index) in files" :key="index">
+          <v-card class="problem-review-file-cards" :title="file.name" :subtitle="file.size" link
+            prepend-icon="mdi-file" append-icon="mdi-open-in-new" variant="tonal" />
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
 import anime from "animejs";
 import axios from '~/ts/request';
-import { onMounted, ref, computed, watch } from "vue";
+import { onMounted, ref, computed, watch, nextTick } from "vue";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useRoute } from "vue-router";
 import type { Commit, Marking } from "~/types";
@@ -59,33 +66,45 @@ const route = useRoute();
 const commitId = computed(() => route.query.id as string);
 const store = useMainStore();
 const score = ref<number>(0);
-const answerInfo = ref<Commit|null>(null);
+const answerInfo = ref<Commit | null>(null);
 const reviewed = computed(() => {
-  if(answerInfo.value){
+  if (answerInfo.value) {
     return answerInfo.value.markings.length > 0;
   }
   return false;
 });
 const files = ref<File[]>([]);
+const loading = ref(false);
 
 watch(commitId, () => init());
 
-function init(){
-  getCommits();
+function init() {
+  loading.value = true;
   anime({
     targets: ".problem-review-header",
     translateX: [20, 0],
     opacity: [0, 1],
     delay: anime.stagger(100),
   });
-  anime({
-    targets: ".problem-review-file-card",
-    translateY: [-20, 0],
-    opacity: [0, 1],
-    delay: anime.stagger(100,{
-      start:400
-    }),
-  })
+  getCommits().then(() => {
+    loading.value = false;
+    nextTick(() => {
+      anime({
+        targets: ".problem-review-anime",
+        translateX: [20, 0],
+        opacity: [0, 1],
+        delay: anime.stagger(100),
+      });
+      anime({
+        targets: ".problem-review-file-card",
+        translateY: [-20, 0],
+        opacity: [0, 1],
+        delay: anime.stagger(100, {
+          start: 300
+        }),
+      })
+    })
+  });
 }
 
 const submitReview = () => {
@@ -101,18 +120,27 @@ const submitReview = () => {
   });
 };
 
-function getCommits () {
+async function getCommits() {
   // 获取提交记录
-  axios.get<Commit>(`/commit/${commitId.value}`).then((res) => {
-    answerInfo.value = res.data;
-  });
+  return new Promise<void>((resolve, reject) => {
+    axios.get<Commit>(`/commit/${commitId.value}`).then((res) => {
+      answerInfo.value = res.data;
+      resolve()
+    });
+  })
 }
 
-onMounted(()=>init())
+onMounted(() => init())
 </script>
 
 <style>
 .problem-review-container {
   padding: 40px;
+}
+.problem-review-content-wrapper{
+  display: flex;
+  gap: 10%;
+  flex-direction: row;
+  width: 100%;
 }
 </style>

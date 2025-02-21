@@ -1,13 +1,14 @@
 <template>
-  <div id="sidebar-main">
-    <div id="sidebar-logo">
+  <div class="sidebar-main">
+    <div class="sidebar-logo">
       <img v-if="store.isDarkMode" src="@/assets/img/logo-dark.png" alt="logo" />
       <img v-else src="@/assets/img/logo-light.png" alt="logo" />
     </div>
-    <div id="sidebar-menu">
+    <div class="sidebar-menu">
       <SidebarCell v-ripple v-for="option in options" :name="option.name" :iconClass="option.iconClass" @click="open(option.path)"></SidebarCell>
+      <SidebarCell v-ripple name="退出" iconClass="mdi-exit-to-app" @click="store.logout()"></SidebarCell>
     </div>
-    <div id="sidebar-exam">
+    <div class="sidebar-exam">
       <template v-if="exams.length === 0">
         <v-skeleton-loader  type="list-item-two-line" class="mb-4" v-for="n in 2" :key="n" />
       </template>
@@ -27,11 +28,12 @@ import ExamCell from './ExamCell.vue';
 import { useMainStore } from '~/store/mainStore';
 import { entry } from '~/ts/entry';
 import SidebarFooter from './SidebarFooter.vue';
+import '~/style/sidebar.css';
 
 const router = useRouter();
 const store = useMainStore();
 const options = ref([
-  { name: 'Home', iconClass: 'el-icon-s-home',path:'/home' },
+  { name: '主页', iconClass: 'mdi-home',path:'/home' },
 ]);
 
 const exams = computed(() => store.examData);
@@ -50,41 +52,3 @@ onMounted(()=>{
   }
 })
 </script>
-
-<style scoped>
-#sidebar-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 220px;
-  height: 100vh;
-  background-color: var(--bg-color-shallow);
-}
-
-#sidebar-menu{
-  padding: 20px;
-  padding-bottom: 0;
-  box-sizing: border-box;
-  width: 100%;
-}
-
-#sidebar-exam{
-  width: calc(100% - 40px);
-  border-radius: 20px;
-  margin: 20px;
-  margin-top: 10px;
-  padding: 13px;
-  box-sizing: border-box;
-  height: 100%;
-  background-color: var(--bg-color-solid);
-  box-shadow: var(--inset-shadow);
-}
-
-#sidebar-logo img{
-  width: 100%;
-  padding: 20%;
-  padding-bottom: 0;
-  box-sizing: border-box;
-  text-align: center;
-}
-</style>
