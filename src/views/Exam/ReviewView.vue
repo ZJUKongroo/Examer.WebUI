@@ -58,21 +58,66 @@ const options: Ref<Record<OptionKeys, string[] | SelectOption[]>> = ref({
     { label: "未评测", val: "false" }
   ],
 });
+
+// 初始化时，根据 URL query 恢复状态
 const selectedOption: Ref<Record<OptionKeys, any>> = ref({
   userName: "All",
-  problemName: "All",
+  problemName:  "All",
   status: { label: "All", val: "All" },
 });
 
 const commits = ref<Commit[]>([]);
 
-watch(examId, (id) => init(id))
+async function init(id: string) {
+  // 初始化过滤选项为 URL 中的值（或默认值）
+  anime({
+    targets: ".exam-review-header",
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100),
+  });
+  commits.value = await commitStore.queryExamCommit(id);
+  await Promise.all([
+    (async () => {
+      options.value.userName = ["All", ...await commitStore.queryCommitUser(id)];
+    })(),
+    (async () => {
+      options.value.problemName = ["All", ...await commitStore.queryCommitProblem(id)];
+    })()
+  ])
+  selectedOption.value = {
+    userName: route.query.userName ? String(route.query.userName) : "All",
+    problemName: route.query.problemName ? String(route.query.problemName) : "All",
+    status: route.query.status 
+      ? (options.value.status as SelectOption[]).find(item => item.val === route.query.status) || { label: "All", val: "All" }
+      : { label: "All", val: "All" },
+  }
+  nextTick(() => {
+    anime({
+      targets: ".exam-review-record-card",
+      translateY: [-20, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(100),
+    });
+  })
+}
 
+// 当过滤选项改变时，更新 URL query 参数，并重新查询
 watch(selectedOption, async () => {
+  // 更新 URL query 参数
+  router.replace({
+    query: {
+      ...route.query,
+      userName: selectedOption.value.userName,
+      problemName: selectedOption.value.problemName,
+      status: selectedOption.value.status.val
+    }
+  });
+  
   const query = {
     userName: selectedOption.value.userName === "All" ? undefined : selectedOption.value.userName,
     problemName: selectedOption.value.problemName === "All" ? undefined : selectedOption.value.problemName,
-    status: selectedOption.value.status.val === 'All' ? undefined : selectedOption.value.status.val,
+    status: selectedOption.value.status.val === "All" ? undefined : selectedOption.value.status.val,
   }
   commits.value = await commitStore.queryExamCommit(examId.value, query);
   nextTick(() => {
@@ -92,37 +137,6 @@ function openCommit(commit: Commit) {
       id: commit.id,
     },
   });
-}
-
-async function init(id: string) {
-  selectedOption.value = {
-    userName: "All",
-    problemName: "All",
-    status: "All",
-  }
-  anime({
-    targets: ".exam-review-header",
-    translateX: [20, 0],
-    opacity: [0, 1],
-    delay: anime.stagger(100),
-  });
-  commits.value = await commitStore.queryExamCommit(id);
-  await Promise.all([
-    (async () => {
-      options.value.userName = ["All", ...await commitStore.queryCommitUser(id)];
-    })(),
-    (async () => {
-      options.value.problemName = ["All", ...await commitStore.queryCommitProblem(id)];
-    })()
-  ])
-  nextTick(() => {
-    anime({
-      targets: ".exam-review-record-card",
-      translateY: [-20, 0],
-      opacity: [0, 1],
-      delay: anime.stagger(100),
-    });
-  })
 }
 
 onMounted(() => init(examId.value));
