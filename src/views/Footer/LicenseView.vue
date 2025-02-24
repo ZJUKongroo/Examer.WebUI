@@ -15,12 +15,12 @@
                             后端
                         </div>
                     </div>
-                    <div class="developer-card-email">
+                    <div class="developer-card-email" @click="openEmail('daimolean@zju.edu.cn')">
                         daimolean@zju.edu.cn
                     </div>
                 </div>
             </div>
-            <div class="developer-card colbox">
+            <div class="developer-card colbox" @click="openUrl('https://blog.cast1e.top')">
                 <img src="@/assets/img/developer-avatar/cast1e.jpg" class="developer-card-avatar">
                 <div class="developer-card-info">
                     <div class="colbox">
@@ -31,7 +31,7 @@
                             前端
                         </div>
                     </div>
-                    <div class="developer-card-email">
+                    <div class="developer-card-email" @click.stop="openEmail('rooger@zju.edu.cn')">
                         rooger@zju.edu.cn
                     </div>
                 </div>
@@ -45,7 +45,7 @@
         <h2 class="mb-4 license-anime-element">使用的开源项目及协议</h2>
         <div id="project-card-container" class="license-anime-element">
             <div class="project-card" v-for="project in usedProjects" :key="project.name"
-                @click="open(project.licenseUrl)">
+                @click="openUrl(project.licenseUrl)">
                 <div class="project-card-name">{{ project.name }}</div>
                 <div class="project-card-license">{{ project.license }}</div>
             </div>
@@ -70,8 +70,12 @@ interface Project {
     licenseUrl: string,
 }
 
-function open(url: string) {
+function openUrl(url: string) {
     window.open(url, "_blank");
+}
+
+function openEmail(email: string) {
+    window.open(`mailto:${email}`);
 }
 
 const usedProjects = ref<Project[]>([{
@@ -175,6 +179,19 @@ const usedProjects = ref<Project[]>([{
     font-size: 35px;
     margin-bottom: 5px;
     margin-right: 8px;
+}
+
+.developer-card:hover {
+    background-color: var(--bg-color-darker);
+    cursor: pointer;
+}
+
+.developer-card:active{
+    background-color: var(--bg-color-shallow);
+}
+
+.developer-card .developer-card-email:hover{
+    text-decoration: underline;
 }
 
 #project-card-container {
