@@ -43,9 +43,9 @@
       </div>
       <h2 class="problem-review-file-title problem-review-anime mb-4">文件列表</h2>
       <div id="problem-review-file">
-        <div class="problem-review-file-card mb-4" v-for="(file, index) in files" :key="index">
-          <v-card class="problem-review-file-cards" :title="file.name" :subtitle="file.size" link
-            prepend-icon="mdi-file" append-icon="mdi-open-in-new" variant="tonal" />
+        <div class="problem-review-file-card mb-4" v-for="(file, index) in answerInfo?.files" :key="index">
+          <v-card class="problem-review-file-cards" :title="file.fileName" :subtitle="file.size" link
+            prepend-icon="mdi-file" append-icon="mdi-open-in-new" variant="tonal" @click="openFile(file)" />
         </div>
       </div>
     </template>
@@ -58,7 +58,7 @@ import axios from '~/ts/request';
 import { onMounted, ref, computed, watch, nextTick } from "vue";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useRoute } from "vue-router";
-import type { Commit, Marking } from "~/types";
+import type { Commit, CommitFile, Marking } from "~/types";
 import { useMainStore } from "~/store/mainStore";
 import { ElMessage } from "element-plus";
 
@@ -73,7 +73,6 @@ const reviewed = computed(() => {
   }
   return false;
 });
-const files = ref<File[]>([]);
 const loading = ref(false);
 
 watch(commitId, () => init());
@@ -122,12 +121,32 @@ const submitReview = () => {
 
 async function getCommits() {
   // 获取提交记录
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<void>((resolve,) => {
     axios.get<Commit>(`/commit/${commitId.value}`).then((res) => {
       answerInfo.value = res.data;
       resolve()
     });
   })
+}
+
+const PreviewFileType = ["jpg","jpeg","png","pdf","tiff","webp","mp4","mp3","txt"]
+
+function openFile(file: CommitFile) {
+  const fileExtension = file.fileName.split('.').pop()?.toLowerCase();
+  axios.get(`/file/blob/${file.id}`, { responseType: 'blob' }).then((response) => {
+    const url = URL.createObjectURL(new Blob([response.data],{
+      type:response.headers["content-type"] as string
+    }));
+    if (fileExtension && PreviewFileType.includes(fileExtension)) {
+      const newWindow = window.open(url, '_blank');
+    } else {
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', file.fileName);
+      link.click();
+      window.URL.revokeObjectURL(url);
+    }
+  });
 }
 
 onMounted(() => init())

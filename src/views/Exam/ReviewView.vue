@@ -11,7 +11,7 @@
       </v-select>
     </div>
     <div class="exam-review-results-container">
-      <div class="exam-review-record-card mb-4" v-for="commit in commits" :key="commit.id">
+      <div class="exam-review-record-card mb-4" v-for="commit in paginatedCommits" :key="commit.id">
         <v-card :color="commit.markings.length > 0
           ? 'var(--question-completed-bg)'
           : 'var(--bg-color-shallow)'
@@ -27,12 +27,13 @@
         </v-card>
       </div>
     </div>
+    <v-pagination @update:model-value="handleCurrentPage" v-model="currentPage" :length="totalPages" circle class="mt-4" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import anime from "animejs";
-import { ref, computed, type Ref, onMounted, watchEffect, nextTick, watch } from "vue";
+import { ref, computed, type Ref, onMounted, nextTick, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useCommitStore } from "~/store/commitStore";
@@ -48,6 +49,7 @@ const router = useRouter();
 const route = useRoute();
 const examId = computed(() => route.query.id as string);
 const commitStore = useCommitStore();
+const defaultPageSize = 9;
 
 const options: Ref<Record<OptionKeys, string[] | SelectOption[]>> = ref({
   userName: ["All"],
@@ -67,6 +69,12 @@ const selectedOption: Ref<Record<OptionKeys, any>> = ref({
 });
 
 const commits = ref<Commit[]>([]);
+const currentPage = ref(route.query.currentPage ? Number(route.query.currentPage) : 1);
+const totalPages = computed(() => Math.ceil(commits.value.length / defaultPageSize));
+const paginatedCommits = computed<Commit[]>(()=>{
+  const start = (currentPage.value - 1) * defaultPageSize;
+  return commits.value.slice(start, start + defaultPageSize);
+})
 
 async function init(id: string) {
   // 初始化过滤选项为 URL 中的值（或默认值）
@@ -100,6 +108,15 @@ async function init(id: string) {
       delay: anime.stagger(100),
     });
   })
+}
+
+function handleCurrentPage(to:number){
+  router.replace({
+    query: {
+      ...route.query,
+      currentPage: to
+    }
+  });
 }
 
 // 当过滤选项改变时，更新 URL query 参数，并重新查询
@@ -139,6 +156,7 @@ function openCommit(commit: Commit) {
   });
 }
 
+watch(examId,()=>init(examId.value))
 onMounted(() => init(examId.value));
 </script>
 

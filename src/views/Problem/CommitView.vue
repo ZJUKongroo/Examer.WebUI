@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import anime from "animejs";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
 import axios from '~/ts/request'
@@ -10,8 +10,8 @@ import type { Commit } from "~/types";
 import CDialog from "~/components/UI/CDialog.vue";
 
 const files = ref<File[]>([]);
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
 const isDragging = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const store = useMainStore();
@@ -31,7 +31,14 @@ const problem = computed(() => {
   return res;
 });
 const uploading = ref(false);
-const uploadProgress = ref(0);
+const uploadingVisible = ref(false)
+const uploadProgress = ref<{ [name: string]: number }>({});
+
+interface FileDto {
+  id: string
+  fileName: string,
+  fileType: number
+}
 
 const handleFileUpload = (newFiles: FileList) => {
   for (let i = 0; i < newFiles.length; i++) {
@@ -57,43 +64,60 @@ function handleFileSelect() {
   }
 }
 
-function submit() {
+async function submit() {
   if (files.value.length === 0) {
-    ElMessage.warning("请先选择文件")
+    ElMessage.warning("请先选择文件");
     return;
   }
 
-  const formData = new FormData();
-  files.value.forEach((file) => {
-    formData.append("formFile", file);
-  });
+  uploadingVisible.value = true;
 
-  uploading.value = true;
-  uploadProgress.value = 0;
-  axios.post<Commit>("/commit", {
-    examId: examId.value,
-    problemId: problemId.value,
-    userId: store.userId
-  }).then((res) => {
-    const commitId = res.data.id;
-    axios.post(`/commit/file/${commitId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.total) {
-          uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        }
-      }
-    }).then(() => {
-      uploading.value = false;
-      router.back();
-      ElMessage.success("提交成功")
-    })
-      .catch(() => {
-        ElMessage.error("提交失败")
+  try {
+    const { data: commit } = await axios.post<Commit>("/commit", {
+      examId: examId.value,
+      problemId: problemId.value,
+      userId: store.userId
+    });
+
+    const commitId = commit.id;
+    uploading.value = true;
+
+    const uploadPromises = files.value.map(async (file) => {
+      const formData = new FormData();
+      formData.append("formFile", file);
+      uploadProgress.value[file.name] = 0;
+      const { data } = await axios.post<FileDto>("/file", {
+        fileName: file.name,
+        parentId: commitId,
+        fileType: 2
       });
-  })
+      try {
+        await axios.post(`/file/blob/${data.id}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              uploadProgress.value[file.name] = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            }
+          }
+        });
+      } catch (e) {
+        await axios.delete(`/file/${data.id}`);
+        ElMessage.error("上传失败");
+      }
+    });
+
+    await Promise.all(uploadPromises);
+    ElMessage.success("提交成功");
+    router.back();
+  } catch (error) {
+    ElMessage.error("提交失败");
+  } finally {
+    uploading.value = false;
+    uploadingVisible.value = false;
+    uploadProgress.value = {};
+  }
 }
 </script>
 
@@ -137,18 +161,25 @@ function submit() {
       <input ref="fileInputRef" type="file" @change="handleFileSelect" multiple style="display: none" />
     </div>
   </div>
-  <CDialog v-model:visible="uploading" title="上传中">
+  <CDialog v-model:visible="uploadingVisible" title="上传中" width="500px" height="450px">
     <template #content>
-      <h1 class="mb-4">正在提交</h1>
-      <div class="problem-commit-dialog-content">
-        <template v-if="uploadProgress !== 0">
-          <v-progress-circular :model-value="uploadProgress" :rotate="360" :size="100" :width="15" color="teal">
-            <template v-slot:default> {{ uploadProgress }} % </template>
-          </v-progress-circular>
-        </template>
-        <template v-else>
-          创建提交中……
-        </template>
+      <div style="padding: 20px;">
+        <h1 class="mb-4">正在提交</h1>
+        <div class="problem-commit-dialog-content">
+          <template v-if="uploading" v-for="(progress, name) in uploadProgress">
+            <div class="problem-commit-dialog-files">
+              <h2 class="mb-4">{{ name }}</h2>
+              <v-progress-linear :model-value="progress" :rotate="360" :size="100" height="20">
+                <template #default>
+                  {{ progress }}%
+                </template>
+              </v-progress-linear>
+            </div>
+          </template>
+          <template v-else>
+            创建提交中……
+          </template>
+        </div>
       </div>
     </template>
   </CDialog>
@@ -195,10 +226,14 @@ function submit() {
   margin-bottom: 15px;
 }
 
-.problem-commit-dialog-content{
+.problem-commit-dialog-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.problem-commit-dialog-files {
+  width: 100%;
 }
 </style>

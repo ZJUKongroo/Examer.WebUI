@@ -128,6 +128,13 @@ export interface Commit {
   exam: Exam;
   problem: Problem;
   markings: Marking[];
+  files:CommitFile[];
+}
+
+export interface CommitFile{
+  id: string
+  fileName: string
+  fileType: number
 }
 
 export interface Marking {
@@ -137,7 +144,7 @@ export interface Marking {
   score: number
 }
 
-interface Pagination { 
+export interface Pagination { 
   totalCount: number, 
   pageSize: number, 
   currentPage: number, 
