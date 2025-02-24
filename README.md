@@ -1,6 +1,5 @@
 <div align="center">
 <h1 align="center">ACEE Exam Submission System</h1>
-<hr>
 
 English / [简体中文](./README_CN.md)
 

@@ -1,6 +1,5 @@
 <div align="center">
 <h1 align="center">ACEE 试题提交系统</h1>
-<hr>
 
 [English](./README.md) / 简体中文
 
