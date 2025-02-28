@@ -99,7 +99,17 @@ async function submit() {
     })).data;
     userId = groupInfo.id;
   }
-
+  const currentCommit = (await axios.get<Commit[]>(`/Commit`, {
+      params: {
+        examId: examId.value,
+        problemId: problemId.value,
+        userId
+      }
+    })).data;
+  let currentCommitId = "";
+  if(currentCommit.length > 0){
+    currentCommitId = currentCommit[0].id;
+  }
   // 开启上传对话框
   uploadingVisible.value = true;
 
@@ -136,9 +146,14 @@ async function submit() {
             }
           }
         });
+        // 上传完成后确认提交
+        await axios.post(`/commit/confirmation/${commitId}`);
       } catch (e) {
         // 如果上传失败，则删除中间记录，并显示错误提示
-        await axios.delete(`/file/${data.id}`);
+        // await axios.delete(`/file/${data.id}`);
+        if(currentCommitId){
+          await axios.post(`/commit/confirmation/${currentCommitId}`);
+        }
         ElMessage.error("上传失败");
       }
     });
