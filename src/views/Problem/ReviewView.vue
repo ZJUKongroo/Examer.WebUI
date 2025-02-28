@@ -62,13 +62,11 @@ import { useRoute } from "vue-router";
 import type { Commit, CommitFile, Marking } from "~/types";
 import { useMainStore } from "~/store/mainStore";
 import { ElMessage, ElMessageBox, type Action } from "element-plus";
-import { useCommitStore } from "~/store/commitStore";
 import { renderAsync } from 'docx-preview';
 
 const route = useRoute();
 const commitId = computed(() => route.query.id as string);
 const store = useMainStore();
-const commitStore = useCommitStore();
 const score = ref<number>(0);
 const answerInfo = ref<Commit | null>(null);
 const reviewed = computed(() => {
