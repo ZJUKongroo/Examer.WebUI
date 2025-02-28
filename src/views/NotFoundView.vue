@@ -1,3 +1,5 @@
+<!-- 404 页面 -->
+
 <template>
   <div id="not-found-view">
     <div id="not-found-view-content">

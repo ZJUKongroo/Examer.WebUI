@@ -107,6 +107,7 @@ export interface Problem {
   description: string;
   problemType: number;
   score: number;
+  completed?: boolean;
 }
 
 import { ExamType } from "~/enums";
@@ -135,6 +136,7 @@ export interface CommitFile{
   id: string
   fileName: string
   fileType: number
+  size?: number
 }
 
 export interface Marking {

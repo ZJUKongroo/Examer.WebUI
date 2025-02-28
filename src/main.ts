@@ -8,7 +8,7 @@ import "./style/global.scss";
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
-import "vuetify/styles";
+import "vuetify/dist/vuetify.min.css";
 import { createVuetify } from "vuetify";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
 import '@mdi/font/css/materialdesignicons.css' // Ensure you are using css-loader

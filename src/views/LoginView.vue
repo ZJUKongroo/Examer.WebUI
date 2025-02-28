@@ -1,20 +1,19 @@
 <template>
   <div class="colbox container" id="login-container">
     <div id="login-sidebar">
-      <!-- <div id="login-sidebar-announcement">
-                示例公告
-            </div> -->
+      <!-- 登录页面侧边栏背景 -->
       <div id="login-sidebar-title">
-        <!-- ZJUKongroo<small>.StartUp</small> -->
         <strong>ACEE</strong> 试题提交系统
       </div>
     </div>
     <div class="rowbox" id="login-main" :class="{ registering: isRegistering }">
       <div style="flex-grow: 3"></div>
+      <!-- 根据是否注册显示标题 -->
       <div id="login-title">
         {{ isRegistering ? "注册" : "登录" }}
       </div>
       <v-form ref="formRef" lazy-validation>
+        <!-- 用户名输入 -->
         <v-text-field
           v-model="form.username"
           label="用户名"
@@ -22,6 +21,7 @@
           dense
           required
         ></v-text-field>
+        <!-- 密码输入，回车触发登录 -->
         <v-text-field
           v-model="form.password"
           label="密码"
@@ -33,6 +33,7 @@
         ></v-text-field>
       </v-form>
       <div id="login-button-wrapper">
+        <!-- 登录按钮，根据 logining 状态显示加载动画或箭头图标 -->
         <button
           type="button"
           id="login-button"
@@ -44,6 +45,7 @@
         </button>
       </div>
       <div id="toggle-register-wrapper">
+        <!-- 切换注册/登录按钮，目前仅支持登录 -->
         <v-btn variant="plain" id="toggle-register-button" @click="toggleRegister">
           {{ isRegistering ? "已有账号？登录" : "没有账号？注册" }}
         </v-btn>
@@ -61,18 +63,21 @@ import { useMainStore } from "~/store/mainStore";
 import axios from '~/ts/request';
 import { ElMessage } from "element-plus";
 
+// 登录表单数据
 const form = ref({
   username: "",
   password: "",
 });
-const logining = ref(false);
-const isRegistering = ref(false);
+const logining = ref(false); // 正在登录标志
+const isRegistering = ref(false); // 注册状态标志
 
+// 切换注册状态，目前不启用注册功能
 const toggleRegister = () => {
   // isRegistering.value = !isRegistering.value;
   ElMessage.error("暂不支持注册");
 };
 
+// 登录表单校验
 function check(payload: LoginDto): boolean {
   if (payload.password.length <= 1 || payload.studentNo.length <= 1) {
     return false;
@@ -83,13 +88,16 @@ function check(payload: LoginDto): boolean {
 const store = useMainStore();
 const router = useRouter();
 
+// 登录函数，提交表单数据到后端进行验证
 function login(): void {
   let payload: LoginDto = {
     studentNo: form.value.username,
     password: form.value.password,
   };
+  
   if (check(payload)) {
     logining.value = true;
+    // 发起登录请求，通过查询字符串传输学号信息
     let request = axios.post(`/Authentication?studentNo=${form.value.username}`, payload);
     if (request)
       request
@@ -99,9 +107,11 @@ function login(): void {
               type: "success",
               message: "登录成功",
             });
+            // 登录成功，保存用户数据并刷新考试数据
             const data = res.data;
-            store.login(data)
+            store.login(data);
             store.refreshExamData();
+            // 执行离场动画，登录成功后跳转页面
             const login_main = document.getElementById("login-main");
             const login_sidebar = document.getElementById("login-sidebar");
             if (login_main) leave("left", login_main);
@@ -121,35 +131,15 @@ function login(): void {
             message: `登录失败`,
           });
         });
-  } else
+  } else {
     ElMessage({
       type: "error",
       message: "用户名或密码格式错误",
     });
+  }
 }
 
-// function login() {
-//   logining.value = true;
-//   setTimeout(() => {
-//     logining.value = false;
-//     store.login("1","User");
-//     const login_main = document.getElementById("login-main");
-//     const login_sidebar = document.getElementById("login-sidebar");
-//     if (login_main) leave("left", login_main);
-//     if (login_sidebar)
-//       leave("right", login_sidebar, 200, () => {
-//         const container = document.getElementById("login-container");
-//         if (container) fadeOut(container, 300, () => {
-//           router.push("/");
-//         });
-//       });
-//   }, 1000);
-// }
-
-// const register = () => {
-//   // 注册逻辑
-// };
-
+// 页面挂载后执行动画效果
 onMounted(() => {
   const container = document.getElementById("login-container");
   const main = document.getElementById("login-main");
@@ -166,7 +156,6 @@ onMounted(() => {
     transform: translate(calc(-50% - 20px), -50%);
     opacity: 0;
   }
-
   100% {
     transform: translate(-50%, -50%);
     opacity: 1;
@@ -182,6 +171,7 @@ onMounted(() => {
   }
 }
 
+/* 侧边栏背景 */
 #login-sidebar {
   background-image: url("@/assets/img/login_page.jpg");
   flex-grow: 1;
@@ -189,6 +179,7 @@ onMounted(() => {
   position: relative;
 }
 
+/* 侧边栏标题样式 */
 #login-sidebar-title {
   position: absolute;
   bottom: 20px;
@@ -198,6 +189,7 @@ onMounted(() => {
   text-shadow: 8px 5px 0px rgba(239, 239, 239, 0.2);
 }
 
+/* 登录主区域样式 */
 #login-main {
   box-sizing: border-box;
   width: 30%;
@@ -210,20 +202,12 @@ onMounted(() => {
   transition: 0.5s;
 }
 
-// #login-main.registering {
-//   width: 50%;
-// }
-
 #login-title {
   font-size: 50px;
   flex-grow: 1;
 }
 
-#login-input {
-  text-align: left;
-  justify-content: space-between;
-}
-
+/* 登录按钮样式及交互 */
 #login-button-wrapper {
   flex-grow: 8;
   position: relative;
@@ -258,27 +242,12 @@ onMounted(() => {
   background-color: var(--login-button-hover);
 }
 
-#login-sidebar-announcement {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border-radius: 15px;
-  transform: translate(-50%, -50%);
-  width: calc(60% - 40px);
-  height: calc(60% - 40px);
-  font-size: 35px;
-  background-color: var(--bg-color);
-  backdrop-filter: blur(30px);
-  border: solid 1px var(--bd-color);
-  padding: 20px;
-  animation: login-sidebar-announcement-entry 0.5s;
-}
-
 #toggle-register-wrapper {
   flex-grow: 1;
   text-align: center;
 }
 
+/* 切换注册按钮样式 */
 #toggle-register-button {
   background: none;
   border: none;

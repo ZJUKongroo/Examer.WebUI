@@ -1,4 +1,4 @@
-import { createVNode, getCurrentInstance, render } from 'vue';
+import { createVNode, render } from 'vue';
 import DeleteConfirm from '@/components/DeleteConfirm.vue';
 import { context } from '~/main';
 

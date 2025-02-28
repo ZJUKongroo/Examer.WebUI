@@ -1,4 +1,4 @@
-export function validatePassword(rule: any, password: string, callback: any) {
+export function validatePassword(_: any, password: string, callback: any) {
     password = password.trim();
     if (!password) {
         callback(new Error("请输入密码..."))
@@ -86,7 +86,7 @@ export function validateIdentityNo(rule: any, identityNo: string, callback: any)
     }
 }
 
-export function validatePhoneNumber(rule: any, phoneNumber: string, callback: any) {
+export function validatePhoneNumber(_: any, phoneNumber: string, callback: any) {
     phoneNumber = phoneNumber.trim();
     if (!phoneNumber) {
         callback(new Error("请输入电话号码..."))
@@ -106,7 +106,7 @@ export function validatePhoneNumber(rule: any, phoneNumber: string, callback: an
     }
 }
 
-export function validateStudentNo(rule: any, studentNo: string, callback: any) {
+export function validateStudentNo(_: any, studentNo: string, callback: any) {
     studentNo = studentNo.trim();
     if (!studentNo) {
         callback(new Error("请输入学号..."))

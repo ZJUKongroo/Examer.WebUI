@@ -138,7 +138,7 @@ function openFile(file: CommitFile) {
       type:response.headers["content-type"] as string
     }));
     if (fileExtension && PreviewFileType.includes(fileExtension)) {
-      const newWindow = window.open(url, '_blank');
+      window.open(url, '_blank');
     } else {
       const link = document.createElement('a');
       link.href = url;
