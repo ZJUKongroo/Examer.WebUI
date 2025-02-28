@@ -108,7 +108,6 @@ async function submit() {
       uploadProgress.value[file.name] = 0;
       // 先通过接口获取文件记录 ID
       const { data } = await axios.post<FileDto>("/file", {
-        fileName: file.name,
         parentId: commitId,
         fileType: 2
       });

@@ -1,6 +1,10 @@
 <template>
   <div class="exam-review-container">
-    <UniversalHeader title="提交记录" class="exam-review-header" />
+    <UniversalHeader title="提交记录" class="exam-review-header">
+      <template #append>
+        <v-btn @click="refreshCommits">刷新</v-btn>
+      </template>
+    </UniversalHeader>
     <div class="colbox exam-review-header" id="exam-review-filter">
       <v-autocomplete v-model="selectedOption.problemName" :items="options.problemName" label="题目"
         class="mb-4 exam-review-filter-item"></v-autocomplete>
@@ -9,6 +13,7 @@
       <v-select return-object v-model="selectedOption.status" :items="options.status" item-title="label"
         item-value="val" label="评测状态" class="mb-4 exam-review-filter-item">
       </v-select>
+      <v-btn :icon=" ascending ? 'mdi-sort-calendar-ascending' : 'mdi-sort-calendar-descending' " variant="plain" @click="toggleSort"/>
     </div>
     <div class="exam-review-results-container">
       <div class="exam-review-record-card mb-4" v-for="commit in paginatedCommits" :key="commit.id">
@@ -18,7 +23,7 @@
           " :title="`ID ${commit.id}`" :subtitle="`提交时间: ${new Date(commit.commitTime).toLocaleString()}`" link
           @click="openCommit(commit)">
           <template v-slot:append>
-            <div v-if="commit.markings.length>0">{{commit.markings.map((marking => marking.score))}}</div>
+            <div v-if="commit.markings.length > 0">{{commit.markings.map((marking => marking.score))}}</div>
           </template>
           <v-card-text>
             <div>题目名称: {{ commit.problem.name }}</div>
@@ -27,7 +32,8 @@
         </v-card>
       </div>
     </div>
-    <v-pagination @update:model-value="handleCurrentPage" v-model="currentPage" :length="totalPages" circle class="mt-4" />
+    <v-pagination @update:model-value="handleCurrentPage" v-model="currentPage" :length="totalPages" circle
+      class="mt-4" />
   </div>
 </template>
 
@@ -50,6 +56,7 @@ const route = useRoute();
 const examId = computed(() => route.query.id as string);
 const commitStore = useCommitStore();
 const defaultPageSize = 9;
+const ascending = ref(true);
 
 const options: Ref<Record<OptionKeys, string[] | SelectOption[]>> = ref({
   userName: ["All"],
@@ -64,15 +71,16 @@ const options: Ref<Record<OptionKeys, string[] | SelectOption[]>> = ref({
 // 初始化时，根据 URL query 恢复状态
 const selectedOption: Ref<Record<OptionKeys, any>> = ref({
   userName: "All",
-  problemName:  "All",
+  problemName: "All",
   status: { label: "All", val: "All" },
 });
 
 const commits = ref<Commit[]>([]);
 const currentPage = ref(route.query.currentPage ? Number(route.query.currentPage) : 1);
 const totalPages = computed(() => Math.ceil(commits.value.length / defaultPageSize));
-const paginatedCommits = computed<Commit[]>(()=>{
+const paginatedCommits = computed<Commit[]>(() => {
   const start = (currentPage.value - 1) * defaultPageSize;
+  nextTick(() => animateCommits())
   return commits.value.slice(start, start + defaultPageSize);
 })
 
@@ -85,6 +93,9 @@ async function init(id: string) {
     delay: anime.stagger(100),
   });
   commits.value = await commitStore.queryExamCommit(id);
+  if(route.query.ascending === "false"){
+    ascending.value = false;
+  }
   await Promise.all([
     (async () => {
       options.value.userName = ["All", ...await commitStore.queryCommitUser(id)];
@@ -96,27 +107,42 @@ async function init(id: string) {
   selectedOption.value = {
     userName: route.query.userName ? String(route.query.userName) : "All",
     problemName: route.query.problemName ? String(route.query.problemName) : "All",
-    status: route.query.status 
+    status: route.query.status
       ? (options.value.status as SelectOption[]).find(item => item.val === route.query.status) || { label: "All", val: "All" }
       : { label: "All", val: "All" },
   }
-  nextTick(() => {
-    anime({
-      targets: ".exam-review-record-card",
-      translateY: [-20, 0],
-      opacity: [0, 1],
-      delay: anime.stagger(100),
-    });
-  })
 }
 
-function handleCurrentPage(to:number){
+function animateCommits() {
+  anime({
+    targets: ".exam-review-record-card",
+    translateY: [-20, 0],
+    opacity: [0, 1],
+    delay: anime.stagger(100, { grid: [3, 3]}),
+  });
+}
+
+function toggleSort() {
+  ascending.value = !ascending.value;
+  router.replace({
+    query: {
+      ...route.query,
+      ascending: ascending.value.toString()
+    }
+  });
+}
+
+function handleCurrentPage(to: number) {
   router.replace({
     query: {
       ...route.query,
       currentPage: to
     }
   });
+}
+
+function refreshCommits() {
+  commitStore.fetchCommits().then(() => init(examId.value))
 }
 
 // 当过滤选项改变时，更新 URL query 参数，并重新查询
@@ -130,13 +156,15 @@ watch(selectedOption, async () => {
       status: selectedOption.value.status.val
     }
   });
-  
+
   const query = {
     userName: selectedOption.value.userName === "All" ? undefined : selectedOption.value.userName,
     problemName: selectedOption.value.problemName === "All" ? undefined : selectedOption.value.problemName,
     status: selectedOption.value.status.val === "All" ? undefined : selectedOption.value.status.val,
   }
-  commits.value = await commitStore.queryExamCommit(examId.value, query);
+  commits.value = (await commitStore.queryExamCommit(examId.value, query)).sort((a, b) => {
+    return (new Date(b.commitTime).getTime() - new Date(a.commitTime).getTime()) * (ascending.value ? 1 : -1);
+  });
   nextTick(() => {
     anime({
       targets: ".exam-review-record-card",
@@ -147,6 +175,10 @@ watch(selectedOption, async () => {
   })
 }, { deep: true });
 
+watch(ascending,()=>{
+  commits.value = commits.value.reverse();
+});
+
 function openCommit(commit: Commit) {
   router.push({
     path: "/problem/review",
@@ -156,7 +188,7 @@ function openCommit(commit: Commit) {
   });
 }
 
-watch(examId,()=>init(examId.value))
+watch(examId, () => init(examId.value))
 onMounted(() => init(examId.value));
 </script>
 

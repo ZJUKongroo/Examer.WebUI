@@ -14,7 +14,11 @@ export const useCommitStore = defineStore("commit", () => {
   async function fetchCommits() {
     loading.value = true;
     try {
-      const { data } = await axios.get<Commit[]>("/commit");
+      const { data } = await axios.get<Commit[]>("/commit",{
+        params: {
+          pageSize: 1000,
+        },
+      });
       // 如果集合不存在，则添加集合并插入数据
       let commitCollection = db.getCollection<Commit>("commits");
       if (!commitCollection) {

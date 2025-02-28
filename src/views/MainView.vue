@@ -4,7 +4,7 @@
       <SuperAdminSidebar v-if="store.userRole===UserRole.SuperAdministrator"/>
       <AdminSidebar v-else-if="store.userRole===UserRole.Administrator"/>
       <MainSidebar v-else/>
-      // 根据用户替换导航条
+      <!-- 根据用户替换导航条 -->
     </div>
     <div id="main-view-content">
       <div id="main-view-wrapper">

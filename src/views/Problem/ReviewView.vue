@@ -29,12 +29,13 @@
                 <h1 class="mb-1">题目信息</h1>
                 <div class="mb-2"><strong>题目名称:</strong> {{ answerInfo.problem.name }}</div>
                 <div class="mb-2"><strong>题目描述:</strong> {{ answerInfo.problem.description }}</div>
+                <div class="mb-2"><strong>题目分数:</strong> {{ answerInfo.problem.score }}</div>
               </div>
               <div>
                 <h1 class="mb-1">考试信息</h1>
                 <div class="mb-2"><strong>考试名称:</strong> {{ answerInfo.exam.name }}</div>
                 <div class="mb-2"><strong>考试时间:</strong> {{ (new Date(answerInfo.exam.startTime)).toLocaleDateString()
-                  }} - {{ (new Date(answerInfo.exam.endTime)).toLocaleDateString() }}</div>
+                }} - {{ (new Date(answerInfo.exam.endTime)).toLocaleDateString() }}</div>
               </div>
             </div>
             <v-text-field variants="tonal" v-model="score" label="打分" type="number"></v-text-field>
@@ -60,11 +61,14 @@ import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useRoute } from "vue-router";
 import type { Commit, CommitFile, Marking } from "~/types";
 import { useMainStore } from "~/store/mainStore";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox, type Action } from "element-plus";
+import { useCommitStore } from "~/store/commitStore";
+import { renderAsync } from 'docx-preview';
 
 const route = useRoute();
 const commitId = computed(() => route.query.id as string);
 const store = useMainStore();
+const commitStore = useCommitStore();
 const score = ref<number>(0);
 const answerInfo = ref<Commit | null>(null);
 const reviewed = computed(() => {
@@ -108,36 +112,67 @@ function init() {
 
 const submitReview = () => {
   // 提交评测逻辑
-  axios.post<Marking>(`/marking`, {
-    commitId: commitId.value,
-    reviewUserId: store.userId,
-    score: score.value,
-  }).then(() => {
-    // 提交成功
-    ElMessage.success("提交成功");
-    init()
-  });
+  const judge_score = Number(score.value);
+  if (judge_score > 0 && answerInfo.value && judge_score > answerInfo.value.problem.score) {
+    axios.post<Marking>(`/marking`, {
+      commitId: commitId.value,
+      reviewUserId: store.userId,
+      score: judge_score,
+    }).then(() => {
+      // 提交成功
+      ElMessage.success("提交成功");
+      commitStore.fetchCommits();
+      init()
+    });
+  }
+  else {
+    ElMessage.error("分数不合法");
+  }
 };
 
 async function getCommits() {
   // 获取提交记录
   return new Promise<void>((resolve,) => {
-    axios.get<Commit>(`/commit/${commitId.value}`).then((res) => {
+    axios.get<Commit>(`/commit/${commitId.value.trim()}`).then((res) => {
       answerInfo.value = res.data;
       resolve()
     });
   })
 }
 
-const PreviewFileType = ["jpg","jpeg","png","pdf","tiff","webp","mp4","mp3","txt"]
+// 添加 docx 到预览类型列表
+const PreviewFileType = ["jpg", "jpeg", "png", "pdf", "tiff", "webp", "mp4", "mp3", "txt", "gif", "wav", "docx"];
 
 function openFile(file: CommitFile) {
   const fileExtension = file.fileName.split('.').pop()?.toLowerCase();
-  axios.get(`/file/blob/${file.id}`, { responseType: 'blob' }).then((response) => {
-    const url = URL.createObjectURL(new Blob([response.data],{
-      type:response.headers["content-type"] as string
+  axios.get(`/file/blob/${file.id.trim()}`, { responseType: 'blob' }).then((response) => {
+    const blob: Blob = response.data;
+    const url = URL.createObjectURL(new Blob([blob], {
+      type: response.headers["content-type"] as string
     }));
-    if (fileExtension && PreviewFileType.includes(fileExtension)) {
+
+    // 处理 Word 文档
+    if (fileExtension === "docx") {
+      // 显示选择对话框
+      ElMessageBox.confirm(`是否预览 "${file.fileName}"?`, '预览', {
+        confirmButtonText: '预览',
+        cancelButtonText: '下载',
+        type: 'warning',
+        distinguishCancelAndClose: true,
+      }).then(() => {
+        previewDocxFile(blob, file);
+      }).catch((action: Action) => {
+        if (action === 'cancel') {
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', file.fileName);
+          link.click();
+          window.URL.revokeObjectURL(url);
+          return;
+        }
+      })
+    }
+    else if (fileExtension && PreviewFileType.includes(fileExtension)) {
       window.open(url, '_blank');
     } else {
       const link = document.createElement('a');
@@ -149,6 +184,35 @@ function openFile(file: CommitFile) {
   });
 }
 
+function previewDocxFile(blob: Blob, file: CommitFile) {
+  const tempUrl = URL.createObjectURL(blob);
+  const newWindow = window.open(tempUrl, '_blank');
+  if (newWindow) {
+    newWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${file.fileName} - 文档预览</title>
+          <style>body { margin: 0;  }</style>
+        </head>
+        <body>
+          <div id="docx-container"></div>
+        </body>
+        </html>
+      `);
+    newWindow.document.close();
+
+    // 将 blob 转为 ArrayBuffer 后渲染
+    blob.arrayBuffer().then((buffer) => {
+      const container = newWindow.document.getElementById('docx-container');
+      if (container) renderAsync(buffer, container, undefined, {
+        className: 'docx-viewer',
+        inWrapper: true
+      });
+    });
+  }
+}
+
 onMounted(() => init())
 </script>
 
@@ -156,7 +220,8 @@ onMounted(() => init())
 .problem-review-container {
   padding: 40px;
 }
-.problem-review-content-wrapper{
+
+.problem-review-content-wrapper {
   display: flex;
   gap: 10%;
   flex-direction: row;

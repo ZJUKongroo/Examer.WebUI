@@ -21,16 +21,16 @@
           </div>
         </div>
       </main>
-      <aside id="exam-commit-aside" class="exam-commit-first-in">
+      <aside v-if="exam?.examType === ExamType.GroupExam" id="exam-commit-aside" class="exam-commit-first-in">
         <div class="exam-commit-right-column">
-          <div v-if="exam?.examType == ExamType.GroupExam" class="exam-commit-team-info">
+          <div  class="exam-commit-team-info">
             <div class="exam-commit-team-info-title">队伍信息</div>
             <TeamCell v-ripple v-for="member in members" :info="member" />
           </div>
-          <div class="exam-commit-score-card">
+          <!-- <div class="exam-commit-score-card">
             <div class="exam-commit-score-title">分数</div>
             <div class="exam-commit-score-value">{{ score }}</div>
-          </div>
+          </div> -->
         </div>
       </aside>
     </container>
@@ -75,7 +75,7 @@ function openProblem(problem: Problem) {
 }
 
 const members = ref<User[]>([]);
-const score = ref<number>(0); // Example score value
+// const score = ref<number>(0); // Example score value
 
 onMounted(async () => {
   anime({

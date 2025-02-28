@@ -411,7 +411,7 @@ async function getExamGroup() {
     endTime: string,
     users: string[]
   }
-  const res = await axios.get<ExamGroupResponse>(`/exam/groups/${examId.value}`);
+  const res = await axios.get<ExamGroupResponse>(`/exam/groups/${examId.value.trim()}`);
   examGroup.value = groups.value.filter(group =>
     res.data.users.includes(group.id)
   );
@@ -431,13 +431,13 @@ onMounted(async () => {
   loading.value = false;
   nextTick(() => {
     anime({
-      targets: '.exam-group-group-card',
+      targets: '.exam-group-users-container',
       translateY: [20, 0],
       opacity: [0, 1],
       delay: anime.stagger(100),
     })
     anime({
-      targets: '.exam-group-undistributed-card',
+      targets: '.exam-group-groups-container',
       translateX: [-20, 0],
       opacity: [0, 1],
       delay: 200
