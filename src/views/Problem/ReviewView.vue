@@ -113,7 +113,7 @@ function init() {
 const submitReview = () => {
   // 提交评测逻辑
   const judge_score = Number(score.value);
-  if (judge_score > 0 && answerInfo.value && judge_score > answerInfo.value.problem.score) {
+  if (judge_score > 0 && answerInfo.value && judge_score <= answerInfo.value.problem.score) {
     axios.post<Marking>(`/marking`, {
       commitId: commitId.value,
       reviewUserId: store.userId,
@@ -121,7 +121,6 @@ const submitReview = () => {
     }).then(() => {
       // 提交成功
       ElMessage.success("提交成功");
-      commitStore.fetchCommits();
       init()
     });
   }

@@ -6,8 +6,9 @@ import { useRoute, useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
 import axios from '~/ts/request'
 import { ElMessage } from "element-plus";
-import type { Commit } from "~/types";
+import type { Commit, Group } from "~/types";
 import CDialog from "~/components/UI/CDialog.vue";
+import { ExamType } from "~/enums";
 
 // 用户要提交的文件
 const files = ref<File[]>([]);
@@ -88,6 +89,17 @@ async function submit() {
     return;
   }
 
+  let userId = store.userId;
+
+  if(exam.value?.examType === ExamType.GroupExam){
+    const groupInfo = (await axios.get<Group>(`/user/groups/${store.userId}`,{
+      params:{
+        examId: examId.value
+      }
+    })).data;
+    userId = groupInfo.id;
+  }
+
   // 开启上传对话框
   uploadingVisible.value = true;
 
@@ -96,7 +108,7 @@ async function submit() {
     const { data: commit } = await axios.post<Commit>("/commit", {
       examId: examId.value,
       problemId: problemId.value,
-      userId: store.userId
+      userId: userId
     });
     const commitId = commit.id;
     uploading.value = true;

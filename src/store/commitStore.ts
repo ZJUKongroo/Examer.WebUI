@@ -1,4 +1,3 @@
-import { ref } from "vue";
 import { defineStore } from "pinia";
 import axios from "~/ts/request";
 import type { Commit } from "~/types";
@@ -7,22 +6,19 @@ import { ElMessage } from "element-plus";
 
 export const useCommitStore = defineStore("commit", () => {
   // state
-  const loading = ref(false);
   const db = new Loki("commit");
-  const initialized = ref(false);
 
-  async function fetchCommits() {
-    loading.value = true;
+  async function fetchCommits(examId:string) {
     try {
       const { data } = await axios.get<Commit[]>("/commit",{
-        params: {
-          pageSize: 1000,
-        },
+        params:{
+          examId
+        }
       });
       // 如果集合不存在，则添加集合并插入数据
-      let commitCollection = db.getCollection<Commit>("commits");
+      let commitCollection = db.getCollection<Commit>(examId);
       if (!commitCollection) {
-        commitCollection = db.addCollection<Commit>("commits");
+        commitCollection = db.addCollection<Commit>(examId);
       } else {
         // 重新加载数据前清空集合
         commitCollection.clear();
@@ -30,8 +26,6 @@ export const useCommitStore = defineStore("commit", () => {
       commitCollection.insert(data);
     } catch (e) {
       ElMessage.error("获取提交数据失败");
-    } finally {
-      loading.value = false;
     }
   }
 
@@ -43,12 +37,7 @@ export const useCommitStore = defineStore("commit", () => {
       status?: string;
     } = {}
   ) {
-    if (!initialized.value && !loading.value) {
-      await fetchCommits();
-      initialized.value = true;
-    }
-
-    const commitCollection = db.getCollection<Commit>("commits");
+    const commitCollection = db.getCollection<Commit>(examId);
     if (!commitCollection) {
       return [];
     }
@@ -65,31 +54,23 @@ export const useCommitStore = defineStore("commit", () => {
   }
 
   async function queryCommitProblem(examId: string) {
-    if (!initialized.value && !loading.value) {
-      await fetchCommits();
-      initialized.value = true;
-    }
-
-    const commitCollection = db.getCollection<Commit>("commits");
+    const commitCollection = db.getCollection<Commit>(examId);
     if (!commitCollection) {
       return [];
     }
 
     const query: any = { "exam.id": examId };
 
-    const problemName = commitCollection
-      .find(query)
-      .map((commit) => commit.problem.name);
+    const problemName = [
+      ...new Set(
+      commitCollection.find(query).map((commit) => commit.problem.name)
+      ),
+    ];
     return problemName;
   }
 
   async function queryCommitUser(examId: string) {
-    if (!initialized.value && !loading.value) {
-      await fetchCommits();
-      initialized.value = true;
-    }
-
-    const commitCollection = db.getCollection<Commit>("commits");
+    const commitCollection = db.getCollection<Commit>(examId);
     if (!commitCollection) {
       return [];
     }
@@ -104,8 +85,6 @@ export const useCommitStore = defineStore("commit", () => {
   }
 
   return {
-    loading,
-    db,
     fetchCommits,
     queryExamCommit,
     queryCommitProblem,

@@ -92,6 +92,7 @@ async function init(id: string) {
     opacity: [0, 1],
     delay: anime.stagger(100),
   });
+  await commitStore.fetchCommits(id);
   commits.value = await commitStore.queryExamCommit(id);
   if(route.query.ascending === "false"){
     ascending.value = false;
@@ -142,7 +143,7 @@ function handleCurrentPage(to: number) {
 }
 
 function refreshCommits() {
-  commitStore.fetchCommits().then(() => init(examId.value))
+  commitStore.fetchCommits(examId.value).then(() => init(examId.value))
 }
 
 // 当过滤选项改变时，更新 URL query 参数，并重新查询

@@ -1,38 +1,39 @@
 <template>
   <div id="exam-container">
-    <UniversalHeader :title="exam? exam.name:''" class="exam-commit-header exam-commit-second-in"/>
+    <UniversalHeader :title="exam ? exam.name : ''" class="exam-commit-header exam-commit-second-in" />
+    <div v-if="exam?.examType === ExamType.GroupExam" class="exam-commit-second-in">
+      <v-alert variant="tonal" show-icon :closable="false" type="info">
+        本场考试为小组考试，你的提交会覆盖同组其他成员的提交
+      </v-alert>
+    </div>
     <container id="exam-wrapper">
       <main id="exam-main">
         <div class="exam-commit-left-column">
-          <div
-            v-ripple
-            @click="openProblem(problem)"
-            v-for="(problem, index) in problems"
-            :key="index"
-            class="exam-commit-second-in exam-commit-card"
-            :class="[
-              { completed: problem.completed, 'not-completed': !problem.completed },
-            ]"
-          >
+          <div v-ripple @click="openProblem(problem)" v-for="(problem, index) in problems" :key="index"
+            class="exam-commit-second-in exam-commit-card" :class="[
+              { completed: commitStatus[problem.id] != undefined },
+            ]">
             <div class="exam-commit-number">试题 {{ problem.name }}</div>
-            <div class="exam-commit-status">
-              {{ problem.completed ? "已经提交" : "尚未提交" }}
+            <div v-if="commitStatus[problem.id]" class="exam-commit-status">
+              上次提交 <br/>
+              {{ commitStatus[problem.id].toLocaleString() }}
             </div>
+            <div v-else class="exam-commit-status">尚未提交</div>
           </div>
         </div>
       </main>
-      <aside v-if="exam?.examType === ExamType.GroupExam" id="exam-commit-aside" class="exam-commit-first-in">
+      <!-- <aside id="exam-commit-aside" class="exam-commit-second-in">
         <div class="exam-commit-right-column">
           <div  class="exam-commit-team-info">
             <div class="exam-commit-team-info-title">队伍信息</div>
             <TeamCell v-ripple v-for="member in members" :info="member" />
           </div>
-          <!-- <div class="exam-commit-score-card">
+          <div class="exam-commit-score-card">
             <div class="exam-commit-score-title">分数</div>
             <div class="exam-commit-score-value">{{ score }}</div>
-          </div> -->
+          </div>
         </div>
-      </aside>
+      </aside> -->
     </container>
   </div>
 </template>
@@ -41,27 +42,30 @@
 import anime from "animejs";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import TeamCell from "~/components/TeamCell.vue";
+// import TeamCell from "~/components/TeamCell.vue";
 import { ExamType } from "~/enums";
 import { useMainStore } from "~/store/mainStore";
-import type { Problem, User } from "~/types";
+import type { Commit, Exam, Problem } from "~/types";
 import UniversalHeader from "~/components/UniversalHeader.vue";
+import axios from '~/ts/request'
 
 const router = useRouter();
 const store = useMainStore();
 const examId = computed(() => router.currentRoute.value.query.id as string);
 const exam = computed(() => {
   const res = store.examData.find((exam) => exam.id === examId.value)
-  nextTick(()=>anime({
+  if (res) getCommitStatus(res);
+  nextTick(() => anime({
     targets: ".exam-commit-second-in",
     translateY: [-20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(50,{
-      start:250
+    delay: anime.stagger(50, {
+      start: 200
     }),
   }))
   return res;
 });
+const commitStatus = ref<{ [problemId: string]: Date }>({});
 const problems = computed(() => exam.value?.problems);
 
 function openProblem(problem: Problem) {
@@ -74,7 +78,24 @@ function openProblem(problem: Problem) {
   });
 }
 
-const members = ref<User[]>([]);
+function getCommitStatus(exam: Exam) {
+  for (const problem of exam.problems) {
+    axios.get<Commit[]>(`/Commit`, {
+      params: {
+        examId: exam.id,
+        problemId: problem.id,
+        userId: store.userId
+      }
+    })
+      .then(({ data }) => {
+        if (data.length > 0) {
+          commitStatus.value[problem.id] = new Date(data[0].commitTime);
+        }
+      })
+  }
+}
+
+// const members = ref<User[]>([]);
 // const score = ref<number>(0); // Example score value
 
 onMounted(async () => {
@@ -140,8 +161,8 @@ onMounted(async () => {
 }
 
 .exam-commit-card {
-  width: 130px;
-  height: 130px;
+  width: 140px;
+  height: 140px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -150,6 +171,7 @@ onMounted(async () => {
   font-size: 16px;
   border-radius: 8px;
   box-sizing: border-box;
+  background-color: var(--bg-color-darker);
 }
 
 .exam-commit-card:hover {
@@ -163,6 +185,10 @@ onMounted(async () => {
   filter: brightness(1);
 }
 
+.exam-commit-status{
+  text-wrap: wrap;
+}
+
 .exam-commit-number {
   font-size: 24px;
   font-weight: bold;
@@ -170,10 +196,6 @@ onMounted(async () => {
 
 .completed {
   background-color: var(--question-completed-bg);
-}
-
-.not-completed {
-  background-color: var(--bg-color-darker);
 }
 
 .exam-commit-score-card {
@@ -197,6 +219,7 @@ onMounted(async () => {
   width: 100%;
   text-align: center;
 }
+
 .exam-commit-team-info-title {
   font-size: 24px;
   margin-bottom: 10px;
