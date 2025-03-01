@@ -147,7 +147,9 @@ async function submit() {
           }
         });
         // 上传完成后确认提交
-        await axios.post(`/commit/confirmation/${commitId}`);
+        if(currentCommitId){
+          await axios.post(`/commit/confirmation/${commitId}`);
+        }
       } catch (e) {
         // 如果上传失败，则删除中间记录，并显示错误提示
         // await axios.delete(`/file/${data.id}`);
