@@ -15,8 +15,8 @@
             <v-card title="等待分配的用户" @dragover.prevent="draggingOver = 'undistributed'"
               :class="{ 'exam-group-dragging': draggingOver === 'undistributed' }" @drop="onDropUndistributed">
               <v-card-text>
-                <v-card v-for="user in paginatedFilteredUsers" :key="user.id" class="exam-group-user-card" draggable="true"
-                  @dragstart="onDragStart(user)" variant="tonal">
+                <v-card v-for="user in paginatedFilteredUsers" :key="user.id" class="exam-group-user-card"
+                  draggable="true" @dragstart="onDragStart(user)" variant="tonal">
                   <v-card-title>{{ user.name }}</v-card-title>
                 </v-card>
               </v-card-text>
@@ -37,8 +37,9 @@
         <div class="exam-group-groups-container">
           <v-text-field v-model="searchQuery.group" label="Search group..." solo></v-text-field>
           <div class="exam-group-groups">
-            <div v-if="currentPage.group === 1" class="exam-group-new-zone" @drop.prevent="handleNewGroup" @dragover.prevent="draggingOver = 'new'"
-              @dragleave.prevent="draggingOver = ''" :class="{ 'exam-group-dragging': draggingOver === 'new' }">
+            <div v-if="currentPage.group === 1" class="exam-group-new-zone" @drop.prevent="handleNewGroup"
+              @dragover.prevent="draggingOver = 'new'" @dragleave.prevent="draggingOver = ''"
+              :class="{ 'exam-group-dragging': draggingOver === 'new' }">
               <p>放下以新建组</p>
             </div>
             <v-card v-for="group in paginatedFilteredExamGroup" :key="group.id" class="exam-group-group-card"
@@ -234,35 +235,70 @@ const onDropUndistributed = async () => {
 const handleNewGroup = async () => {
   const user = draggingInfo.value?.user;
   const from = draggingInfo.value?.from;
-  if (user) {
+
+  if (!user) {
+    draggingInfo.value = null;
+    draggingOver.value = "";
+    return;
+  }
+
+  try {
+    let createdGroupId = null;
+
+    // 1. 如果用户来自某个组，先从原组移除
+    if (from) {
+      await axios.delete(`/group/distribution/${from.id}`, { data: [user.id] });
+      from.users = from.users.filter(u => u.id !== user.id);
+    }
+
+    // 更新本地用户列表（先暂存以便出错时恢复）
+    const userIndex = users.value.findIndex(u => u.id === user.id);
+    const removedUser = users.value.splice(userIndex, 1)[0];
+
     try {
-      if (from) {
-        await axios.delete(`/group/distribution/${from.id}`, {
-          data: [user.id]
-        });
-        // Remove from Group
-        from.users = from.users.filter((u) => u.id !== user.id)
-      }
-      else users.value = users.value.filter((u) => u.id !== user.id);
+      // 2. 创建新组
       const { data } = await axios.post<Group>(`/group`, {
         name: "新组",
         description: ""
       });
-      // New Group
+      createdGroupId = data.id;
+
+      // 3. 分配用户到新组
       await axios.post(`/group/distribution/${data.id}`, [user.id]);
-      // Assign to Group
+
+      // 4. 分配组到考试
       await axios.post(`/exam/assignment/${examId.value}`, [data.id]);
-      // Assign to Exam
+
+      // 5. 更新UI状态
       data.users.push(user);
       examGroup.value.push(data);
 
       ElMessage.success("新建组成功");
     } catch (error) {
-      ElMessage.error("新建组失败");
+      // 恢复本地状态
+      if (removedUser) {
+        users.value.push(removedUser);
+      }
+
+      // 尝试清理失败的组
+      if (createdGroupId) {
+        try {
+          await axios.delete(`/group/${createdGroupId}`);
+        } catch (cleanupError) {
+          console.error("清理失败组时出错:", cleanupError);
+        }
+      }
+
+      throw error; // 向上传递错误
     }
+  } catch (error) {
+    console.error("操作失败:", error);
+    ElMessage.error("新建组失败");
+  } finally {
+    // 无论成功失败都清理拖拽状态
+    draggingInfo.value = null;
+    draggingOver.value = "";
   }
-  draggingInfo.value = null;
-  draggingOver.value = "";
 };
 
 /**
