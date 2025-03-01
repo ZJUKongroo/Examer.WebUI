@@ -7,21 +7,32 @@
       <!-- 根据用户替换导航条 -->
     </div>
     <div id="main-view-content">
-      <div id="main-view-wrapper">
+      <el-watermark id="main-view-wrapper" :font="font" :content="store.userId" :gap="[80,30]">
         <router-view />
-      </div>
+      </el-watermark>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import MainSidebar from "~/components/MainSidebar.vue";
 import AdminSidebar from "~/components/AdminSidebar.vue";
 import SuperAdminSidebar from "~/components/SuperAdminSidebar.vue";
 import { useMainStore } from "~/store/mainStore";
 import { entry } from "~/ts/entry";
 import { UserRole } from "~/enums";
+import { ElWatermark} from "element-plus";
+
+const font = computed(() => {
+  return{
+    color:store.isDarkMode
+      ? 'rgba(255, 255, 255, .05)'
+      : 'rgba(0, 0, 0, .08)',
+      size: 20,
+      weight: 600,
+  }
+})
 
 const store = useMainStore();
 

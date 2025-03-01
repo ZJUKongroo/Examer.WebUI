@@ -50,6 +50,23 @@
                 <div class="project-card-license">{{ project.license }}</div>
             </div>
         </div>
+        <h2 class="mb-4 license-anime-element">致谢</h2>
+        <div class="mb-2 license-anime-element">
+            <v-alert title="致谢 - daimolean" variant="tonal" show-icon :closable="false"
+            border="start"
+            color="deep-purple-accent-4"
+            icon="mdi-account-supervisor">
+                感谢所有为本项目提供帮助的老师和同学, 感谢浙江大学工程教育高级班提供的支持, 感谢我的女朋友在开发期间的陪伴与支持。
+            </v-alert>
+        </div>
+        <div class="mb-2 license-anime-element">
+            <v-alert title="致谢 - cast1e" variant="tonal" show-icon :closable="false"
+            border="start"
+            color="success"
+            icon="mdi-account-supervisor">
+                感谢浙江大学工程教育高级班提供的支持, 也感谢项目开发测试人员的辛勤付出。
+            </v-alert>
+        </div>
     </div>
 </template>
 
@@ -89,9 +106,9 @@ const usedProjects = ref<Project[]>([{
     licenseUrl: "https://github.com/AutoMapper/AutoMapper?tab=MIT-1-ov-file#readme"
 },
 {
-    name: "Swashbuckle.AspNetCore",
+    name: "Scalar",
     license: "MIT",
-    licenseUrl: "https://github.com/domaindrivendev/Swashbuckle.AspNetCore?tab=MIT-1-ov-file#readme"
+    licenseUrl: "https://github.com/ScalaR/ScalaR?tab=MIT-1-ov-file"
 },
 {
     name: "vue",

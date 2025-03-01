@@ -21,7 +21,7 @@ export const coreRoutes: RouteRecordRaw[] = [
   {
     path: "home",
     component: Home,
-    meta: { requiresAuth: true, roles: ["User"], title: "Home" },
+    meta: { requiresAuth: true, roles: ["User"], title: "主页" },
   },
   {
     path: "exam",
@@ -37,7 +37,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator", "User"],
-          title: "Exam Commit",
+          title: "考试提交",
         },
       },
       {
@@ -46,7 +46,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator"],
-          title: "Exam Review",
+          title: "考试评测",
         },
       },
       {
@@ -55,7 +55,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator"],
-          title: "Exam Edit",
+          title: "考试编辑",
         },
       },
       {
@@ -64,7 +64,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator"],
-          title: "Exam Group",
+          title: "考试分组",
         },
       },
       {
@@ -73,7 +73,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator"],
-          title: "Exam Candidate",
+          title: "考生编辑",
         },
       }
     ],
@@ -84,7 +84,7 @@ export const coreRoutes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: true,
       roles: ["Administrator"],
-      title: "Dashboard",
+      title: "仪表盘",
     },
   },
   {
@@ -101,7 +101,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator", "User"],
-          title: "Problem Commit",
+          title: "题目提交",
         },
       },
       {
@@ -110,7 +110,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator"],
-          title: "Problem Review",
+          title: "题目评测",
         },
       },
       {
@@ -120,7 +120,7 @@ export const coreRoutes: RouteRecordRaw[] = [
         meta: {
           requiresAuth: true,
           roles: ["Administrator"],
-          title: "Problem Edit",
+          title: "题目编辑",
         },
       },
     ],
@@ -131,7 +131,7 @@ export const coreRoutes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: false,
       roles: ["Administrator"],
-      title: "About",
+      title: "关于",
     },
   },
   {
@@ -140,7 +140,7 @@ export const coreRoutes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: false,
       roles: ["Administrator"],
-      title: "Term of Use",
+      title: "使用条款",
     },
   },
   {
@@ -148,7 +148,7 @@ export const coreRoutes: RouteRecordRaw[] = [
     component: FooterLicense,
     meta: {
       requiresAuth: false,
-      title: "License",
+      title: "许可证与致谢",
     },
   },
 ];

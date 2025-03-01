@@ -18,12 +18,12 @@ const routes:readonly RouteRecordRaw[] = [
   {
     path: "/login",
     component: Login,
-    meta: { requiresAuth: false, title: "Login" },
+    meta: { requiresAuth: false, title: "登录" },
   },
   {
     path: "/unauthorized",
     component: UnauthorizedView,
-    meta: { requiresAuth: false, title: "Unauthorized" },
+    meta: { requiresAuth: false, title: "未授权访问" },
   },
   {
     path: "/:pathMatch(.*)*",
