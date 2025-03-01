@@ -92,12 +92,12 @@ async function submit() {
   let userId = store.userId;
 
   if(exam.value?.examType === ExamType.GroupExam){
-    const groupInfo = (await axios.get<Group>(`/user/groups/${store.userId}`,{
+    const groupInfo = (await axios.get<Group[]>(`/user/groups/${store.userId}`,{
       params:{
         examId: examId.value
       }
     })).data;
-    userId = groupInfo.id;
+    if(groupInfo.length>0) userId = groupInfo[0].id;
   }
   const currentCommit = (await axios.get<Commit[]>(`/Commit`, {
       params: {
