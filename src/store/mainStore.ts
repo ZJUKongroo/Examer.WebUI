@@ -14,6 +14,7 @@ export const useMainStore = defineStore('main', () => {
   const isDarkMode = ref<boolean>(false); // Add isDarkMode state
   const examData = ref<Exam[]>([]); // Add examData state
   const router = useRouter();
+  const loading = ref(true);
 
   const login = (data:{
     token: string,
@@ -54,16 +55,19 @@ export const useMainStore = defineStore('main', () => {
   const isLoggedIn = computed(() => !!token.value);
 
   const refreshExamData = async () => {
+    loading.value = true;
     // Fetch exam data from the server
     try {
       const response = await axios.get<Exam[]>('/Exam');
       examData.value = response.data;
+      loading.value = false;
     }catch(err){
       ElMessage.error('Failed to fetch exam data')
     };
   }
 
   return {
+    loading,
     token,
     userRole,
     userId,

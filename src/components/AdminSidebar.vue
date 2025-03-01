@@ -9,12 +9,15 @@
       <SidebarCell v-ripple name="退出" iconClass="mdi-exit-to-app" @click="store.logout()"></SidebarCell>
     </div>
     <div class="sidebar-exam">
-      <template v-if="exams.length === 0">
+      <template v-if="store.loading">
         <v-skeleton-loader  type="list-item-two-line" class="mb-4" v-for="n in 2" :key="n" />
       </template>
-      <ExamCell v-else v-ripple v-for="exam in exams" :info="exam" @click="open('/exam/review',{
+      <template v-else>
+        <div v-if="exams.length===0">暂无考试</div>
+        <ExamCell v-else v-ripple v-for="exam in exams" :info="exam" @click="open('/exam/review',{
         id:exam.id
       })"></ExamCell>
+      </template>
     </div>
     <SidebarFooter></SidebarFooter>
   </div>

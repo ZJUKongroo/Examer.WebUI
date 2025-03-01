@@ -5,16 +5,20 @@
       <img v-else src="@/assets/img/logo-light.png" alt="logo" />
     </div>
     <div class="sidebar-menu">
-      <SidebarCell v-ripple v-for="option in options" :name="option.name" :iconClass="option.iconClass" @click="open(option.path)"></SidebarCell>
+      <SidebarCell v-ripple v-for="option in options" :name="option.name" :iconClass="option.iconClass"
+        @click="open(option.path)"></SidebarCell>
       <SidebarCell v-ripple name="退出" iconClass="mdi-exit-to-app" @click="store.logout()"></SidebarCell>
     </div>
     <div class="sidebar-exam">
-      <template v-if="exams.length === 0">
-        <v-skeleton-loader  type="list-item-two-line" class="mb-4" v-for="n in 2" :key="n" />
+      <template v-if="store.loading">
+        <v-skeleton-loader type="list-item-two-line" class="mb-4" v-for="n in 2" :key="n" />
       </template>
-      <ExamCell v-else v-ripple v-for="exam in exams" :info="exam" @click="open('/problem/edit',{
-        id:exam.id
-      })"></ExamCell>
+      <template v-else>
+        <div v-if="exams.length === 0">暂无考试</div>
+        <ExamCell v-else v-ripple v-for="exam in exams" :info="exam" @click="open('/problem/edit', {
+          id: exam.id
+        })"></ExamCell>
+      </template>
     </div>
     <SidebarFooter></SidebarFooter>
   </div>
@@ -33,23 +37,23 @@ import '~/style/sidebar.css';
 const router = useRouter();
 const store = useMainStore();
 const options = ref([
-  { name: '主页', iconClass: 'mdi-home',path:'/dashboard' },
-  { name: '考试管理', iconClass: 'mdi-format-list-bulleted',path:'/exam/edit' },
+  { name: '主页', iconClass: 'mdi-home', path: '/dashboard' },
+  { name: '考试管理', iconClass: 'mdi-format-list-bulleted', path: '/exam/edit' },
 ]);
 
 const exams = computed(() => store.examData);
 
-function open(path: string,query?:any) {
+function open(path: string, query?: any) {
   router.push({
     path,
     query
   });
 }
 
-onMounted(()=>{
+onMounted(() => {
   const main = document.getElementById('sidebar-main');
-  if(main) {
-    entry('right',main, 50)
+  if (main) {
+    entry('right', main, 50)
   }
 })
 </script>
