@@ -156,7 +156,7 @@ async function submit() {
         if(currentCommitId){
           await axios.post(`/commit/confirmation/${currentCommitId}`);
         }
-        ElMessage.error("上传失败");
+        throw e;
       }
     });
 
