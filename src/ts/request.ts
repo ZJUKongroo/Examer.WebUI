@@ -5,7 +5,6 @@ import { useMainStore } from '~/store/mainStore';
 
 const instance = axios.create({
   baseURL: "/api",
-  timeout: 6000,
 })
 
 instance.interceptors.request.use(
