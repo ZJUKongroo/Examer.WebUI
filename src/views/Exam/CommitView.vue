@@ -1,22 +1,25 @@
 <template>
   <div id="exam-container">
     <UniversalHeader :title="exam ? exam.name : ''" class="exam-commit-header exam-commit-second-in" />
-    <div v-if="exam?.examType === ExamType.GroupExam" class="exam-commit-second-in">
+    <div v-if="exam?.examType === ExamType.GroupExam" class="exam-commit-second-in mb-2">
       <v-alert variant="tonal" show-icon :closable="false" type="info">
         本场考试为小组考试，你的提交会覆盖同组其他成员的提交
       </v-alert>
     </div>
+    <v-alert class="exam-commit-second-in" variant="tonal" show-icon :closable="false">
+      <strong>Hint: </strong>右键题目卡片可以查看上次提交
+    </v-alert>
     <container id="exam-wrapper">
       <main id="exam-main">
         <div class="exam-commit-left-column">
-          <div v-ripple @click="openProblem(problem)" v-for="(problem, index) in problems" :key="index"
-            class="exam-commit-second-in exam-commit-card" :class="[
+          <div v-ripple @contextmenu.prevent="(e) => handleMenuOpen(e, problem)" @click="openProblem(problem)"
+            v-for="(problem, index) in problems" :key="index" class="exam-commit-second-in exam-commit-card" :class="[
               { completed: commitStatus[problem.id] != undefined },
             ]">
             <div class="exam-commit-number">试题 {{ problem.name }}</div>
             <div v-if="commitStatus[problem.id]" class="exam-commit-status">
-              上次提交 <br/>
-              {{ commitStatus[problem.id].toLocaleString() }}
+              上次提交 <br />
+              {{ (new Date(commitStatus[problem.id].commitTime)).toLocaleString() }}
             </div>
             <div v-else class="exam-commit-status">尚未提交</div>
           </div>
@@ -36,6 +39,47 @@
       </aside> -->
     </container>
   </div>
+  <Teleport to="body">
+    <CRMenu ref="menu" v-model:visible="menuVisible" @handleOpen="handleMenuOpen" class="exam-commit-second-in">
+      <template #content v-if="selectedProblem">
+        <CRMenuCell @click="openProblem(selectedProblem)" v-ripple>
+          <template v-slot:icon>
+            <v-icon>mdi-file-edit</v-icon>
+          </template>
+          作答
+        </CRMenuCell>
+        <CRMenuCell @click="inspectProblem(selectedProblem)" v-ripple>
+          <template v-slot:icon>
+            <v-icon>mdi-information</v-icon>
+          </template>
+          查看题目信息
+        </CRMenuCell>
+      </template>
+    </CRMenu>
+  </Teleport>
+  <CDialog v-model:visible="inspectVisible" width="500px" height="400px">
+    <template #content>
+      <template v-if="selectedCommit">
+        <div class="exam-commit-inspect-dialog">
+          <section class="exam-commit-inspect-anime">
+            <h2 class="mb-4">提交信息</h2>
+            <p class="mb-2"><strong>提交时间:</strong> {{ (new Date(selectedCommit.commitTime)).toLocaleString() }}</p>
+            <p class="mb-4"><strong>提交用户:</strong>{{ selectedCommit.user.name }}</p>
+            <h3 class="mb-2">文件列表</h3>
+          </section>
+          <div class="exam-commit-inspect-anime mb-4" v-for="(file, index) in selectedCommit.files" :key="index">
+            <v-card class="exam-commit-inspect-file-cards" :title="file.fileName" :subtitle="file.size"
+              prepend-icon="mdi-file" variant="tonal" />
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <div style="text-align: center;padding: 20px;">
+          暂无作答信息
+        </div>
+      </template>
+    </template>
+  </CDialog>
 </template>
 
 <script lang="ts" setup>
@@ -48,6 +92,9 @@ import { useMainStore } from "~/store/mainStore";
 import type { Commit, Exam, Problem } from "~/types";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import axios from '~/ts/request'
+import CRMenu from "~/components/UI/CRMenu.vue";
+import CRMenuCell from "~/components/UI/CRMenuCell.vue";
+import CDialog from "~/components/UI/CDialog.vue";
 
 const router = useRouter();
 const store = useMainStore();
@@ -65,10 +112,38 @@ const exam = computed(() => {
   }))
   return res;
 });
-const commitStatus = ref<{ [problemId: string]: Date }>({});
+const commitStatus = ref<{ [problemId: string]: Commit }>({});
 const problems = computed(() => exam.value?.problems);
+const selectedProblem = ref<Problem | null>(null);
+const selectedCommit = ref<Commit | null>(null);
+const menuVisible = ref(false);
+const inspectVisible = ref(false);
+const menu = ref<InstanceType<typeof CRMenu> | null>(null);
+
+function handleMenuOpen(event: MouseEvent, problem: Problem) {
+  selectedProblem.value = problem;
+  menuVisible.value = true;
+  nextTick(() => {
+    menu.value?.handleOpen(event.clientX, event.clientY);
+  })
+}
+
+function inspectProblem(problem: Problem) {
+  selectedCommit.value = commitStatus.value[problem.id];
+  inspectVisible.value = true;
+  menuVisible.value = false;
+  nextTick(() => {
+    anime({
+      targets: ".exam-commit-inspect-anime",
+      translateY: [-20, 0],
+      opacity: [0, 1],
+      delay: anime.stagger(50),
+    })
+  })
+}
 
 function openProblem(problem: Problem) {
+  menuVisible.value = false;
   router.push({
     path: "/problem/commit",
     query: {
@@ -89,7 +164,7 @@ function getCommitStatus(exam: Exam) {
     })
       .then(({ data }) => {
         if (data.length > 0) {
-          commitStatus.value[problem.id] = new Date(data[0].commitTime);
+          commitStatus.value[problem.id] = data[0];
         }
       })
   }
@@ -185,7 +260,7 @@ onMounted(async () => {
   filter: brightness(1);
 }
 
-.exam-commit-status{
+.exam-commit-status {
   text-wrap: wrap;
 }
 
@@ -225,5 +300,9 @@ onMounted(async () => {
   margin-bottom: 10px;
   font-weight: bold;
   text-align: left;
+}
+
+.exam-commit-inspect-dialog {
+  padding: 20px;
 }
 </style>

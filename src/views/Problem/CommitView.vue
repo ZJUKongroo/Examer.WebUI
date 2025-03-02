@@ -199,8 +199,8 @@ async function submit() {
         <div class="problem-commit-dialog-content">
           <template v-if="uploading" v-for="(progress, name) in uploadProgress">
             <div class="problem-commit-dialog-files">
-              <h2 class="mb-4">{{ name }}</h2>
-              <v-progress-linear :model-value="progress" :rotate="360" :size="100" height="20">
+              <h3 class="mb-2">{{ name }}</h3>
+              <v-progress-linear color="indigo-darken-2" class="mb-4" rounded :model-value="progress" :rotate="360" :size="100" height="23">
                 <template #default>
                   {{ progress }}%
                 </template>

@@ -19,14 +19,19 @@ instance.interceptors.request.use(
         validToken = true;
       }
     }
-    if (!validToken && config.url && !config.url.startsWith("/Authentication")) {
+    if (
+      !validToken &&
+      config.url &&
+      !config.url.startsWith("/Authentication")
+    ) {
       console.log(config.url);
       store.logout();
       router.push("/login");
       ElMessage({
-      type: "warning",
-      message: "登录状态已过期",
+        type: "warning",
+        message: "登录状态已过期",
       });
+      return Promise.reject(new Error("Token expired"));
     }
     config.headers["If-Modified-Since"] = "";
     return config;
