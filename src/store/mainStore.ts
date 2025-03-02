@@ -10,7 +10,7 @@ export const useMainStore = defineStore('main', () => {
   const token = ref<string>(localStorage.getItem('token') || '');
   const userRole = ref<UserRole|null>(localStorage.getItem('userRole')?Number(localStorage.getItem('userRole')) as UserRole:null);
   const userId = ref<string>(localStorage.getItem('userId') || '');
-  const expirationTime = ref<Date>(new Date(localStorage.getItem('expirationTime') || ''));
+  const expirationTime = ref<Date>(new Date(localStorage.getItem('expirationTime') || '1970-01-01'));
   const isDarkMode = ref<boolean>(false); // Add isDarkMode state
   const examData = ref<Exam[]>([]); // Add examData state
   const router = useRouter();
@@ -55,15 +55,21 @@ export const useMainStore = defineStore('main', () => {
   const isLoggedIn = computed(() => !!token.value);
 
   const refreshExamData = async () => {
-    loading.value = true;
     // Fetch exam data from the server
-    try {
-      const response = await axios.get<Exam[]>('/Exam');
-      examData.value = response.data;
-      loading.value = false;
-    }catch(err){
-      ElMessage.error('Failed to fetch exam data')
-    };
+    if(isLoggedIn.value) {
+      loading.value = true;
+      try {
+        const response = await axios.get('/Exam');
+        examData.value = response.data;
+      } catch (error) {
+        ElMessage({
+          type: "error",
+          message: "获取考试数据失败"
+        })
+      }finally{
+        loading.value = false;
+      }
+    }
   }
 
   return {
