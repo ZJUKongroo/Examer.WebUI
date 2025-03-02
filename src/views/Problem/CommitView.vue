@@ -9,6 +9,7 @@ import { ElMessage } from "element-plus";
 import type { Commit, Group } from "~/types";
 import CDialog from "~/components/UI/CDialog.vue";
 import { ExamType } from "~/enums";
+import { fileUploadAsync } from "~/ts/fileUpload";
 
 // 用户要提交的文件
 const files = ref<File[]>([]);
@@ -43,12 +44,6 @@ const problem = computed(() => {
 const uploading = ref(false);
 const uploadingVisible = ref(false)
 const uploadProgress = ref<{ [name: string]: number }>({});
-
-interface FileDto {
-  id: string
-  fileName: string,
-  fileType: number
-}
 
 // 文件上传：将选中的新文件加入文件列表
 const handleFileUpload = (newFiles: FileList) => {
@@ -124,48 +119,24 @@ async function submit() {
     uploading.value = true;
 
     // 遍历选中的文件，上传每个文件
-    const uploadPromises = files.value.map(async (file) => {
-      const formData = new FormData();
-      formData.append("formFile", file);
-      uploadProgress.value[file.name] = 0;
-      // 先通过接口获取文件记录 ID
-      const { data } = await axios.post<FileDto>("/file", {
-        parentId: commitId,
-        fileType: 2
+    const uploadPromises = files.value.map((file)=>{
+      return fileUploadAsync(file,commitId,(progress)=>{
+        uploadProgress.value[file.name] = progress;
       });
-      try {
-        // 上传文件实际内容，绑定上传进度
-        await axios.post(`/file/blob/${data.id}`, formData, {
-          headers: {
-            // 注意：不建议手动设置 Content-Type，浏览器会自动添加 boundary
-            'Content-Type': 'multipart/form-data',
-          },
-          onUploadProgress: (progressEvent) => {
-            if (progressEvent.total) {
-              uploadProgress.value[file.name] = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            }
-          }
-        });
-        // 上传完成后确认提交
-        if(currentCommitId){
-          await axios.post(`/commit/confirmation/${commitId}`);
-        }
-      } catch (e) {
-        // 如果上传失败，则删除中间记录，并显示错误提示
-        // await axios.delete(`/file/${data.id}`);
-        if(currentCommitId){
-          await axios.post(`/commit/confirmation/${currentCommitId}`);
-        }
-        throw e;
-      }
     });
 
     // 等待所有文件上传完成
     await Promise.all(uploadPromises);
+    if(currentCommitId){
+        await axios.post(`/commit/confirmation/${commitId}`);
+      }
     ElMessage.success("提交成功");
     router.back(); // 上传成功后返回上一个页面
   } catch (error) {
     // 基本提交失败时提示错误
+    if(currentCommitId){
+      await axios.post(`/commit/confirmation/${currentCommitId}`);
+    }
     ElMessage.error("提交失败");
   } finally {
     // 重置上传状态和进度
