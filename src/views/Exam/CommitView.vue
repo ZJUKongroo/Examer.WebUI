@@ -68,8 +68,8 @@
             <h3 class="mb-2">文件列表</h3>
           </section>
           <div class="exam-commit-inspect-anime mb-4" v-for="(file, index) in selectedCommit.files" :key="index">
-            <v-card class="exam-commit-inspect-file-cards" :title="file.fileName" :subtitle="file.size"
-              prepend-icon="mdi-file" variant="tonal" />
+            <v-card class="exam-commit-inspect-file-cards" :title="file.fileName" :subtitle="file.size" link @click="openFile(file)"
+              prepend-icon="mdi-file" append-icon="mdi-open-in-new" variant="tonal" />
           </div>
         </div>
       </template>
@@ -95,6 +95,7 @@ import axios from '~/ts/request'
 import CRMenu from "~/components/UI/CRMenu.vue";
 import CRMenuCell from "~/components/UI/CRMenuCell.vue";
 import CDialog from "~/components/UI/CDialog.vue";
+import { openFile } from "~/ts/previewFile";
 
 const router = useRouter();
 const store = useMainStore();
