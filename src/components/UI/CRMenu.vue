@@ -1,52 +1,38 @@
 <template>
-    <div id="mask" @click.self="handleClose" v-if="visible">
-        <div ref="bg" id="bg">
-            <div id="content">
+    <div class="cui-rmenu-mask" @click.self="handleClose" v-if="visible">
+        <div ref="bg" class="cui-rmenu-bg">
+            <div class="cui-rmenu-content">
                 <slot name="content"></slot>
             </div>
         </div>
     </div>
 </template>
 
-<script>
-export default {
-    name: "CuiRmenu",
-    props: {
-        "visible": {
-            type: Boolean,
-            default: false
-        }
-    },
-    methods: {
-        handleClose() {
-            this.$refs.bg.style.animation = "cui-rmenu-disappear .15s ease-in";
-            setTimeout(() => this.$emit("update:visible", false), 150);
-        },
-        handleOpen(x, y) {
-            setTimeout(()=>{
-                this.$refs.bg.style.top = `${y}px`;
-                this.$refs.bg.style.left = `${x}px`;
-            },0)
-        }
-    },
-}
-// import { ref,defineModel,defineExpose} from 'vue';
-// const dialogVisible= defineModel("visible");
-// const bg = ref(null);
-// function handleClose() {
-//     bg.value.style.animation = "cui-rmenu-disappear .3s ease-in";
-//     setTimeout(() => dialogVisible.value=false, 300);
-// }
-// function handleOpen(x, y){
-//     console.log(x,y);
-//     bg.value.style.top = `${y}px`;
-//     bg.value.style.left = `${x}px`;
-// }
-// console.log(dialogVisible);
+<script setup lang="ts">
+import { ref, defineModel, defineExpose } from 'vue';
 
-// defineExpose({
-//     handleOpen
-// })
+const dialogVisible = defineModel<boolean>("visible", { default: false });
+const bg = ref<HTMLElement | null>(null);
+
+function handleClose() {
+    if (bg.value) {
+        bg.value.style.animation = "cui-rmenu-disappear .15s ease-in";
+        setTimeout(() => dialogVisible.value = false, 150);
+    }
+}
+
+function handleOpen(x: number, y: number) {
+    setTimeout(() => {
+        if (bg.value) {
+            bg.value.style.top = `${y}px`;
+            bg.value.style.left = `${x}px`;
+        }
+    }, 0);
+}
+
+defineExpose({
+    handleOpen
+});
 </script>
 
 <style>
@@ -73,10 +59,8 @@ export default {
         transform: translate(-25%,-25%) scale(0.5);
     }
 }
-</style>
 
-<style scoped>
-#mask {
+.cui-rmenu-mask {
     z-index: 2007;
     position: absolute;
     top: 0;
@@ -85,7 +69,7 @@ export default {
     height: 100%;
 }
 
-#bg {
+.cui-rmenu-bg {
     position: absolute;
     width: auto;
     height: auto;
@@ -96,15 +80,7 @@ export default {
     animation: cui-rmenu-appear .25s cubic-bezier(0, 0, 0.36, 1.29);
 }
 
-#content {
+.cui-rmenu-content {
     height: 100%;
-}
-
-#close {
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin: 5px;
-    cursor: pointer;
 }
 </style>
