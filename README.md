@@ -77,3 +77,15 @@ This will start a server to serve the built files, allowing you to test the prod
 - **Build Process:** The application is built using Vite, which provides fast development startup and an efficient production bundling. The build process includes handling of TypeScript, Vue Single File Components, and static assets.
 - **Deployment:**
   The production build outputs static files that can be deployed on any standard web server or hosting service. Make sure to set the correct environment variables when deploying to production.
+
+## Import Groups Format
+
+You should prepare a **JSON** file which contains group name and group member.
+
+```json
+{
+   [GroupName:string]: string[]
+}
+```
+
+Click `导入分组` and upload the JSON file to complete auto import.
