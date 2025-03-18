@@ -114,7 +114,7 @@ function init() {
         targets: ".problem-review-file-card",
         translateY: [-20, 0],
         opacity: [0, 1],
-        delay: anime.stagger(100, {
+        delay: anime.stagger(50, {
           start: 300
         }),
       })
