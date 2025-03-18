@@ -89,7 +89,7 @@ import { useRouter } from "vue-router";
 // import TeamCell from "~/components/TeamCell.vue";
 import { ExamType } from "~/enums";
 import { useMainStore } from "~/store/mainStore";
-import type { Commit, Exam, Problem } from "~/types";
+import type { Commit, Exam, Group, Problem } from "~/types";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import axios from '~/ts/request'
 import CRMenu from "~/components/UI/CRMenu.vue";
@@ -154,13 +154,22 @@ function openProblem(problem: Problem) {
   });
 }
 
-function getCommitStatus(exam: Exam) {
+async function getCommitStatus(exam: Exam) {
+  let userId = store.userId;
+  if(exam.examType === ExamType.GroupExam){
+    const groupInfo = (await axios.get<Group[]>(`/user/groups/${store.userId}`,{
+      params:{
+        examId: examId.value
+      }
+    })).data;
+    if(groupInfo.length>0) userId = groupInfo[0].id;
+  }
   for (const problem of exam.problems) {
     axios.get<Commit[]>(`/Commit`, {
       params: {
         examId: exam.id,
         problemId: problem.id,
-        userId: store.userId
+        userId: userId
       }
     })
       .then(({ data }) => {
