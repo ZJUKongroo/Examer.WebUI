@@ -9,7 +9,8 @@
       </template>
       <template v-else>
         <div class="exam-group-users-container">
-          <v-btn class="mb-4" @click="autoGroupFormVisible = true">自动分组</v-btn>
+          <v-btn class="mb-4 mr-4" @click="autoGroupFormVisible = true">自动分组</v-btn>
+          <v-btn class="mb-4" @click="importGroupsFromFile">导入分组</v-btn>
           <v-text-field v-model="searchQuery.user" label="Search user..." solo></v-text-field>
           <div class="exam-group-undistributed-card">
             <v-card title="等待分配的用户" @dragover.prevent="draggingOver = 'undistributed'"
@@ -104,6 +105,16 @@
       </div>
     </template>
   </CDialog>
+  <CDialog v-model:visible="importGroupVisible" title="导入分组" width="600px" height="450px">
+    <template #content>
+      <div style="padding: 20px;">
+        <h1 class="mb-4">导入分组中</h1>
+        <v-progress-linear :model-value="(importStatus.current / importStatus.total) * 100" height="10"
+          class="mb-4"></v-progress-linear>
+        <p>当前进度：{{ importStatus.current }} / {{ importStatus.total }}</p>
+      </div>
+    </template>
+  </CDialog>
 </template>
 
 <script lang="ts" setup>
@@ -145,6 +156,12 @@ const autoGroupingStatus = ref({
   current: 0,
   total: 0
 })
+
+const importGroupVisible = ref(false);
+const importStatus = ref({
+  total: 0,
+  current: 0
+});
 
 const onDragStart = (user: User, from?: Group) => {
   draggingInfo.value = {
@@ -311,39 +328,38 @@ const handleNewGroup = async () => {
  */
 const importGroupsFromFile = async () => {
   type DataFormat = {
-    [GroupName:string]: string[]
+    [GroupName: string]: string[]
   }
   // 创建文件选择器
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
-  
+
   input.onchange = async (event) => {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    const FailName: string[] = [];
 
-    const FailName:string[] = [];
-    
     try {
       // 读取文件内容
       const fileContent = await file.text();
-      const groupData:DataFormat = JSON.parse(fileContent);
-      
+      const groupData: DataFormat = JSON.parse(fileContent);
+
       // 检查数据格式
       if (typeof groupData !== 'object' || groupData === null) {
         ElMessage.error("无效的JSON格式");
         return;
       }
-      
-      // 创建分组和分配用户
-      const importStatus = ref({
+
+      importStatus.value = {
         total: Object.keys(groupData).length,
         current: 0
-      });
-      
-      const createdGroups:Group[] = [];
+      };
+      importGroupVisible.value = true;
+
+      const createdGroups: Group[] = [];
       for (const [groupName, memberNames] of Object.entries<string[]>(groupData)) {
-        let newGroup:Group|null = null;
+        let newGroup: Group | null = null;
         try {
           // 1. 创建新组
           const { data } = await axios.post<Group>('/group', {
@@ -351,11 +367,11 @@ const importGroupsFromFile = async () => {
             description: ""
           });
           newGroup = data;
-          
+
           // 2. 匹配用户名到用户ID
           const member = memberNames.map(name => {
             const user = users.value.find(u => u.name === name);
-            if(user){
+            if (user) {
               return user;
             }
             else {
@@ -363,36 +379,36 @@ const importGroupsFromFile = async () => {
               return null;
             };
           }).filter(Boolean) as User[];
-          
+
           if (member.length > 0) {
             // 3. 分配用户到新组
             const memberId = member.map(user => user.id);
             await axios.post(`/group/distribution/${newGroup.id}`, memberId);
             newGroup.users = member;
-            createdGroups.push(newGroup);          
+            createdGroups.push(newGroup);
             // 从未分配列表移除
             users.value = users.value.filter(user => !memberId.includes(user.id));
           }
-          
+
           importStatus.value.current++;
         } catch (error) {
-          if(newGroup){
+          if (newGroup) {
             // 清理失败的组
             await axios.delete(`/group/${newGroup.id}`);
           }
           console.error(`创建组 "${groupName}" 失败:`, error);
         }
       }
-      await axios.post(`/exam/assignment/${examId.value}`, createdGroups);
-      examGroup.value.concat(createdGroups);
-      
+      await axios.post(`/exam/assignment/${examId.value}`, createdGroups.map(group => group.id));
+      examGroup.value = examGroup.value.concat(createdGroups);
+
       ElMessage.success(`成功导入 ${importStatus.value.current} 个分组`);
     } catch (error) {
       console.error('导入分组失败:', error);
       ElMessage.error(`导入分组失败，找不到 ${FailName}`);
     }
   };
-  
+
   // 触发文件选择器
   input.click();
 };
