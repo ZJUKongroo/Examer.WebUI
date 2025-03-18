@@ -144,6 +144,7 @@ export interface Marking {
   commitId: string
   reviewUserId: string
   score: number
+  comment: string
 }
 
 export interface Pagination { 

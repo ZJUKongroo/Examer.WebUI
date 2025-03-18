@@ -21,9 +21,6 @@
                   <strong>是否已经评测:</strong>
                   {{ reviewed ? "是" : "否" }}
                 </div>
-                <div v-if="reviewed" class="mb-4">
-                  <strong>分数:</strong> {{answerInfo.markings.map((marking) => marking.score)}}
-                </div>
               </div>
               <div>
                 <h1 class="mb-1">题目信息</h1>
@@ -38,7 +35,22 @@
                 }} - {{ (new Date(answerInfo.exam.endTime)).toLocaleDateString() }}</div>
               </div>
             </div>
+            <div v-if="reviewed" class="mb-4">
+              <h1 class="mb-1">评测信息</h1>
+              <div class="review-view-marking-container">
+                <v-card v-for="(marking,index) in answerInfo.markings">
+                  <template #prepend>
+                    {{ index }}
+                  </template>
+                  <template #subtitle>
+                    <strong>分数:</strong> {{marking.score}} <br/>
+                    <strong>备注:</strong> {{ marking.comment }} <br/>
+                  </template>
+                </v-card>
+              </div>
+            </div>
             <v-text-field variants="tonal" v-model="score" label="打分" type="number"></v-text-field>
+            <v-text-field variants="tonal" v-model="comment" label="评论"></v-text-field>
           </v-card-text>
         </v-card>
       </div>
@@ -68,6 +80,7 @@ const route = useRoute();
 const commitId = computed(() => route.query.id as string);
 const store = useMainStore();
 const score = ref<number>(0);
+const comment = ref<string>('');
 const answerInfo = ref<Commit | null>(null);
 const reviewed = computed(() => {
   if (answerInfo.value) {
@@ -116,6 +129,7 @@ const submitReview = () => {
       commitId: commitId.value,
       reviewUserId: store.userId,
       score: judge_score,
+      comment: comment.value
     }).then(() => {
       // 提交成功
       ElMessage.success("提交成功");
@@ -214,6 +228,11 @@ onMounted(() => init())
 </script>
 
 <style>
+.review-view-marking-container{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
 .problem-review-container {
   padding: 40px;
 }
