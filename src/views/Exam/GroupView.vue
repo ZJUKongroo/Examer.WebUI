@@ -302,6 +302,102 @@ const handleNewGroup = async () => {
 };
 
 /**
+ * 从JSON文件导入分组数据
+ * 文件格式应为：
+ * {
+ *   "组名1": ["成员名1", "成员名2", ...],
+ *   "组名2": ["成员名1", "成员名2", ...]
+ * }
+ */
+const importGroupsFromFile = async () => {
+  type DataFormat = {
+    [GroupName:string]: string[]
+  }
+  // 创建文件选择器
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  
+  input.onchange = async (event) => {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    const FailName:string[] = [];
+    
+    try {
+      // 读取文件内容
+      const fileContent = await file.text();
+      const groupData:DataFormat = JSON.parse(fileContent);
+      
+      // 检查数据格式
+      if (typeof groupData !== 'object' || groupData === null) {
+        ElMessage.error("无效的JSON格式");
+        return;
+      }
+      
+      // 创建分组和分配用户
+      const importStatus = ref({
+        total: Object.keys(groupData).length,
+        current: 0
+      });
+      
+      const createdGroups:Group[] = [];
+      for (const [groupName, memberNames] of Object.entries<string[]>(groupData)) {
+        let newGroup:Group|null = null;
+        try {
+          // 1. 创建新组
+          const { data } = await axios.post<Group>('/group', {
+            name: groupName,
+            description: ""
+          });
+          newGroup = data;
+          
+          // 2. 匹配用户名到用户ID
+          const member = memberNames.map(name => {
+            const user = users.value.find(u => u.name === name);
+            if(user){
+              return user;
+            }
+            else {
+              FailName.push(name);
+              return null;
+            };
+          }).filter(Boolean) as User[];
+          
+          if (member.length > 0) {
+            // 3. 分配用户到新组
+            const memberId = member.map(user => user.id);
+            await axios.post(`/group/distribution/${newGroup.id}`, memberId);
+            newGroup.users = member;
+            createdGroups.push(newGroup);          
+            // 从未分配列表移除
+            users.value = users.value.filter(user => !memberId.includes(user.id));
+          }
+          
+          importStatus.value.current++;
+        } catch (error) {
+          if(newGroup){
+            // 清理失败的组
+            await axios.delete(`/group/${newGroup.id}`);
+          }
+          console.error(`创建组 "${groupName}" 失败:`, error);
+        }
+      }
+      await axios.post(`/exam/assignment/${examId.value}`, createdGroups);
+      examGroup.value.concat(createdGroups);
+      
+      ElMessage.success(`成功导入 ${importStatus.value.current} 个分组`);
+    } catch (error) {
+      console.error('导入分组失败:', error);
+      ElMessage.error(`导入分组失败，找不到 ${FailName}`);
+    }
+  };
+  
+  // 触发文件选择器
+  input.click();
+};
+
+/**
  * 自动分组函数
  *
  * 根据指定的每组人数(groupSize)将未分配的用户自动分入多个分组，并将每个分组与考试关联。
