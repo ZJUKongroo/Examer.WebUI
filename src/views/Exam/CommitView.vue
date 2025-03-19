@@ -7,7 +7,9 @@
       </v-alert>
     </div>
     <v-alert class="exam-commit-second-in" variant="tonal" show-icon :closable="false">
-      <strong>Hint: </strong>右键题目卡片可以查看上次提交
+      <strong>Hint: </strong>右键题目卡片可以查看上次提交 <br />
+      <strong>Tip: </strong>本场考试时间为 {{ exam?.startTime ? (new Date(exam.startTime)).toLocaleString() : '' }} -
+      {{ exam?.endTime ? (new Date(exam.endTime)).toLocaleString() : '' }} 请注意考试时间
     </v-alert>
     <container id="exam-wrapper">
       <main id="exam-main">
