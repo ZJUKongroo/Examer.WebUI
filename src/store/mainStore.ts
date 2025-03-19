@@ -5,16 +5,19 @@ import { UserRole } from '~/enums';
 import type { Exam } from '~/types';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
+import { getSecureItem, setSecureItem } from '~/ts/encrypt';
 
 export const useMainStore = defineStore('main', () => {
-  const token = ref<string>(localStorage.getItem('token') || '');
-  const userRole = ref<UserRole|null>(localStorage.getItem('userRole')?Number(localStorage.getItem('userRole')) as UserRole:null);
-  const userId = ref<string>(localStorage.getItem('userId') || '');
-  const expirationTime = ref<Date>(new Date(localStorage.getItem('expirationTime') || '1970-01-01'));
+  const token = ref<string>(getSecureItem('token') || '');
+  const userRole = ref<UserRole|null>(getSecureItem('userRole')?Number(getSecureItem('userRole')) as UserRole:null);
+  const userId = ref<string>(getSecureItem('userId') || '');
+  const expirationTime = ref<Date>(new Date(getSecureItem('expirationTime') || '1970-01-01'));
   const isDarkMode = ref<boolean>(false); // Add isDarkMode state
   const examData = ref<Exam[]>([]); // Add examData state
   const router = useRouter();
   const loading = ref(true);
+
+  
 
   const login = (data:{
     token: string,
@@ -26,10 +29,10 @@ export const useMainStore = defineStore('main', () => {
     userRole.value = data.role;
     expirationTime.value = new Date(data.expirationTime);
     userId.value = data.userId;
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('userRole', data.role.toString());
-    localStorage.setItem('expirationTime', data.expirationTime);
-    localStorage.setItem('userId', data.userId);
+    setSecureItem('token', data.token);
+    setSecureItem('userRole', data.role.toString());
+    setSecureItem('expirationTime', data.expirationTime);
+    setSecureItem('userId', data.userId);
   };
 
   const logout = () => {
