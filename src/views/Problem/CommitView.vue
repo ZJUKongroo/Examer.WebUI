@@ -155,7 +155,7 @@ async function submit() {
       </template>
     </UniversalHeader>
     <v-alert variant="tonal" type="info" class="problem-commit-animation">
-      注意: 确认提交后你将无法修改此次提交。请使用新提交覆盖
+      <strong>注意: </strong>你的提交会覆盖上次提交。确认提交后你将无法修改此次提交，请使用新提交覆盖
     </v-alert>
     <div id="problem-commit-info" class="problem-commit-animation">
       <v-card>

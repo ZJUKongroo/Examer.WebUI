@@ -52,6 +52,7 @@ defineProps({
 .exam-cell-content {
   display: flex;
   flex-direction: column;
+  width: calc(100% - 34px);
   font-size: 15px;
   text-wrap: nowrap;
   text-overflow: ellipsis;
@@ -61,7 +62,12 @@ defineProps({
 
 .exam-cell-content-name{
   font-size: 13px;
+  width: 100%;
+  text-align: left;
   font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .exam-cell-content-time{

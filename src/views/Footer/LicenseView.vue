@@ -54,17 +54,17 @@
         <div class="mb-4 license-anime-element">
             <v-alert title="致谢 - daimolean" variant="tonal" show-icon :closable="false"
             border="start"
-            color="success" 
+            color="pink-lighten-3" 
             icon="mdi-account-supervisor">
-                感谢所有为本项目提供帮助的老师和同学, 感谢浙江大学工程教育高级班提供的支持, 感谢我的女朋友在开发期间的陪伴与支持。
+                感谢所有为本项目提供帮助的老师和同学, 感谢浙江大学工程教育高级班提供的支持, 感谢世界上最聪明正直善良的女朋友在开发期间的陪伴与支持。😘
             </v-alert>
         </div>
         <div class="mb-4 license-anime-element">
             <v-alert title="致谢 - cast1e" variant="tonal" show-icon :closable="false"
             border="start"
-            color="deep-purple-accent-2"
+            color="cyan-darken-1"
             icon="mdi-account-supervisor">
-                感谢浙江大学工程教育高级班提供的支持, 也感谢项目开发测试人员的辛勤付出。
+                感谢浙江大学工程教育高级班提供的支持, 也感谢项目开发测试人员的辛勤付出, 还有网站有彩蛋哦, 来找找看吧 ~
             </v-alert>
         </div>
         <div>别看了，这里没有 Flag</div>
