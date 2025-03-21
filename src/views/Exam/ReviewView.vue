@@ -27,7 +27,7 @@
           </template>
           <v-card-text>
             <div>题目名称: {{ commit.problem.name }}</div>
-            <!-- <div>评卷人: {{ commit.reviewer }}</div> -->
+            <div>提交者: {{ commit.user.name }}</div>
           </v-card-text>
         </v-card>
       </div>

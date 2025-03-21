@@ -17,6 +17,7 @@
                 <h1 class="mb-1">作答信息</h1>
                 <div class="mb-2"><strong>提交时间:</strong> {{ (new Date(answerInfo.commitTime)).toLocaleString() }}</div>
                 <div class="mb-2"><strong>题目名称:</strong> {{ answerInfo.problem.name }}</div>
+                <div class="mb-2"><strong>提交者:</strong> {{ answerInfo.user.name }}</div>
                 <div class="mb-2">
                   <strong>是否已经评测:</strong>
                   {{ reviewed ? "是" : "否" }}

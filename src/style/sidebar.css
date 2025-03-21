@@ -25,7 +25,8 @@
   height: 100%;
   background-color: var(--bg-color-solid);
   box-shadow: var(--inset-shadow);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .sidebar-logo img {
