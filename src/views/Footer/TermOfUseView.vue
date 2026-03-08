@@ -33,14 +33,13 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import anime from 'animejs';
+import { animate, stagger } from 'animejs';
 
 onMounted(() => {
-  anime({
-    targets: '#terms-container section',
+  animate('#terms-container section', {
     opacity: [0, 1],
     translateY: [-50, 0],
-    delay: anime.stagger(50),
+    delay: stagger(50),
   });
 });
 </script>

@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import anime from 'animejs';
+import { animate, stagger } from 'animejs';
 import { ElMessage } from 'element-plus';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -166,16 +166,14 @@ async function getExamUser() {
 
 // 动画
 onMounted(async () => {
-  anime({
-    targets: '.exam-candidate-header',
+  animate('.exam-candidate-header', {
     translateX: [20, 0],
     opacity: [0, 1],
   });
-  anime({
-    targets: '.exam-candidate-content',
+  animate('.exam-candidate-content', {
     translateY: [20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(100),
+    delay: stagger(100),
   });
 
   loading.value = true;

@@ -8,21 +8,20 @@
     </div>
     <div class="rowbox" id="login-main" :class="{ registering: isRegistering }">
       <div style="flex-grow: 3"></div>
-      <!-- 根据是否注册显示标题 -->
       <div id="login-title">
         {{ isRegistering ? "注册" : "登录" }}
       </div>
-      <v-form ref="formRef" lazy-validation>
-        <!-- 用户名输入 -->
+      <v-form lazy-validation>
         <v-text-field
-          v-model="form.username"
-          label="用户名"
+          v-model="form.studentNo"
+          label="学号"
           outlined
           dense
           required
+          @keyup.enter="isRegistering ? startRegister() : login()"
         ></v-text-field>
-        <!-- 密码输入，回车触发登录 -->
         <v-text-field
+          v-if="!isRegistering"
           v-model="form.password"
           label="密码"
           type="password"
@@ -33,19 +32,17 @@
         ></v-text-field>
       </v-form>
       <div id="login-button-wrapper">
-        <!-- 登录按钮，根据 logining 状态显示加载动画或箭头图标 -->
         <button
           type="button"
           id="login-button"
-          @click="login"
-          :class="{ 'login-button-active': logining }"
+          @click="isRegistering ? startRegister() : login()"
+          :class="{ 'login-button-active': loading }"
         >
-          <v-icon v-if="logining" class="is-loading" icon="mdi-loading" spin />
-          <v-icon v-else icon="mdi-arrow-right" />
+          <v-icon v-if="loading" class="is-loading" icon="mdi-loading" spin />
+          <v-icon v-else :icon="isRegistering ? 'mdi-email-fast-outline' : 'mdi-arrow-right'" />
         </button>
       </div>
       <div id="toggle-register-wrapper">
-        <!-- 切换注册/登录按钮，目前仅支持登录 -->
         <v-btn variant="plain" id="toggle-register-button" @click="toggleRegister">
           {{ isRegistering ? "已有账号？登录" : "没有账号？注册" }}
         </v-btn>
@@ -63,83 +60,148 @@ import { useMainStore } from "~/store/mainStore";
 import axios from '~/ts/request';
 import { ElMessage } from "element-plus";
 
-// 登录表单数据
 const form = ref({
-  username: "",
+  studentNo: "",
   password: "",
 });
-const logining = ref(false); // 正在登录标志
-const isRegistering = ref(false); // 注册状态标志
+const loading = ref(false);
+const isRegistering = ref(false);
 
-// 切换注册状态，目前不启用注册功能
 const toggleRegister = () => {
-  // isRegistering.value = !isRegistering.value;
-  ElMessage.error("暂不支持注册");
+  isRegistering.value = !isRegistering.value;
+  form.value.password = "";
 };
 
-// 登录表单校验
-function check(payload: LoginDto): boolean {
+function checkLoginPayload(payload: LoginDto): boolean {
   if (payload.password.length <= 1 || payload.studentNo.length <= 1) {
     return false;
   }
   return true;
 }
 
+function checkStudentNo(studentNo: string): boolean {
+  return studentNo.trim().length > 1;
+}
+
+function extractRegisterToken(data: any): string {
+  if (!data) return "";
+  if (typeof data === "string") return data;
+  if (typeof data.token === "string") return data.token;
+  if (typeof data.registerToken === "string") return data.registerToken;
+  if (typeof data.data?.token === "string") return data.data.token;
+  return "";
+}
+
+async function requestRegisterToken(studentNo: string): Promise<string> {
+  const encodedStudentNo = encodeURIComponent(studentNo);
+  const candidates = [
+    `/Authentication/Register?studentNo=${encodedStudentNo}`,
+    `/Authentication/Register/Email?studentNo=${encodedStudentNo}`,
+    `/Authentication/Registration?studentNo=${encodedStudentNo}`,
+  ];
+
+  let lastError: unknown = null;
+  for (const endpoint of candidates) {
+    try {
+      const res = await axios.post(endpoint);
+      return extractRegisterToken(res.data);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
+
 const store = useMainStore();
 const router = useRouter();
 
-// 登录函数，提交表单数据到后端进行验证
-function login(): void {
-  let payload: LoginDto = {
-    studentNo: form.value.username,
+async function startRegister(): Promise<void> {
+  const studentNo = form.value.studentNo.trim();
+  if (!checkStudentNo(studentNo)) {
+    ElMessage({
+      type: "error",
+      message: "请先输入有效学号",
+    });
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const token = await requestRegisterToken(studentNo);
+    ElMessage({
+      type: "success",
+      message: "注册邮件已发送，请继续完善信息",
+    });
+
+    if (token) {
+      router.push({ path: "/login/complete", query: { token } });
+    } else {
+      ElMessage({
+        type: "warning",
+        message: "未获取到 token，请通过邮件中的链接继续注册",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    ElMessage({
+      type: "error",
+      message: "发送注册邮件失败",
+    });
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function login(): Promise<void> {
+  const payload: LoginDto = {
+    studentNo: form.value.studentNo,
     password: form.value.password,
   };
-  
-  if (check(payload)) {
-    logining.value = true;
-    // 发起登录请求，通过查询字符串传输学号信息
-    let request = axios.post(`/Authentication?studentNo=${form.value.username}`, payload);
-    if (request)
-      request
-        .then((res: { status: number; data: any }) => {
-          if (res.status == 200) {
-            ElMessage({
-              type: "success",
-              message: "登录成功",
-            });
-            // 登录成功，保存用户数据并刷新考试数据
-            const data = res.data;
-            store.login(data);
-            store.refreshExamData();
-            // 执行离场动画，登录成功后跳转页面
-            const login_main = document.getElementById("login-main");
-            const login_sidebar = document.getElementById("login-sidebar");
-            if (login_main) leave("left", login_main);
-            if (login_sidebar)
-              leave("right", login_sidebar, 200, () => {
-                const container = document.getElementById("login-container");
-                if (container)
-                  fadeOut(container, 300, () => router.push("/"));
-              });
-          }
-        })
-        .catch((e: any) => {
-          console.log(e);
-          logining.value = false;
-          ElMessage({
-            type: "error",
-            message: `登录失败`,
-          });
-        });
-  } else {
+
+  if (!checkLoginPayload(payload)) {
     ElMessage({
       type: "error",
       message: "用户名或密码格式错误",
     });
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const res = await axios.post(`/Authentication?studentNo=${encodeURIComponent(form.value.studentNo)}`, payload);
+    if (res.status === 200) {
+      ElMessage({
+        type: "success",
+        message: "登录成功",
+      });
+      const data = res.data;
+      store.login(data);
+      store.refreshExamData();
+
+      const loginMain = document.getElementById("login-main");
+      const loginSidebar = document.getElementById("login-sidebar");
+      if (loginMain) leave("left", loginMain);
+      if (loginSidebar) {
+        leave("right", loginSidebar, 200, () => {
+          const container = document.getElementById("login-container");
+          if (container) {
+            fadeOut(container, 300, () => router.push("/"));
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    ElMessage({
+      type: "error",
+      message: "登录失败",
+    });
+  } finally {
+    loading.value = false;
   }
 }
 
-// 页面挂载后执行动画效果
 onMounted(() => {
   const container = document.getElementById("login-container");
   const main = document.getElementById("login-main");

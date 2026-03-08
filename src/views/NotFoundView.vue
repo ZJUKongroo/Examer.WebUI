@@ -13,7 +13,7 @@
 
 <script lang="ts" setup>
 import { onMounted } from "vue";
-import anime from "animejs";
+import { animate, stagger } from "animejs";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -22,11 +22,10 @@ const backHome = () => {
 };
 
 onMounted(() => {
-  anime({
-    targets: ".not-found-view-anime",
+  animate(".not-found-view-anime", {
     translateX: [-30, 0],
     opacity: [0, 1],
-    delay:anime.stagger(50),
+    delay:stagger(50),
   });
 });
 </script>

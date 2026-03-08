@@ -16,18 +16,16 @@
 </template>
 
 <script lang="ts" setup>
-import anime from 'animejs';
+import { animate, stagger } from 'animejs';
 import { onMounted } from 'vue';
 
 onMounted(() => {
-  anime({
-    targets: "#home-view-content *",
+  animate("#home-view-content *", {
     translateX: [20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(50),
+    delay: stagger(50),
   })
-  anime({
-    targets: "#home-view-bg",
+  animate("#home-view-bg", {
     translateY: [20, 0],
     opacity: [0, 1],
   })

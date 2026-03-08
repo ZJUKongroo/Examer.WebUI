@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts" setup>
-import anime from "animejs";
+import { animate, stagger } from "animejs";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 // import TeamCell from "~/components/TeamCell.vue";
@@ -105,11 +105,10 @@ const examId = computed(() => router.currentRoute.value.query.id as string);
 const exam = computed(() => {
   const res = store.examData.find((exam) => exam.id === examId.value)
   if (res) getCommitStatus(res);
-  nextTick(() => anime({
-    targets: ".exam-commit-second-in",
+  nextTick(() => animate(".exam-commit-second-in", {
     translateY: [-20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(50, {
+    delay: stagger(50, {
       start: 200
     }),
   }))
@@ -136,11 +135,10 @@ function inspectProblem(problem: Problem) {
   inspectVisible.value = true;
   menuVisible.value = false;
   nextTick(() => {
-    anime({
-      targets: ".exam-commit-inspect-anime",
+    animate(".exam-commit-inspect-anime", {
       translateY: [-20, 0],
       opacity: [0, 1],
-      delay: anime.stagger(50),
+      delay: stagger(50),
     })
   })
 }
@@ -186,11 +184,10 @@ async function getCommitStatus(exam: Exam) {
 // const score = ref<number>(0); // Example score value
 
 onMounted(async () => {
-  anime({
-    targets: ".exam-commit-first-in",
+  animate(".exam-commit-first-in", {
     translateX: [20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(100),
+    delay: stagger(100),
   })
 });
 </script>

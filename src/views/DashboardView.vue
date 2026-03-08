@@ -10,18 +10,16 @@
   </template>
   
   <script lang="ts" setup>
-  import anime from 'animejs';
+  import { animate, stagger } from 'animejs';
   import { onMounted } from 'vue';
   
   onMounted(() => {
-    anime({
-      targets: "#dashboard-view-content *",
+    animate("#dashboard-view-content *", {
       translateX: [20, 0],
       opacity: [0, 1],
-      delay: anime.stagger(50),
+      delay: stagger(50),
     })
-    anime({
-      targets: "#dashboard-view-bg",
+    animate("#dashboard-view-bg", {
       translateY: [20, 0],
       opacity: [0, 1],
     })

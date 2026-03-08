@@ -48,15 +48,14 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import anime from 'animejs';
+import { animate, stagger } from 'animejs';
 import qrcodeImg from '~/assets/img/about/qrcode.webp';
 
 onMounted(() => {
-  anime({
-    targets: '#about-container section',
+  animate('#about-container section', {
     opacity: [0, 1],
     translateY: [-50, 0],
-    delay: anime.stagger(50),
+    delay: stagger(50),
   });
 });
 </script>

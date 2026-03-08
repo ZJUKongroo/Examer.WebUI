@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import anime from "animejs";
+import { animate, stagger } from "animejs";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute} from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
@@ -149,18 +149,16 @@ async function getProblems() {
 
 function init() {
   getProblems().then(() => {
-    anime({
-      targets: "#problem-edit-header",
+    animate("#problem-edit-header", {
       opacity: [0, 1],
       translateX: [20, 0],
       loop: false,
     });
-    anime({
-      targets: ".problem-edit-card",
+    animate(".problem-edit-card", {
       opacity: [0, 1],
       translateY: [20, 0],
       loop: false,
-      delay: anime.stagger(100),
+      delay: stagger(100),
     });
   });
 }

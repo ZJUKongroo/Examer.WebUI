@@ -2,6 +2,22 @@ export interface LoginDto {
   studentNo: string;
   password: string;
 }
+
+export interface RegisterStartResponse {
+  token?: string;
+}
+
+export interface RegisterCompleteDto {
+  name: string;
+  college: string;
+  major: string;
+  class: string;
+  phoneNo: string;
+  password: string;
+  campus?: string;
+  dormitory?: string;
+}
+
 export interface option {
   target: string;
   title: string;
