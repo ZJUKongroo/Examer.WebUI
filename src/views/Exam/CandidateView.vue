@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { animate, stagger } from 'animejs';
+import { animate, createSpring, stagger } from 'animejs';
 import { ElMessage } from 'element-plus';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -169,11 +169,13 @@ onMounted(async () => {
   animate('.exam-candidate-header', {
     translateX: [20, 0],
     opacity: [0, 1],
+    ease: createSpring(),
   });
   animate('.exam-candidate-content', {
     translateY: [20, 0],
     opacity: [0, 1],
-    delay: stagger(100),
+    delay: stagger(50),
+    ease: createSpring(),
   });
 
   loading.value = true;

@@ -10,18 +10,20 @@
   </template>
   
   <script lang="ts" setup>
-  import { animate, stagger } from 'animejs';
+  import { animate, createSpring, stagger } from 'animejs';
   import { onMounted } from 'vue';
   
   onMounted(() => {
     animate("#dashboard-view-content *", {
       translateX: [20, 0],
       opacity: [0, 1],
-      delay: stagger(50),
+      ease: createSpring(),
+      delay: stagger(20),
     })
     animate("#dashboard-view-bg", {
       translateY: [20, 0],
       opacity: [0, 1],
+      ease: createSpring()
     })
   })
   </script>

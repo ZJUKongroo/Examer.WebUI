@@ -13,7 +13,7 @@
 
 <script lang="ts" setup>
 import { onMounted } from "vue";
-import { animate, stagger } from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -25,7 +25,8 @@ onMounted(() => {
   animate(".not-found-view-anime", {
     translateX: [-30, 0],
     opacity: [0, 1],
-    delay:stagger(50),
+    delay:stagger(20),
+    ease: createSpring(),
   });
 });
 </script>

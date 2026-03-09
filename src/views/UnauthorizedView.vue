@@ -1,7 +1,7 @@
 <!-- 未认证页面 -->
 
 <script setup lang="ts">
-import { animate, stagger } from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import { onMounted } from "vue";
 import { useMainStore } from "~/store/mainStore";
 
@@ -14,7 +14,8 @@ onMounted(() => {
   animate(".unauthorized-view-anime", {
     translateX: [-30, 0],
     opacity: [0, 1],
-    delay: stagger(50),
+    delay: stagger(20),
+    ease: createSpring(),
   });
 });
 </script>

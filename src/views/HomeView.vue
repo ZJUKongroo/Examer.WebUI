@@ -16,18 +16,21 @@
 </template>
 
 <script lang="ts" setup>
-import { animate, stagger } from 'animejs';
+import { animate, createSpring, stagger } from 'animejs';
 import { onMounted } from 'vue';
 
 onMounted(() => {
   animate("#home-view-content *", {
     translateX: [20, 0],
     opacity: [0, 1],
-    delay: stagger(50),
+    ease: createSpring(),
+    delay: stagger(20),
   })
   animate("#home-view-bg", {
     translateY: [20, 0],
     opacity: [0, 1],
+    duration: 100,
+    ease: createSpring(),
   })
 })
 </script>

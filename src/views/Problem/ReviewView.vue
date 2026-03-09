@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import { animate, stagger } from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import axios from '~/ts/request';
 import { onMounted, ref, computed, watch, nextTick } from "vue";
 import UniversalHeader from "~/components/UniversalHeader.vue";
@@ -100,6 +100,7 @@ function init() {
     translateX: [20, 0],
     opacity: [0, 1],
     delay: stagger(100),
+    ease: createSpring(),
   });
   getCommits().then(() => {
     loading.value = false;
@@ -108,6 +109,7 @@ function init() {
         translateX: [20, 0],
         opacity: [0, 1],
         delay: stagger(100),
+        ease: createSpring(),
       });
       animate(".problem-review-file-card", {
         translateY: [-20, 0],
@@ -115,6 +117,7 @@ function init() {
         delay: stagger(50, {
           start: 300
         }),
+        ease: createSpring(),
       })
     })
   });

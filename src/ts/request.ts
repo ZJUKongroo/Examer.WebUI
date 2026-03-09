@@ -22,7 +22,7 @@ instance.interceptors.request.use(
     if (
       !validToken &&
       config.url &&
-      !config.url.startsWith("/Authentication")
+      !config.url.startsWith("/authentication")
     ) {
       console.log(config.url);
       store.logout();

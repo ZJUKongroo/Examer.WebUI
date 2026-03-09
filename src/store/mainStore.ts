@@ -2,7 +2,7 @@ import axios from '~/ts/request';
 import { defineStore } from 'pinia';
 import { ref, computed} from 'vue';
 import { UserRole } from '~/enums';
-import type { Exam } from '~/types';
+import type { Exam, LoginCredientialDto } from '~/types';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { getSecureItem, setSecureItem } from '~/ts/encrypt';
@@ -19,12 +19,7 @@ export const useMainStore = defineStore('main', () => {
 
   
 
-  const login = (data:{
-    token: string,
-    expirationTime: string,
-    role: UserRole,
-    userId:string
-  }) => {
+  const login = (data: LoginCredientialDto) => {
     token.value = data.token;
     userRole.value = data.role;
     expirationTime.value = new Date(data.expirationTime);

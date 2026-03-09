@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import { animate, stagger } from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute} from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
@@ -153,12 +153,14 @@ function init() {
       opacity: [0, 1],
       translateX: [20, 0],
       loop: false,
+      ease: createSpring(),
     });
     animate(".problem-edit-card", {
       opacity: [0, 1],
       translateY: [20, 0],
       loop: false,
       delay: stagger(100),
+      ease: createSpring(),
     });
   });
 }

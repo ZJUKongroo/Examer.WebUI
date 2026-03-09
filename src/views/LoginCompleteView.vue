@@ -1,163 +1,236 @@
 <template>
   <div id="register-complete-page">
     <div id="register-complete-card">
-      <div id="register-complete-title">完善注册信息</div>
-      <div id="register-complete-subtitle">请补充基础资料以完成账号注册</div>
-
-      <v-alert
-        v-if="!token"
-        type="warning"
-        variant="tonal"
-        density="comfortable"
-        text="缺少 token，请通过邮件中的注册链接进入该页面。"
-      />
+      <div id="register-complete-title">激活并完善个人信息</div>
 
       <v-form id="register-complete-form" lazy-validation>
-        <v-text-field v-model="form.name" label="姓名" density="comfortable" required />
-        <v-text-field v-model="form.college" label="学院" density="comfortable" required />
-        <v-text-field v-model="form.major" label="专业" density="comfortable" required />
-        <v-text-field v-model="form.className" label="班级" density="comfortable" required />
-        <v-text-field v-model="form.phoneNo" label="手机号" density="comfortable" required />
-        <v-text-field v-model="form.campus" label="校区（可选）" density="comfortable" />
-        <v-text-field v-model="form.dormitory" label="宿舍（可选）" density="comfortable" />
-        <v-text-field
-          v-model="form.password"
-          label="设置密码"
-          type="password"
+        <v-select
+          v-model="form.gender"
+          :items="genderOptions"
+          label="性别"
           density="comfortable"
+          item-title="title"
+          item-value="value"
+          required
+        />
+        <v-select
+          v-model="form.ethnicGroup"
+          :items="ethnicGroupOptions"
+          label="民族"
+          density="comfortable"
+          item-title="title"
+          item-value="value"
+          required
+        />
+        <v-text-field v-model="form.dateOfBirth" type="date" label="出生日期" density="comfortable" placeholder="请选择出生日期" required />
+        <v-text-field v-model="form.phoneNumber" label="手机号" density="comfortable" placeholder="例如：13800138000" required />
+        <v-text-field v-model="form.college" label="学院" density="comfortable" placeholder="例如：计算机科学与技术学院" required />
+        <v-text-field v-model="form.major" label="专业" density="comfortable" placeholder="例如：软件工程" required />
+        <v-text-field v-model="form.class" label="班级" density="comfortable" placeholder="例如：软工2301" required />
+        <v-text-field v-model="form.campus" label="校区" density="comfortable" placeholder="例如：紫金港" required />
+        <v-text-field v-model="form.dormitory" label="宿舍" density="comfortable" placeholder="例如：丹阳3舍301" required />
+        <v-select
+          v-model="form.politicalStatus"
+          :items="politicalStatusOptions"
+          label="政治面貌"
+          density="comfortable"
+          item-title="title"
+          item-value="value"
+          required
+        />
+        <v-text-field v-model="form.homeAddress" label="家庭住址" density="comfortable" placeholder="例如：浙江省杭州市西湖区..." required />
+        <v-text-field v-model="form.englishLevel" label="英语等级" density="comfortable" placeholder="请填写雅思/托福/英语四级/英语六级成绩" required />
+        <v-text-field
+          v-model.number="form.gpaOfAllCourses"
+          type="number"
+          step="0.01"
+          min="0"
+          label="总课程绩点"
+          density="comfortable"
+          placeholder="填写总课程绩点，例如 3.75"
           required
         />
         <v-text-field
-          v-model="form.confirmPassword"
-          label="确认密码"
-          type="password"
+          v-model.number="form.gpaOfMajorCourses"
+          type="number"
+          step="0.01"
+          min="0"
+          label="专业课程绩点"
           density="comfortable"
+          placeholder="填写专业课程绩点，例如 3.82"
           required
-          @keyup.enter="completeRegister"
         />
+        <v-text-field v-model.number="form.rank" type="number" label="排名" density="comfortable" required />
+        <v-text-field v-model.number="form.collegeNumber" type="number" label="学院人数" density="comfortable" required @keyup.enter="submitForm" />
       </v-form>
 
+      <div id="register-complete-message" :class="noticeType" v-if="noticeMessage">{{ noticeMessage }}</div>
+
       <div id="register-complete-actions">
-        <v-btn color="primary" size="large" :loading="submitting" :disabled="!token" @click="completeRegister">
-          确认完成注册
+        <v-btn color="primary" size="large" :loading="submitting" @click="submitForm">
+          提交
         </v-btn>
-        <v-btn variant="text" @click="router.push('/login')">返回登录</v-btn>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import type { RegisterCompleteDto } from "~/types";
-import { computed, ref, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
-import { ElMessage } from "element-plus";
 import { animate, createSpring } from "animejs";
+import { useMainStore } from "~/store/mainStore";
+import { LoginCredientialDto } from "~/types";
+import { EthnicGroup, PoliticalStatus } from "~/enums";
 
 const route = useRoute();
 const router = useRouter();
 const submitting = ref(false);
+const noticeMessage = ref("");
+const noticeType = ref<"success" | "error">("success");
+const store = useMainStore();
 
-const token = computed(() => {
+
+const genderOptions = [
+  { title: "男", value: 1 },
+  { title: "女", value: 2 },
+];
+
+const ethnicGroupOptions = Object.keys(EthnicGroup)
+  .filter((key) => Number.isNaN(Number(key)) && key !== "Null")
+  .map((key) => ({
+    title: key,
+    value: EthnicGroup[key as keyof typeof EthnicGroup] as number,
+  }));
+
+const politicalStatusOptions = Object.keys(PoliticalStatus)
+  .filter((key) => Number.isNaN(Number(key)) && key !== "Null")
+  .map((key) => ({
+    title: key,
+    value: PoliticalStatus[key as keyof typeof PoliticalStatus] as number,
+  }));
+
+function getTokenFromQuery(): string {
   const queryToken = route.query.token;
-  return typeof queryToken === "string" ? queryToken : "";
-});
-
-onMounted(()=>{
-    animate("#register-complete-card", {
-        translateY: [20, 0],
-        opacity: [0, 1],
-        ease: createSpring()
-    })
-    animate("#register-complete-form", {
-        translateX: [20, 0],
-        opacity: [0, 1],
-        delay: 50,
-        ease: createSpring()
-    })
-})
+  return typeof queryToken === "string" ? queryToken.trim() : "";
+}
 
 const form = ref({
-  name: "",
+  gender: 1,
+  ethnicGroup: 1,
+  dateOfBirth: "",
+  phoneNumber: "",
   college: "",
   major: "",
-  className: "",
-  phoneNo: "",
+  class: "",
   campus: "",
   dormitory: "",
-  password: "",
-  confirmPassword: "",
+  politicalStatus: 1,
+  homeAddress: "",
+  englishLevel: "",
+  gpaOfAllCourses: 0,
+  gpaOfMajorCourses: 0,
+  rank: 1,
+  collegeNumber: 1,
+});
+
+onMounted(() => {
+  animate("#register-complete-card", {
+    translateY: [20, 0],
+    opacity: [0, 1],
+    ease: createSpring(),
+  });
+  animate("#register-complete-form", {
+    translateX: [20, 0],
+    opacity: [0, 1],
+    delay: 50,
+    ease: createSpring(),
+  });
 });
 
 function validateForm(): boolean {
-  if (!token.value) {
-    ElMessage({ type: "error", message: "注册链接缺少 token" });
+  noticeMessage.value = "";
+
+  if (!getTokenFromQuery()) {
+    noticeType.value = "error";
+    noticeMessage.value = "链接缺少 token 参数，请从邮箱中的激活链接进入";
     return false;
   }
+
   if (
-    form.value.name.trim().length <= 1 ||
+    !form.value.dateOfBirth ||
+    form.value.phoneNumber.trim().length <= 5 ||
     form.value.college.trim().length <= 1 ||
     form.value.major.trim().length <= 1 ||
-    form.value.className.trim().length <= 1 ||
-    form.value.phoneNo.trim().length <= 5
+    form.value.class.trim().length <= 1 ||
+    form.value.campus.trim().length <= 0 ||
+    form.value.dormitory.trim().length <= 0 ||
+    form.value.homeAddress.trim().length <= 1 ||
+    form.value.englishLevel.trim().length <= 0
   ) {
-    ElMessage({ type: "error", message: "请完整填写必填信息" });
+    noticeType.value = "error";
+    noticeMessage.value = "请完整填写表单中的必填信息";
     return false;
   }
-  if (form.value.password.length <= 5) {
-    ElMessage({ type: "error", message: "密码长度至少为 6 位" });
+
+  if (
+    !Number.isFinite(form.value.gender) ||
+    !Number.isFinite(form.value.ethnicGroup) ||
+    !Number.isFinite(form.value.politicalStatus) ||
+    !Number.isFinite(form.value.gpaOfAllCourses) ||
+    !Number.isFinite(form.value.gpaOfMajorCourses) ||
+    !Number.isFinite(form.value.rank) ||
+    !Number.isFinite(form.value.collegeNumber)
+  ) {
+    noticeType.value = "error";
+    noticeMessage.value = "数字字段格式不正确";
     return false;
   }
-  if (form.value.password !== form.value.confirmPassword) {
-    ElMessage({ type: "error", message: "两次输入密码不一致" });
+
+  if (form.value.gpaOfAllCourses < 0 || form.value.gpaOfMajorCourses < 0) {
+    noticeType.value = "error";
+    noticeMessage.value = "绩点不能为负数";
     return false;
   }
+
   return true;
 }
 
-async function submitComplete(payload: RegisterCompleteDto): Promise<void> {
-  const encodedToken = encodeURIComponent(token.value);
-  const candidates = [
-    `/Authentication/Register/Complete?token=${encodedToken}`,
-    `/Authentication/Registration/Complete?token=${encodedToken}`,
-    `/Authentication/RegisterComplete?token=${encodedToken}`,
-  ];
-
-  let lastError: unknown = null;
-  for (const endpoint of candidates) {
-    try {
-      await axios.post(endpoint, payload);
-      return;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError;
-}
-
-async function completeRegister(): Promise<void> {
+async function submitForm(): Promise<void> {
   if (!validateForm()) return;
 
   submitting.value = true;
   try {
-    const payload: RegisterCompleteDto = {
-      name: form.value.name.trim(),
+    const emailActivateToken = getTokenFromQuery();
+    let credientials = await axios.post<LoginCredientialDto>(`/authentication/activate/${encodeURIComponent(emailActivateToken)}`);
+    store.login(credientials.data);
+
+    const payload = {
+      gender: Number(form.value.gender),
+      ethnicGroup: Number(form.value.ethnicGroup),
+      dateOfBirth: form.value.dateOfBirth,
+      phoneNumber: form.value.phoneNumber.trim(),
       college: form.value.college.trim(),
       major: form.value.major.trim(),
-      class: form.value.className.trim(),
-      phoneNo: form.value.phoneNo.trim(),
-      password: form.value.password,
-      campus: form.value.campus.trim() || undefined,
-      dormitory: form.value.dormitory.trim() || undefined,
+      class: form.value.class.trim(),
+      campus: form.value.campus.trim(),
+      dormitory: form.value.dormitory.trim(),
+      politicalStatus: Number(form.value.politicalStatus),
+      homeAddress: form.value.homeAddress.trim(),
+      englishLevel: form.value.englishLevel.trim(),
+      gpaOfAllCourses: Number(form.value.gpaOfAllCourses),
+      gpaOfMajorCourses: Number(form.value.gpaOfMajorCourses),
+      rank: Number(form.value.rank),
+      collegeNumber: Number(form.value.collegeNumber),
     };
 
-    await submitComplete(payload);
-    ElMessage({ type: "success", message: "注册完成，请登录" });
-    router.push("/login");
+    await axios.post("/user/detail", payload);
+    router.push("/user/detail");
   } catch (error) {
-    console.log(error);
-    ElMessage({ type: "error", message: "注册失败，请检查信息后重试" });
+    console.error(error);
+    noticeType.value = "error";
+    noticeMessage.value = "提交失败，请检查 token 与表单信息后重试";
   } finally {
     submitting.value = false;
   }
@@ -211,6 +284,20 @@ async function completeRegister(): Promise<void> {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+#register-complete-message {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+#register-complete-message.success {
+  color: #2e7d32;
+}
+
+#register-complete-message.error {
+  color: #c62828;
 }
 
 @media (max-width: 640px) {

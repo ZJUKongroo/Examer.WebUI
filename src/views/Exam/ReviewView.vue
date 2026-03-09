@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import { animate, stagger } from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import { ref, computed, type Ref, onMounted, nextTick, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import UniversalHeader from "~/components/UniversalHeader.vue";
@@ -90,6 +90,7 @@ async function init(id: string) {
     translateX: [20, 0],
     opacity: [0, 1],
     delay: stagger(100),
+    ease: createSpring(),
   });
   await commitStore.fetchCommits(id);
   commits.value = await commitStore.queryExamCommit(id);
@@ -118,6 +119,7 @@ function animateCommits() {
     translateY: [-20, 0],
     opacity: [0, 1],
     delay: stagger(100, { grid: [3, 3]}),
+    ease: createSpring(),
   });
 }
 
@@ -169,6 +171,7 @@ watch(selectedOption, async () => {
       translateY: [-20, 0],
       opacity: [0, 1],
       delay: stagger(100),
+      ease: createSpring()
     });
   })
 }, { deep: true });

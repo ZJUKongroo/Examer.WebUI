@@ -37,6 +37,7 @@ const router = useRouter();
 const store = useMainStore();
 const options = ref([
   { name: '主页', iconClass: 'mdi-home',path:'/home' },
+  { name: '个人信息', iconClass: 'mdi-account',path:'/user/detail' },
 ]);
 
 const exams = computed(() => store.examData);

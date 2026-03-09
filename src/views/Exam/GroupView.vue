@@ -118,7 +118,7 @@
 </template>
 
 <script lang="ts" setup>
-import { animate, stagger } from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import { ElMessage } from "element-plus";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -571,6 +571,7 @@ onMounted(async () => {
   animate('.exam-group-view-anime', {
     translateX: [20, 0],
     opacity: [0, 1],
+    ease: createSpring(),
   })
   loading.value = true;
   await Promise.all([getAllUser(), getAllGroup()]);
@@ -581,11 +582,13 @@ onMounted(async () => {
       translateY: [20, 0],
       opacity: [0, 1],
       delay: stagger(100),
+      ease: createSpring(),
     })
     animate('.exam-group-groups-container', {
       translateX: [-20, 0],
       opacity: [0, 1],
-      delay: 200
+      delay: 200,
+      ease: createSpring(),
     })
   })
 })

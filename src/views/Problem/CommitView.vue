@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { animate, stagger } from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import { computed, nextTick, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -33,6 +33,7 @@ const problem = computed(() => {
         translateX: [20, 0],
         opacity: [0, 1],
         delay: stagger(100),
+        ease: createSpring(),
       })
     })
   }
