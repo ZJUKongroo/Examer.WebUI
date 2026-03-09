@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import anime from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import axios from '~/ts/request';
 import { onMounted, ref, computed, watch, nextTick } from "vue";
 import UniversalHeader from "~/components/UniversalHeader.vue";
@@ -96,28 +96,28 @@ watch(commitId, () => init());
 
 function init() {
   loading.value = true;
-  anime({
-    targets: ".problem-review-header",
+  animate(".problem-review-header", {
     translateX: [20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(100),
+    delay: stagger(100),
+    ease: createSpring(),
   });
   getCommits().then(() => {
     loading.value = false;
     nextTick(() => {
-      anime({
-        targets: ".problem-review-anime",
+      animate(".problem-review-anime", {
         translateX: [20, 0],
         opacity: [0, 1],
-        delay: anime.stagger(100),
+        delay: stagger(100),
+        ease: createSpring(),
       });
-      anime({
-        targets: ".problem-review-file-card",
+      animate(".problem-review-file-card", {
         translateY: [-20, 0],
         opacity: [0, 1],
-        delay: anime.stagger(50, {
+        delay: stagger(50, {
           start: 300
         }),
+        ease: createSpring(),
       })
     })
   });

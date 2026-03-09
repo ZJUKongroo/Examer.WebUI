@@ -1,7 +1,60 @@
 export interface LoginDto {
-  studentNo: string;
+  studentNumber: string;
   password: string;
 }
+
+export interface LoginCredientialDto {
+  token: string,
+  expirationTime: string,
+  role: UserRole,
+  userId:string
+}
+
+export interface RegisterDto {
+  studentNo: string;
+  name: string;
+  college: string;
+  major: string;
+  class: string;
+  phoneNo: string;
+  password: string;
+  campus?: string;
+  dormitory?: string;
+}
+
+export interface UserDetailDto {
+  id: string;
+  studentNo: string;
+  name: string;
+  college: string;
+  major: string;
+  class: string;
+  phoneNo: string;
+  campus?: string;
+  dormitory?: string;
+}
+
+export interface AddUserDetailDto {
+  studentNo: string;
+  name: string;
+  college: string;
+  major: string;
+  class: string;
+  phoneNo: string;
+  campus?: string;
+  dormitory?: string;
+}
+
+export interface UpdateUserDetailDto {
+  name?: string;
+  college?: string;
+  major?: string;
+  class?: string;
+  phoneNo?: string;
+  campus?: string;
+  dormitory?: string;
+}
+
 export interface option {
   target: string;
   title: string;

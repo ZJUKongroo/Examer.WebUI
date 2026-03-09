@@ -51,7 +51,7 @@ import { useRouter } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import { useMainStore } from "~/store/mainStore";
 import deleteConfirm from "~/ts/deleteConfirm";
-import anime from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import axios from "~/ts/request";
 import { ElMessage } from "element-plus";
 import { ExamType } from "~/enums/index";
@@ -123,18 +123,18 @@ function open(path: string, query?: any) {
 }
 
 onMounted(() => {
-  anime({
-    targets: "#exam-edit-header",
+  animate("#exam-edit-header", {
     opacity: [0, 1],
     translateX: [20, 0],
     loop: false,
+    ease: createSpring(),
   });
-  anime({
-    targets: ".exam-edit-card",
+  animate(".exam-edit-card", {
     opacity: [0, 1],
     translateY: [20, 0],
     loop: false,
-    delay: anime.stagger(100),
+    delay: stagger(50),
+    ease: createSpring(),
   });
 });
 </script>

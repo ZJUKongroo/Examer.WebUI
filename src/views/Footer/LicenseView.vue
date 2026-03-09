@@ -73,14 +73,14 @@
 </template>
 
 <script setup lang="ts">
-import anime from 'animejs';
+import { animate, createSpring, stagger } from 'animejs';
 import { ref, onMounted } from 'vue'
 onMounted(() => {
-    anime({
-        targets: ".license-anime-element",
+    animate(".license-anime-element", {
         opacity: [0, 1],
         translateX: [20, 0],
-        delay: anime.stagger(50),
+        delay: stagger(20),
+        ease: createSpring(),
     })
 })
 interface Project {

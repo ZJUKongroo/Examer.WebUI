@@ -7,6 +7,7 @@ import NotFoundView from "~/views/NotFoundView.vue";
 import { routerSetup } from "./setup";
 import { coreRoutes } from "./corePath";
 const Login = () => import("~/views/LoginView.vue");
+const LoginComplete = () => import("~/views/LoginCompleteView.vue");
 
 const routes:readonly RouteRecordRaw[] = [
   {
@@ -19,6 +20,11 @@ const routes:readonly RouteRecordRaw[] = [
     path: "/login",
     component: Login,
     meta: { requiresAuth: false, title: "登录" },
+  },
+  {
+    path: "/login/complete",
+    component: LoginComplete,
+    meta: { requiresAuth: false, title: "完善注册信息" },
   },
   {
     path: "/unauthorized",

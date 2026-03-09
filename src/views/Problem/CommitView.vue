@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import anime from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import { computed, nextTick, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -29,11 +29,11 @@ const problem = computed(() => {
   const res = exam.value?.problems.find((problem) => problem.id === problemId.value);
   if (res) {
     nextTick(() => {
-      anime({
-        targets: ".problem-commit-animation",
+      animate(".problem-commit-animation", {
         translateX: [20, 0],
         opacity: [0, 1],
-        delay: anime.stagger(100),
+        delay: stagger(100),
+        ease: createSpring(),
       })
     })
   }

@@ -118,7 +118,7 @@
 </template>
 
 <script lang="ts" setup>
-import anime from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import { ElMessage } from "element-plus";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -568,27 +568,27 @@ async function getExamGroup() {
 }
 
 onMounted(async () => {
-  anime({
-    targets: '.exam-group-view-anime',
+  animate('.exam-group-view-anime', {
     translateX: [20, 0],
     opacity: [0, 1],
+    ease: createSpring(),
   })
   loading.value = true;
   await Promise.all([getAllUser(), getAllGroup()]);
   await getExamGroup();
   loading.value = false;
   nextTick(() => {
-    anime({
-      targets: '.exam-group-users-container',
+    animate('.exam-group-users-container', {
       translateY: [20, 0],
       opacity: [0, 1],
-      delay: anime.stagger(100),
+      delay: stagger(100),
+      ease: createSpring(),
     })
-    anime({
-      targets: '.exam-group-groups-container',
+    animate('.exam-group-groups-container', {
       translateX: [-20, 0],
       opacity: [0, 1],
-      delay: 200
+      delay: 200,
+      ease: createSpring(),
     })
   })
 })

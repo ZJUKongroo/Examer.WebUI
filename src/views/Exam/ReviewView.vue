@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import anime from "animejs";
+import { animate, createSpring, stagger } from "animejs";
 import { ref, computed, type Ref, onMounted, nextTick, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import UniversalHeader from "~/components/UniversalHeader.vue";
@@ -86,11 +86,11 @@ const paginatedCommits = computed<Commit[]>(() => {
 
 async function init(id: string) {
   // 初始化过滤选项为 URL 中的值（或默认值）
-  anime({
-    targets: ".exam-review-header",
+  animate(".exam-review-header", {
     translateX: [20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(100),
+    delay: stagger(100),
+    ease: createSpring(),
   });
   await commitStore.fetchCommits(id);
   commits.value = await commitStore.queryExamCommit(id);
@@ -115,11 +115,11 @@ async function init(id: string) {
 }
 
 function animateCommits() {
-  anime({
-    targets: ".exam-review-record-card",
+  animate(".exam-review-record-card", {
     translateY: [-20, 0],
     opacity: [0, 1],
-    delay: anime.stagger(100, { grid: [3, 3]}),
+    delay: stagger(100, { grid: [3, 3]}),
+    ease: createSpring(),
   });
 }
 
@@ -167,11 +167,11 @@ watch(selectedOption, async () => {
     return (new Date(b.commitTime).getTime() - new Date(a.commitTime).getTime()) * (ascending.value ? 1 : -1);
   });
   nextTick(() => {
-    anime({
-      targets: ".exam-review-record-card",
+    animate(".exam-review-record-card", {
       translateY: [-20, 0],
       opacity: [0, 1],
-      delay: anime.stagger(100),
+      delay: stagger(100),
+      ease: createSpring()
     });
   })
 }, { deep: true });

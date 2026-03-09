@@ -16,6 +16,8 @@ const ProblemEdit = () => import("~/views/Problem/EditView.vue");
 const FooterAbout = () => import("~/views/Footer/AboutView.vue");
 const FooterTermOfUse = () => import("~/views/Footer/TermOfUseView.vue");
 const FooterLicense = () => import("~/views/Footer/LicenseView.vue");
+const User = () => import("~/views/UserView.vue");
+const UserDetail = () => import("~/views/UserDetailView.vue");
 
 export const coreRoutes: RouteRecordRaw[] = [
   {
@@ -124,6 +126,24 @@ export const coreRoutes: RouteRecordRaw[] = [
         },
       },
     ],
+  },
+  {
+    path: "user",
+    component: User,
+    meta: {
+      requiresAuth: true,
+      roles: ["Administrator"],
+      title: "用户管理",
+    },
+  },
+  {
+    path: "user/detail",
+    component: UserDetail,
+    meta: {
+      requiresAuth: true,
+      roles: ["Administrator", "User"],
+      title: "用户详情",
+    },
   },
   {
     path: "about",
