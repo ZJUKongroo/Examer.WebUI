@@ -1,42 +1,39 @@
 <template>
   <div id="user-detail-page">
-    <!-- 当前用户信息卡片 -->
     <div id="user-detail-header">
       <v-icon size="48" color="primary">mdi-account-circle</v-icon>
       <div>
-        <div id="user-detail-name">{{ me?.name ?? '加载中...' }}</div>
-        <div id="user-detail-studentno">学号：{{ me?.studentNo }}</div>
+        <div id="user-detail-name">{{ detail?.name ?? "加载中..." }}</div>
+        <div id="user-detail-studentno">学号：{{ detail?.studentNo ?? "—" }}</div>
       </div>
     </div>
 
     <v-divider class="my-4" />
 
-    <div v-if="loadingMe" class="text-center py-8">
+    <div v-if="loading" class="text-center py-8">
       <v-progress-circular indeterminate color="primary" />
     </div>
 
-    <div v-else-if="me" id="user-detail-grid">
+    <div v-else-if="detail" id="user-detail-grid">
       <div class="detail-item" v-for="field in detailFields" :key="field.label">
         <span class="detail-label">{{ field.label }}</span>
-        <span class="detail-value">{{ field.value || '—' }}</span>
+        <span class="detail-value">{{ field.value || "—" }}</span>
       </div>
     </div>
 
-    <div class="mt-4 d-flex justify-end">
-      <v-btn color="primary" variant="tonal" @click="openEditDialog(me, true)">编辑我的信息</v-btn>
-    </div>
+    <v-alert v-else type="error" variant="tonal" text="无法加载用户信息" class="mt-4" />
 
-    <!-- <v-alert v-else type="error" variant="tonal" text="无法加载个人信息" class="mt-4" /> -->
+    <div v-if="detail" class="mt-4 d-flex justify-end">
+      <v-btn color="primary" variant="tonal" @click="openEditDialog">{{ isViewingSelf ? "编辑我的信息" : "编辑该用户信息" }}</v-btn>
+    </div>
 
     <v-dialog v-model="editDialog" max-width="760">
       <v-card>
         <v-card-title>编辑用户信息</v-card-title>
         <v-card-text>
           <v-form id="user-edit-form" lazy-validation>
-            <v-select v-model="editForm.gender" :items="genderOptions" label="性别" density="comfortable"
-              item-title="title" item-value="value" />
-            <v-select v-model="editForm.ethnicGroup" :items="ethnicGroupOptions" label="民族" density="comfortable"
-              item-title="title" item-value="value" />
+            <v-select v-model="editForm.gender" :items="genderOptions" label="性别" density="comfortable" item-title="title" item-value="value" />
+            <v-select v-model="editForm.ethnicGroup" :items="ethnicGroupOptions" label="民族" density="comfortable" item-title="title" item-value="value" />
             <v-text-field v-model="editForm.dateOfBirth" type="date" label="出生日期" density="comfortable" />
             <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
             <v-text-field v-model="editForm.college" label="学院" density="comfortable" />
@@ -44,13 +41,11 @@
             <v-text-field v-model="editForm.class" label="班级" density="comfortable" />
             <v-text-field v-model="editForm.campus" label="校区" density="comfortable" />
             <v-text-field v-model="editForm.dormitory" label="宿舍" density="comfortable" />
-            <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌"
-              density="comfortable" item-title="title" item-value="value" />
+            <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌" density="comfortable" item-title="title" item-value="value" />
             <v-text-field v-model="editForm.homeAddress" label="家庭住址" density="comfortable" />
             <v-text-field v-model="editForm.englishLevel" label="英语等级" density="comfortable" />
-            <v-text-field v-model.number="editForm.gpaOfAllCourses" type="number" label="总课程绩点" density="comfortable" />
-            <v-text-field v-model.number="editForm.gpaOfMajorCourses" type="number" label="专业课程绩点"
-              density="comfortable" />
+            <v-text-field v-model.number="editForm.gpaOfAllCourses" type="number" step="0.01" min="0" label="总课程绩点" density="comfortable" />
+            <v-text-field v-model.number="editForm.gpaOfMajorCourses" type="number" step="0.01" min="0" label="专业课程绩点" density="comfortable" />
             <v-text-field v-model.number="editForm.rank" type="number" label="排名" density="comfortable" />
             <v-text-field v-model.number="editForm.collegeNumber" type="number" label="学院人数" density="comfortable" />
           </v-form>
@@ -61,60 +56,13 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- 管理员：全部用户列表 -->
-    <template v-if="isAdmin">
-      <v-divider class="my-6" />
-      <div id="user-list-title">所有用户</div>
-
-      <div v-if="loadingList" class="text-center py-6">
-        <v-progress-circular indeterminate color="primary" />
-      </div>
-
-      <v-table v-else id="user-detail-table" density="compact">
-        <thead>
-          <tr>
-            <th>姓名</th>
-            <th>学号</th>
-            <th>学院</th>
-            <th>专业</th>
-            <th>班级</th>
-            <th>手机号</th>
-            <th>民族</th>
-            <th>政治面貌</th>
-            <th>校区</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="u in userList" :key="u.id">
-            <td>{{ u.name }}</td>
-            <td>{{ u.studentNo }}</td>
-            <td>{{ u.college }}</td>
-            <td>{{ u.major }}</td>
-            <td>{{ u.class }}</td>
-            <td>{{ getPhone(u) }}</td>
-            <td>{{ ethnicGroupName(u.ethnicGroup) }}</td>
-            <td>{{ politicalStatusName(u.politicalStatus) }}</td>
-            <td>{{ u.campus || '—' }}</td>
-            <td>
-              <v-btn size="small" variant="text" @click="openEditDialog(u)">编辑</v-btn>
-            </td>
-          </tr>
-        </tbody>
-      </v-table>
-
-      <div class="d-flex justify-center mt-4" v-if="!loadingList">
-        <v-pagination v-model="page" :length="totalPages" :total-visible="7" @update:model-value="fetchUserList" />
-      </div>
-
-    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
 import type { UserDetailDto } from "~/types";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
 import { useMainStore } from "~/store/mainStore";
 import { UserRole, EthnicGroup, PoliticalStatus } from "~/enums";
@@ -134,20 +82,14 @@ type UserDetailRecord = UserDetailDto & {
   collegeNumber?: number;
 };
 
+const route = useRoute();
+const router = useRouter();
 const store = useMainStore();
 
-const me = ref<UserDetailRecord | null>(null);
-const loadingMe = ref(true);
-
-const userList = ref<UserDetailRecord[]>([]);
-const loadingList = ref(false);
-const page = ref(1);
-const pageSize = 20;
-const totalPages = ref(1);
+const detail = ref<UserDetailRecord | null>(null);
+const loading = ref(true);
 const editDialog = ref(false);
 const savingEdit = ref(false);
-const editingUserId = ref("");
-const editingSelf = ref(false);
 
 const genderOptions = [
   { title: "男", value: 1 },
@@ -187,7 +129,9 @@ const editForm = ref({
   collegeNumber: 1,
 });
 
+const viewingUserId = computed(() => (typeof route.query.id === "string" ? route.query.id : ""));
 const isAdmin = computed(() => store.userRole === UserRole.Administrator);
+const isViewingSelf = computed(() => !viewingUserId.value);
 
 function getPhone(user?: Partial<UserDetailRecord> | null): string {
   if (!user) return "—";
@@ -205,62 +149,49 @@ function politicalStatusName(code?: number): string {
 }
 
 const detailFields = computed(() => [
-  { label: "姓名", value: me.value?.name },
-  { label: "学号", value: me.value?.studentNo },
-  { label: "性别", value: me.value?.gender === 1 ? "男" : me.value?.gender === 2 ? "女" : "—" },
-  { label: "民族", value: ethnicGroupName(me.value?.ethnicGroup) },
-  { label: "出生日期", value: me.value?.dateOfBirth },
-  { label: "学院", value: me.value?.college },
-  { label: "专业", value: me.value?.major },
-  { label: "班级", value: me.value?.class },
-  { label: "手机号", value: getPhone(me.value) },
-  { label: "校区", value: me.value?.campus },
-  { label: "宿舍", value: me.value?.dormitory },
-  { label: "政治面貌", value: politicalStatusName(me.value?.politicalStatus) },
-  { label: "家庭住址", value: me.value?.homeAddress },
-  { label: "英语等级", value: me.value?.englishLevel },
-  { label: "总课程绩点", value: me.value?.gpaOfAllCourses },
-  { label: "专业课程绩点", value: me.value?.gpaOfMajorCourses },
-  { label: "排名", value: me.value?.rank },
-  { label: "学院人数", value: me.value?.collegeNumber },
+  { label: "姓名", value: detail.value?.name },
+  { label: "学号", value: detail.value?.studentNo },
+  { label: "性别", value: detail.value?.gender === 1 ? "男" : detail.value?.gender === 2 ? "女" : "—" },
+  { label: "民族", value: ethnicGroupName(detail.value?.ethnicGroup) },
+  { label: "出生日期", value: detail.value?.dateOfBirth },
+  { label: "学院", value: detail.value?.college },
+  { label: "专业", value: detail.value?.major },
+  { label: "班级", value: detail.value?.class },
+  { label: "手机号", value: getPhone(detail.value) },
+  { label: "校区", value: detail.value?.campus },
+  { label: "宿舍", value: detail.value?.dormitory },
+  { label: "政治面貌", value: politicalStatusName(detail.value?.politicalStatus) },
+  { label: "家庭住址", value: detail.value?.homeAddress },
+  { label: "英语等级", value: detail.value?.englishLevel },
+  { label: "总课程绩点", value: detail.value?.gpaOfAllCourses },
+  { label: "专业课程绩点", value: detail.value?.gpaOfMajorCourses },
+  { label: "排名", value: detail.value?.rank },
+  { label: "学院人数", value: detail.value?.collegeNumber },
 ]);
 
-async function fetchMe(): Promise<void> {
-  loadingMe.value = true;
+async function fetchDetail(): Promise<void> {
+  if (viewingUserId.value && !isAdmin.value) {
+    await router.replace({ path: "/user/detail" });
+    return;
+  }
+
+  loading.value = true;
   try {
-    const res = await axios.get("/user/detail/me");
-    me.value = res.data;
+    const path = viewingUserId.value ? `/user/detail/${viewingUserId.value}` : "/user/detail/me";
+    const res = await axios.get(path);
+    detail.value = res.data;
   } catch (error) {
     console.error(error);
-    ElMessage({ type: "error", message: "获取个人信息失败" });
+    ElMessage({ type: "error", message: "获取用户信息失败" });
+    detail.value = null;
   } finally {
-    loadingMe.value = false;
+    loading.value = false;
   }
 }
 
-async function fetchUserList(): Promise<void> {
-  loadingList.value = true;
-  try {
-    const res = await axios.get("/user/detail", {
-      params: { PageNumber: page.value, PageSize: pageSize },
-    });
-    const data: UserDetailRecord[] = res.data;
-    userList.value = data;
-    // 若响应头包含总数则可精确计算，否则通过返回条数判断是否还有下一页
-    const total = Number(res.headers["x-total-count"] ?? res.headers["x-pagination-totalcount"] ?? 0);
-    totalPages.value = total > 0 ? Math.ceil(total / pageSize) : data.length === pageSize ? page.value + 1 : page.value;
-  } catch (error) {
-    console.error(error);
-    ElMessage({ type: "error", message: "获取用户列表失败" });
-  } finally {
-    loadingList.value = false;
-  }
-}
-
-function openEditDialog(user: UserDetailRecord | null, self = false): void {
-  if (!user) return;
-  editingSelf.value = self;
-  editingUserId.value = user.id;
+function openEditDialog(): void {
+  if (!detail.value) return;
+  const user = detail.value;
   editForm.value = {
     gender: user.gender ?? 1,
     ethnicGroup: user.ethnicGroup ?? 1,
@@ -283,7 +214,6 @@ function openEditDialog(user: UserDetailRecord | null, self = false): void {
 }
 
 async function saveEdit(): Promise<void> {
-  if (!editingUserId.value) return;
   savingEdit.value = true;
   try {
     const payload = {
@@ -304,16 +234,12 @@ async function saveEdit(): Promise<void> {
       rank: Number(editForm.value.rank),
       collegeNumber: Number(editForm.value.collegeNumber),
     };
-    const updatePath = editingSelf.value
-      ? "/user/detail/me"
-      : `/user/detail/${editingUserId.value}`;
+
+    const updatePath = isViewingSelf.value ? "/user/detail/me" : `/user/detail/${viewingUserId.value}`;
     await axios.put(updatePath, payload);
     ElMessage({ type: "success", message: "用户信息更新成功" });
     editDialog.value = false;
-    await fetchMe();
-    if (isAdmin.value) {
-      await fetchUserList();
-    }
+    await fetchDetail();
   } catch (error) {
     console.error(error);
     ElMessage({ type: "error", message: "更新失败，请重试" });
@@ -322,11 +248,15 @@ async function saveEdit(): Promise<void> {
   }
 }
 
-onMounted(async () => {
-  await fetchMe();
-  if (isAdmin.value) {
-    await fetchUserList();
+watch(
+  () => route.query.id,
+  async () => {
+    await fetchDetail();
   }
+);
+
+onMounted(async () => {
+  await fetchDetail();
 });
 </script>
 
@@ -379,18 +309,5 @@ onMounted(async () => {
   font-size: 15px;
   font-weight: 500;
   color: var(--text-color);
-}
-
-#user-list-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--text-color);
-}
-
-#user-detail-table {
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--bd-color);
 }
 </style>
