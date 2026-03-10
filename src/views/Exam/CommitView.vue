@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts" setup>
-import { animate, createSpring, stagger } from "animejs";
+import { animate, spring, stagger } from "animejs";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 // import TeamCell from "~/components/TeamCell.vue";
@@ -111,7 +111,7 @@ const exam = computed(() => {
     delay: stagger(50, {
       start: 200
     }),
-    ease: createSpring(),
+    ease: spring(),
   }))
   return res;
 });
@@ -140,7 +140,7 @@ function inspectProblem(problem: Problem) {
       translateY: [-20, 0],
       opacity: [0, 1],
       delay: stagger(50),
-      ease: createSpring(),
+      ease: spring(),
     })
   })
 }
@@ -190,7 +190,7 @@ onMounted(async () => {
     translateX: [20, 0],
     opacity: [0, 1],
     delay: stagger(50),
-    ease: createSpring(),
+    ease: spring(),
   })
 });
 </script>

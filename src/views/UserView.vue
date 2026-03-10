@@ -1,68 +1,58 @@
 <template>
   <div id="user-page">
-    <div id="user-page-header">
+    <div id="user-page-header" class="user-page-animation">
       <div id="user-page-title">用户管理</div>
-      <div id="user-page-subtitle">点击用户进入详情页进行查看或编辑</div>
     </div>
 
-    <div v-if="loading" class="text-center py-6">
-      <v-progress-circular indeterminate color="primary" />
-    </div>
+    <div class="user-page-animation">
+      <div v-if="loading" class="text-center py-6">
+        <v-progress-circular indeterminate color="primary" />
+      </div>
 
-    <v-table v-else id="user-page-table" density="compact">
-      <thead>
-        <tr>
-          <th>姓名</th>
-          <th>学号</th>
-          <th>学院</th>
-          <th>专业</th>
-          <th>班级</th>
-          <th>手机号</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="u in userList" :key="u.id">
-          <td>{{ u.name }}</td>
-          <td>{{ u.studentNo }}</td>
-          <td>{{ u.college }}</td>
-          <td>{{ u.major }}</td>
-          <td>{{ u.class }}</td>
-          <td>{{ getPhone(u) }}</td>
-          <td>
-            <v-btn size="small" variant="text" @click="openDetail(u.id)">查看详情</v-btn>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
+      <v-table v-else id="user-page-table" density="compact">
+        <thead>
+          <tr>
+            <th>姓名</th>
+            <th>学号</th>
+            <th>邮箱</th>
+            <th>验证</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="u in userList" :key="u.id">
+            <td>{{ u.name }}</td>
+            <td>{{ u.studentNumber }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.enabled ? '是' : '否' }}</td>
+            <td>
+              <v-btn size="small" variant="text" @click="openDetail(u.id)">查看详情</v-btn>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
 
-    <div class="d-flex justify-center mt-4" v-if="!loading">
-      <v-pagination v-model="page" :length="totalPages" :total-visible="7" @update:model-value="fetchUserList" />
+      <div class="d-flex justify-center mt-4" v-if="!loading">
+        <v-pagination v-model="page" :length="totalPages" :total-visible="7" @update:model-value="fetchUserList" />
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import type { UserDetailDto } from "~/types";
+import type { User } from "~/types";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "~/ts/request";
 import { ElMessage } from "element-plus";
-
-type UserDetailRecord = UserDetailDto & {
-  phoneNumber?: string;
-};
+import { animate, spring, stagger } from "animejs";
 
 const router = useRouter();
 const loading = ref(false);
 const page = ref(1);
 const pageSize = 20;
 const totalPages = ref(1);
-const userList = ref<UserDetailRecord[]>([]);
-
-function getPhone(user: UserDetailRecord): string {
-  return user.phoneNumber ?? user.phoneNo ?? "—";
-}
+const userList = ref<User[]>([]);
 
 function openDetail(userId: string): void {
   router.push({ path: "/user/detail", query: { id: userId } });
@@ -71,10 +61,10 @@ function openDetail(userId: string): void {
 async function fetchUserList(): Promise<void> {
   loading.value = true;
   try {
-    const res = await axios.get("/user/detail", {
+    const res = await axios.get<User[]>("/user", {
       params: { PageNumber: page.value, PageSize: pageSize },
     });
-    const data: UserDetailRecord[] = res.data;
+    const data = res.data;
     userList.value = data;
 
     const total = Number(res.headers["x-total-count"] ?? res.headers["x-pagination-totalcount"] ?? 0);
@@ -89,6 +79,12 @@ async function fetchUserList(): Promise<void> {
 
 onMounted(async () => {
   await fetchUserList();
+  animate('.user-page-animation',{
+    translateX: [30, 0],
+    opacity: [0, 1],
+    delay: stagger(80),
+    ease: spring(),
+  })
 });
 </script>
 

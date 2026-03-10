@@ -3,8 +3,8 @@
     <div id="user-detail-header">
       <v-icon size="48" color="primary">mdi-account-circle</v-icon>
       <div>
-        <div id="user-detail-name">{{ detail?.name ?? "加载中..." }}</div>
-        <div id="user-detail-studentno">学号：{{ detail?.studentNo ?? "—" }}</div>
+        <div id="user-detail-name">{{ detail?.user?.name ?? "加载中..." }}</div>
+        <div id="user-detail-studentno">学号：{{ detail?.user?.studentNumber ?? "—" }}</div>
       </div>
     </div>
 
@@ -39,7 +39,7 @@
             <v-text-field v-model="editForm.college" label="学院" density="comfortable" />
             <v-text-field v-model="editForm.major" label="专业" density="comfortable" />
             <v-text-field v-model="editForm.class" label="班级" density="comfortable" />
-            <v-text-field v-model="editForm.campus" label="校区" density="comfortable" />
+            <v-text-field v-model="editForm.seniorHigh" label="高中" density="comfortable" />
             <v-text-field v-model="editForm.dormitory" label="宿舍" density="comfortable" />
             <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌" density="comfortable" item-title="title" item-value="value" />
             <v-text-field v-model="editForm.homeAddress" label="家庭住址" density="comfortable" />
@@ -60,33 +60,20 @@
 </template>
 
 <script lang="ts" setup>
-import type { UserDetailDto } from "~/types";
+import type { AddUserDetailDto, UserDetailDto } from "~/types";
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
 import { useMainStore } from "~/store/mainStore";
 import { UserRole, EthnicGroup, PoliticalStatus } from "~/enums";
 import { ElMessage } from "element-plus";
-
-type UserDetailRecord = UserDetailDto & {
-  gender?: number;
-  ethnicGroup?: number;
-  dateOfBirth?: string;
-  phoneNumber?: string;
-  politicalStatus?: number;
-  homeAddress?: string;
-  englishLevel?: string;
-  gpaOfAllCourses?: number;
-  gpaOfMajorCourses?: number;
-  rank?: number;
-  collegeNumber?: number;
-};
+import { animate, spring, stagger } from "animejs";
 
 const route = useRoute();
 const router = useRouter();
 const store = useMainStore();
 
-const detail = ref<UserDetailRecord | null>(null);
+const detail = ref<UserDetailDto | null>(null);
 const loading = ref(true);
 const editDialog = ref(false);
 const savingEdit = ref(false);
@@ -110,7 +97,7 @@ const politicalStatusOptions = Object.keys(PoliticalStatus)
     value: PoliticalStatus[key as keyof typeof PoliticalStatus] as number,
   }));
 
-const editForm = ref({
+const editForm = ref<AddUserDetailDto>({
   gender: 1,
   ethnicGroup: 1,
   dateOfBirth: "",
@@ -118,7 +105,7 @@ const editForm = ref({
   college: "",
   major: "",
   class: "",
-  campus: "",
+  seniorHigh: "",
   dormitory: "",
   politicalStatus: 1,
   homeAddress: "",
@@ -130,13 +117,8 @@ const editForm = ref({
 });
 
 const viewingUserId = computed(() => (typeof route.query.id === "string" ? route.query.id : ""));
-const isAdmin = computed(() => store.userRole === UserRole.Administrator);
+const isAdmin = computed(() => store.userRole != UserRole.User);
 const isViewingSelf = computed(() => !viewingUserId.value);
-
-function getPhone(user?: Partial<UserDetailRecord> | null): string {
-  if (!user) return "—";
-  return user.phoneNumber ?? user.phoneNo ?? "—";
-}
 
 function ethnicGroupName(code?: number): string {
   if (!code) return "—";
@@ -148,17 +130,22 @@ function politicalStatusName(code?: number): string {
   return PoliticalStatus[code] ?? "—";
 }
 
+function genderName(code?: number): string {
+  if (!code) return "—";
+  return code === 1 ? "男" : code === 2 ? "女" : "—";
+}
+
 const detailFields = computed(() => [
-  { label: "姓名", value: detail.value?.name },
-  { label: "学号", value: detail.value?.studentNo },
-  { label: "性别", value: detail.value?.gender === 1 ? "男" : detail.value?.gender === 2 ? "女" : "—" },
+  { label: "姓名", value: detail.value?.user?.name },
+  { label: "学号", value: detail.value?.user?.studentNumber },
+  { label: "性别", value: genderName(detail.value?.gender) },
   { label: "民族", value: ethnicGroupName(detail.value?.ethnicGroup) },
   { label: "出生日期", value: detail.value?.dateOfBirth },
   { label: "学院", value: detail.value?.college },
   { label: "专业", value: detail.value?.major },
   { label: "班级", value: detail.value?.class },
-  { label: "手机号", value: getPhone(detail.value) },
-  { label: "校区", value: detail.value?.campus },
+  { label: "手机号", value: detail.value?.phoneNumber },
+  { label: "高中", value: detail.value?.seniorHigh },
   { label: "宿舍", value: detail.value?.dormitory },
   { label: "政治面貌", value: politicalStatusName(detail.value?.politicalStatus) },
   { label: "家庭住址", value: detail.value?.homeAddress },
@@ -178,7 +165,7 @@ async function fetchDetail(): Promise<void> {
   loading.value = true;
   try {
     const path = viewingUserId.value ? `/user/detail/${viewingUserId.value}` : "/user/detail/me";
-    const res = await axios.get(path);
+    const res = await axios.get<UserDetailDto>(path);
     detail.value = res.data;
   } catch (error) {
     console.error(error);
@@ -196,11 +183,11 @@ function openEditDialog(): void {
     gender: user.gender ?? 1,
     ethnicGroup: user.ethnicGroup ?? 1,
     dateOfBirth: user.dateOfBirth ?? "",
-    phoneNumber: user.phoneNumber ?? user.phoneNo ?? "",
+    phoneNumber: user.phoneNumber ?? "",
     college: user.college ?? "",
     major: user.major ?? "",
     class: user.class ?? "",
-    campus: user.campus ?? "",
+    seniorHigh: user.seniorHigh ?? "",
     dormitory: user.dormitory ?? "",
     politicalStatus: user.politicalStatus ?? 1,
     homeAddress: user.homeAddress ?? "",
@@ -224,7 +211,7 @@ async function saveEdit(): Promise<void> {
       college: editForm.value.college.trim(),
       major: editForm.value.major.trim(),
       class: editForm.value.class.trim(),
-      campus: editForm.value.campus.trim(),
+      seniorHigh: editForm.value.seniorHigh.trim(),
       dormitory: editForm.value.dormitory.trim(),
       politicalStatus: Number(editForm.value.politicalStatus),
       homeAddress: editForm.value.homeAddress.trim(),
@@ -256,13 +243,27 @@ watch(
 );
 
 onMounted(async () => {
+  animate('#user-detail-page',{
+    translateX: [30, 0],
+    opacity: [0, 1],
+    delay: stagger(80),
+    ease: spring(),
+  })
   await fetchDetail();
+  animate('#user-detail-grid .detail-item',{
+    translateY: [20, 0],
+    opacity: [0, 1],
+    delay: stagger(50,{
+      grid: [3,5]
+    }),
+    ease: spring(),
+  })
 });
 </script>
 
 <style lang="scss">
 #user-detail-page {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 28px 20px;
 }

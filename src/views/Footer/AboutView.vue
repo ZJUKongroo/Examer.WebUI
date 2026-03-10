@@ -13,7 +13,7 @@
     <section>
       <h3 class="mb-4">招生条件</h3>
       <p>
-        <strong>招生对象：</strong>浙江大学2024级理工科学生（包括工试、工信、理试、材化高、应生等大类） <br />
+        <strong>招生对象：</strong>浙江大学2025级理工科学生（包括工试、工信、理试、材化高、应生等大类） <br />
         <strong>招生人数：</strong>50人<br />
         <strong>基本要求：</strong>
       </p>
@@ -48,15 +48,15 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { animate, createSpring, stagger } from 'animejs';
+import { animate, spring, stagger } from 'animejs';
 import qrcodeImg from '~/assets/img/about/qrcode.webp';
 
 onMounted(() => {
   animate('#about-container section', {
     opacity: [0, 1],
     translateY: [-50, 0],
-    delay: stagger(20),
-    ease: createSpring(),
+    delay: stagger(80),
+    ease: spring(),
   });
 });
 </script>
