@@ -2,6 +2,12 @@ export enum UserRole {
     "SuperAdministrator","Administrator","User"
 };
 
+export const enum Gender {
+    Null = 0,
+    男 = 1,
+    女 = 2,
+}
+
 export const enum ExamType {
     UserExam = 1,
     GroupExam = 2
