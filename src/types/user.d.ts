@@ -21,20 +21,6 @@ export interface UserDetailDto {
   user?: User;
 }
 
-export interface UpdateUserDetailDto {
-  gender: number;
-  ethnicGroup: number;
-  dateOfBirth: string;
-  phoneNumber: string;
-  college: string;
-  major: string;
-  class: string;
-  seniorHigh: string;
-  dormitory: string;
-  politicalStatus: number;
-  homeAddress: string;
-}
-
 export interface AddUserDetailDto {
   gender: number;
   ethnicGroup: number;

@@ -39,6 +39,7 @@ const store = useMainStore();
 const options = ref([
   { name: '主页', iconClass: 'mdi-home', path: '/dashboard' },
   { name: '考试管理', iconClass: 'mdi-format-list-bulleted', path: '/exam/edit' },
+  { name: '用户管理', iconClass: 'mdi-account-group',path:'/user' },
 ]);
 
 const exams = computed(() => store.examData);

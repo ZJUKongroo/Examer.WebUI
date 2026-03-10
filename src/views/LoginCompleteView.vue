@@ -27,7 +27,7 @@
         <v-text-field v-model="form.college" label="学院" density="comfortable" placeholder="例如：计算机科学与技术学院" required />
         <v-text-field v-model="form.major" label="专业" density="comfortable" placeholder="例如：软件工程" required />
         <v-text-field v-model="form.class" label="班级" density="comfortable" placeholder="例如：软工2301" required />
-        <v-text-field v-model="form.campus" label="校区" density="comfortable" placeholder="例如：紫金港" required />
+        <v-text-field v-model="form.seniorHigh" label="高中" density="comfortable" placeholder="例如：杭州市高级中学" required />
         <v-text-field v-model="form.dormitory" label="宿舍" density="comfortable" placeholder="例如：丹阳3舍301" required />
         <v-select
           v-model="form.politicalStatus"
@@ -79,9 +79,9 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
-import { animate, createSpring } from "animejs";
+import { animate, spring } from "animejs";
 import { useMainStore } from "~/store/mainStore";
-import { LoginCredientialDto } from "~/types";
+import { AddUserDetailDto, LoginCredientialDto } from "~/types";
 import { EthnicGroup, PoliticalStatus } from "~/enums";
 
 const route = useRoute();
@@ -116,7 +116,7 @@ function getTokenFromQuery(): string {
   return typeof queryToken === "string" ? queryToken.trim() : "";
 }
 
-const form = ref({
+const form = ref<AddUserDetailDto>({
   gender: 1,
   ethnicGroup: 1,
   dateOfBirth: "",
@@ -124,7 +124,7 @@ const form = ref({
   college: "",
   major: "",
   class: "",
-  campus: "",
+  seniorHigh: "",
   dormitory: "",
   politicalStatus: 1,
   homeAddress: "",
@@ -139,13 +139,13 @@ onMounted(() => {
   animate("#register-complete-card", {
     translateY: [20, 0],
     opacity: [0, 1],
-    ease: createSpring(),
+    ease: spring(),
   });
   animate("#register-complete-form", {
     translateX: [20, 0],
     opacity: [0, 1],
     delay: 50,
-    ease: createSpring(),
+    ease: spring(),
   });
 });
 
@@ -164,7 +164,7 @@ function validateForm(): boolean {
     form.value.college.trim().length <= 1 ||
     form.value.major.trim().length <= 1 ||
     form.value.class.trim().length <= 1 ||
-    form.value.campus.trim().length <= 0 ||
+    form.value.seniorHigh.trim().length <= 0 ||
     form.value.dormitory.trim().length <= 0 ||
     form.value.homeAddress.trim().length <= 1 ||
     form.value.englishLevel.trim().length <= 0
@@ -206,7 +206,7 @@ async function submitForm(): Promise<void> {
     let credientials = await axios.post<LoginCredientialDto>(`/authentication/activate/${encodeURIComponent(emailActivateToken)}`);
     store.login(credientials.data);
 
-    const payload = {
+    const payload: AddUserDetailDto = {
       gender: Number(form.value.gender),
       ethnicGroup: Number(form.value.ethnicGroup),
       dateOfBirth: form.value.dateOfBirth,
@@ -214,7 +214,7 @@ async function submitForm(): Promise<void> {
       college: form.value.college.trim(),
       major: form.value.major.trim(),
       class: form.value.class.trim(),
-      campus: form.value.campus.trim(),
+      seniorHigh: form.value.seniorHigh.trim(),
       dormitory: form.value.dormitory.trim(),
       politicalStatus: Number(form.value.politicalStatus),
       homeAddress: form.value.homeAddress.trim(),

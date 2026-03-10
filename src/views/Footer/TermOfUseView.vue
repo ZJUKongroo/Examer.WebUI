@@ -33,14 +33,14 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { animate, createSpring, stagger } from 'animejs';
+import { animate, spring, stagger } from 'animejs';
 
 onMounted(() => {
   animate('#terms-container section', {
     opacity: [0, 1],
     translateY: [-50, 0],
-    delay: stagger(20),
-    ease: createSpring(),
+    delay: stagger(80),
+    ease: spring(),
   });
 });
 </script>
