@@ -16,7 +16,7 @@
             <v-icon>mdi-open-in-new</v-icon>
         </v-btn>
         <div class="mt-2 sidebar-footer-copyright">
-            &copy; 2025 ACEE 
+            &copy; 2026 ACEE 
         </div>
     </div>
 </template>

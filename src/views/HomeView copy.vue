@@ -1,12 +1,14 @@
 <template>
   <div id="home-view">
-    <div id="home-view-bg"></div>
     <section id="home-view-content">
       <p class="eyebrow">ACEE Platform</p>
       <h1>Commitment System</h1>
       <h2>试题提交系统</h2>
 
       <div class="warning-texts">
+        <p class="warning-title">Security Banner</p>
+        <p>DO NOT TRY TO BREAK THIS SYSTEM</p>
+        <p>Otherwise, your eligibility will be revoked</p>
         <p class="warning-title cn">严正警告</p>
         <p>请不要尝试破坏试题提交系统</p>
         <p>否则，我们将按照规定取消您的资格</p>
@@ -23,22 +25,22 @@ import { onMounted } from 'vue';
 
 onMounted(() => {
   animate("#home-view-content *", {
-    translateX: [20, 0],
+    translateY: [18, 0],
     opacity: [0, 1],
     ease: spring(),
-    delay: stagger(80),
+    delay: stagger(70),
   })
-  animate("#home-view-bg", {
-    translateY: [20, 0],
+  animate(".warning-texts", {
+    scale: [0.97, 1],
     opacity: [0, 1],
-    duration: 100,
+    duration: 500,
     ease: spring(),
+    delay: 160,
   })
 })
 </script>
 
-<style>
-
+<style scoped>
 #home-view {
   --home-text-main: #1e293b;
   --home-text-muted: #475569;
@@ -46,33 +48,17 @@ onMounted(() => {
   --home-warning: #b45309;
   --home-contact: #334155;
 
-  padding: 40px;
-  height: 100%;
+  padding: 42px 48px;
+  min-height: 100%;
   width: 100%;
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  color: var(--home-text-main);
+  font-family: 'Aptos', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
-#home-view-bg {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  background-image: url('~/assets/img/homepage_background.png');
-  background-size: 100%;
-  background-position: bottom;
-}
-
-#home-view-content{
-  font-size: 23px;
-}
-
-#home-view h1,
-#home-view h2,
-#home-view h3,
-#home-view h4 {
-  margin-bottom: 10px;
+#home-view-content {
+  width: min(860px, 100%);
 }
 
 .eyebrow {
@@ -84,23 +70,17 @@ onMounted(() => {
   font-weight: 700;
 }
 
-#home-view p {
-  margin: 0 8px 0;
-  font-size: clamp(0.96rem, 1.4vw, 1.08rem);
-  line-height: 1.9;
-}
-
-#home-view h1 {
-  margin: 2px 0 12px;
-  font-size: clamp(3.1rem, 5vw, 5.4rem);
+h1 {
+  margin: 12px 0 2px;
+  font-size: clamp(2.1rem, 4vw, 3.4rem);
   line-height: 1.08;
   letter-spacing: 0.01em;
   font-weight: 760;
 }
 
-#home-view h2 {
+h2 {
   margin: 0 0 24px;
-  font-size: clamp(2.2rem, 2.3vw, 2.85rem);
+  font-size: clamp(1.2rem, 2.3vw, 1.85rem);
   color: var(--home-text-muted);
   font-weight: 620;
 }
@@ -123,9 +103,33 @@ onMounted(() => {
   font-weight: 700;
 }
 
+.warning-title.cn {
+  margin-top: 10px;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+
 .contact {
   margin: 20px 0 0;
   font-size: clamp(0.95rem, 1.5vw, 1.04rem);
   color: var(--home-contact);
+}
+
+@media (max-width: 720px) {
+  #home-view {
+    padding: 24px 18px;
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 8.2vw, 2.4rem);
+  }
+
+  h2 {
+    margin-bottom: 18px;
+  }
+
+  .warning-texts p {
+    line-height: 1.56;
+  }
 }
 </style>
