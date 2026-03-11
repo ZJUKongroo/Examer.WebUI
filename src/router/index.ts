@@ -8,6 +8,7 @@ import { routerSetup } from "./setup";
 import { coreRoutes } from "./corePath";
 const Login = () => import("~/views/LoginView.vue");
 const LoginComplete = () => import("~/views/LoginCompleteView.vue");
+const ResetPassword = () => import("~/views/ResetPasswordView.vue");
 
 const routes:readonly RouteRecordRaw[] = [
   {
@@ -25,6 +26,11 @@ const routes:readonly RouteRecordRaw[] = [
     path: "/login/complete",
     component: LoginComplete,
     meta: { requiresAuth: false, title: "完善注册信息" },
+  },
+  {
+    path: "/login/reset",
+    component: ResetPassword,
+    meta: { requiresAuth: false, title: "重置密码" },
   },
   {
     path: "/unauthorized",
