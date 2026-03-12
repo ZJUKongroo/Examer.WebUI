@@ -17,7 +17,16 @@
                 <h1 class="mb-1">作答信息</h1>
                 <div class="mb-2"><strong>提交时间:</strong> {{ (new Date(answerInfo.commitTime)).toLocaleString() }}</div>
                 <div class="mb-2"><strong>题目名称:</strong> {{ answerInfo.problem.name }}</div>
-                <div class="mb-2"><strong>提交者:</strong> {{ answerInfo.user.name }}</div>
+                <div class="mb-2">
+                  <strong>提交者:</strong>
+                  <v-btn
+                    variant="tonal"
+                    class="problem-review-user-link"
+                    @click="toUserDetail(answerInfo.user.id)"
+                  >
+                    {{ answerInfo.user.name }}
+                  </v-btn>
+                </div>
                 <div class="mb-2">
                   <strong>是否已经评测:</strong>
                   {{ reviewed ? "是" : "否" }}
@@ -71,7 +80,7 @@ import { animate, spring, stagger } from "animejs";
 import axios from '~/ts/request';
 import { onMounted, ref, computed, watch, nextTick } from "vue";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import type { Commit,Marking } from "~/types";
 import { useMainStore } from "~/store/mainStore";
 import { ElMessage} from "element-plus";
@@ -79,6 +88,7 @@ import { openFile } from "~/ts/previewFile";
 
 
 const route = useRoute();
+const router = useRouter();
 const commitId = computed(() => route.query.id as string);
 const store = useMainStore();
 const score = ref<number>(0);
@@ -143,6 +153,13 @@ const submitReview = () => {
   }
 };
 
+function toUserDetail(userId: string) {
+  if (!userId) {
+    return;
+  }
+  router.push({ path: "/user/detail", query: { id: userId } });
+}
+
 async function getCommits() {
   // 获取提交记录
   return new Promise<void>((resolve,) => {
@@ -172,5 +189,12 @@ onMounted(() => init())
   gap: 10%;
   flex-direction: row;
   width: 100%;
+}
+
+.problem-review-user-link {
+  min-width: 0;
+  margin-left: 6px;
+  padding: 0 6px 0 6px;
+  text-transform: none;
 }
 </style>

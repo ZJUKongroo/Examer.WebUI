@@ -1,13 +1,17 @@
 import type { CommitFile } from "~/types";
 import axios from './request'
 import { renderAsync } from 'docx-preview';
-import { ElMessageBox, type Action } from "element-plus";
+import { ElMessage, ElMessageBox, type Action } from "element-plus";
 
 // 添加 docx 到预览类型列表
 const PreviewFileType = ["jpg", "jpeg", "png", "pdf", "tiff", "webp", "mp4", "mp3", "txt", "gif", "wav", "docx"];
 
 export function openFile(file: CommitFile) {
   const fileExtension = file.fileName.split('.').pop()?.toLowerCase();
+  ElMessage({
+    type: 'info',
+    message: '正在获取文件...'
+  })
   axios.get(`/file/blob/${file.id.trim()}`, { responseType: 'blob' }).then((response) => {
     const blob: Blob = response.data;
     const url = URL.createObjectURL(new Blob([blob], {

@@ -6,37 +6,40 @@
         <strong>ACEE</strong> 试题提交系统
       </div>
     </div>
-    <template v-if="pageNotice">
-      <v-alert type="info">
-        {{ pageNotice }}
-      </v-alert>
-    </template>
-    <template v-else>
-      <div class="rowbox" id="login-main" :class="{ registering: isRegistering }">
-        <div style="flex-grow: 3"></div>
-        <div id="login-title">
-          {{ isRegistering ? "注册" : "登录" }}
-        </div>
-        <v-form lazy-validation>
-          <v-text-field v-model="form.studentNumber" label="学号" outlined dense required></v-text-field>
-          <v-text-field v-if="isRegistering" v-model="form.name" label="姓名" type="name" outlined dense
-            required></v-text-field>
-          <v-text-field v-model="form.password" label="密码" type="password" outlined dense required
-            @keyup.enter="submit"></v-text-field>
-        </v-form>
-        <div id="login-button-wrapper">
-          <button type="button" id="login-button" @click="submit" :class="{ 'login-button-active': loading }">
-            <v-icon v-if="loading" class="is-loading" icon="mdi-loading" spin />
-            <v-icon v-else :icon="isRegistering ? 'mdi-email-fast-outline' : 'mdi-arrow-right'" />
-          </button>
-        </div>
-        <div id="toggle-register-wrapper">
-          <v-btn variant="plain" id="toggle-register-button" @click="toggleRegister">
-            {{ isRegistering ? "已有账号？登录" : "没有账号？注册" }}
-          </v-btn>
-        </div>
+    <div class="rowbox" id="login-main" :class="{ registering: isRegistering }">
+      <div style="flex-grow: 3"></div>
+      <template v-if="pageNotice">
+        <v-alert type="info">
+          {{ pageNotice }}
+        </v-alert>
+      </template>
+      <div id="login-title">
+        {{ isRegistering ? "注册" : isRecovering ? "找回" : "登录" }}
       </div>
-    </template>
+      <v-form lazy-validation>
+        <v-text-field v-model="form.studentNumber" label="学号" outlined dense required></v-text-field>
+        <v-text-field v-if="isRegistering" v-model="form.name" label="姓名" type="name" outlined dense
+          required></v-text-field>
+        <v-text-field v-if="!isRecovering" v-model="form.password" label="密码" type="password" outlined dense required
+          @keyup.enter="submit"></v-text-field>
+        <v-text-field v-if="isRegistering" v-model="form.repeatPassword" label="重复密码" type="password" outlined dense
+          required @keyup.enter="submit"></v-text-field>
+      </v-form>
+      <div id="login-button-wrapper">
+        <button type="button" id="login-button" @click="submit" :class="{ 'login-button-active': loading }">
+          <v-icon v-if="loading" class="is-loading" icon="mdi-loading" spin />
+          <v-icon v-else :icon="isRegistering || isRecovering ? 'mdi-email-fast-outline' : 'mdi-arrow-right'" />
+        </button>
+      </div>
+      <div id="toggle-register-wrapper">
+        <v-btn variant="plain" id="toggle-register-button" @click="toggleRegister">
+          {{ isRegistering ? "已有账号？登录" : "没有账号？注册" }}
+        </v-btn>
+        <v-btn variant="plain" id="toggle-recover-button" @click="toggleRecover">
+          {{ isRecovering ? "返回登录" : "忘记密码" }}
+        </v-btn>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -53,13 +56,28 @@ const form = ref({
   studentNumber: "",
   password: "",
   name: "",
+  repeatPassword: "",
 });
 const loading = ref(false);
 const isRegistering = ref(false);
+const isRecovering = ref(false);
 const pageNotice = ref("");
 
 const toggleRegister = () => {
   isRegistering.value = !isRegistering.value;
+  if (isRegistering.value) {
+    isRecovering.value = false;
+  }
+  form.value.password = "";
+  form.value.name = "";
+  form.value.repeatPassword = "";
+};
+
+const toggleRecover = () => {
+  isRecovering.value = !isRecovering.value;
+  if (isRecovering.value) {
+    isRegistering.value = false;
+  }
   form.value.password = "";
   form.value.name = "";
 };
@@ -76,11 +94,28 @@ const router = useRouter();
 
 function submit(): void {
   pageNotice.value = "";
-  if (isRegistering.value) {
+  if (isRecovering.value) {
+    goToRecover();
+  } else if (isRegistering.value) {
     goToRegister();
   } else {
     login();
   }
+}
+
+function checkRecoverPayload(): boolean {
+  const studentNumberPattern = /^\d{10}$/;
+  const { studentNumber } = form.value;
+
+  if (!studentNumber || !studentNumberPattern.test(studentNumber)) {
+    ElMessage({
+      type: "error",
+      message: "学号需为10位数字",
+    });
+    return false;
+  }
+
+  return true;
 }
 
 function checkRegisterPayload(): boolean {
@@ -88,7 +123,7 @@ function checkRegisterPayload(): boolean {
   const passwordPattern = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).{8,}$/;
   const studentNumberPattern = /^\d{10}$/;
 
-  const { name, password, studentNumber } = form.value;
+  const { name, password, studentNumber, repeatPassword } = form.value;
 
   if (
     !name ||
@@ -125,6 +160,14 @@ function checkRegisterPayload(): boolean {
     return false;
   }
 
+  if (password !== repeatPassword) {
+    ElMessage({
+      type: "error",
+      message: "两次输入的密码不一致",
+    });
+    return false;
+  }
+
   return true;
 }
 
@@ -141,7 +184,7 @@ function goToRegister(): void {
   }
   axios.post(`/authentication/register`, payload).then(res => {
     if (res.status === 200) {
-      pageNotice.value = "注册成功，请查看邮箱内的验证码";
+      pageNotice.value = "注册成功，请查看校内邮箱内的验证码";
       toggleRegister();
     }
   }).catch(error => {
@@ -149,6 +192,29 @@ function goToRegister(): void {
     ElMessage({
       type: "error",
       message: "注册失败",
+    });
+  });
+}
+
+function goToRecover(): void {
+  if (!checkRecoverPayload()) {
+    return;
+  }
+
+  const payload = {
+    studentNumber: form.value.studentNumber.trim(),
+  };
+
+  axios.post(`/authentication/forgot-password`, payload).then((res) => {
+    if (res.status === 200) {
+      pageNotice.value = "找回密码邮件已发送，请查收邮箱并按提示重置密码";
+      toggleRecover();
+    }
+  }).catch((error) => {
+    console.log(error);
+    ElMessage({
+      type: "error",
+      message: "发送找回密码邮件失败",
     });
   });
 }
@@ -309,6 +375,10 @@ onMounted(() => {
 #toggle-register-wrapper {
   flex-grow: 1;
   text-align: center;
+}
+
+#toggle-recover-button {
+  margin-left: 4px;
 }
 
 #login-page-notice {
