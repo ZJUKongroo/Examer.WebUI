@@ -2,7 +2,6 @@
   <div id="register-complete-page">
     <div id="register-complete-card">
       <div id="register-complete-title">激活并完善个人信息</div>
-
       <v-form id="register-complete-form" lazy-validation>
         <v-select
           v-model="form.gender"
@@ -23,45 +22,26 @@
           required
         />
         <v-text-field v-model="form.dateOfBirth" type="date" label="出生日期" density="comfortable" placeholder="请选择出生日期" required />
-        <v-text-field v-model="form.phoneNumber" label="手机号" density="comfortable" placeholder="例如：13800138000" required />
-        <v-text-field v-model="form.college" label="学院" density="comfortable" placeholder="例如：计算机科学与技术学院" required />
+        <v-text-field v-model="form.college" label="学院（园）" density="comfortable" placeholder="例如：计算机科学与技术学院" required />
+        <v-text-field v-model="form.homeAddress" label="大类" density="comfortable" placeholder="例如：云峰学园" required />
         <v-text-field v-model="form.major" label="专业" density="comfortable" placeholder="例如：软件工程" required />
         <v-text-field v-model="form.class" label="班级" density="comfortable" placeholder="例如：软工2301" required />
+        <v-text-field v-model="form.phoneNumber" label="手机号" density="comfortable" placeholder="例如：13800138000" required />
         <v-text-field v-model="form.seniorHigh" label="高中" density="comfortable" placeholder="例如：杭州市高级中学" required />
         <v-text-field v-model="form.dormitory" label="宿舍" density="comfortable" placeholder="例如：丹阳3舍301" required />
-        <v-select
-          v-model="form.politicalStatus"
-          :items="politicalStatusOptions"
-          label="政治面貌"
-          density="comfortable"
-          item-title="title"
-          item-value="value"
-          required
-        />
-        <v-text-field v-model="form.homeAddress" label="家庭住址" density="comfortable" placeholder="例如：浙江省杭州市西湖区..." required />
-        <v-text-field v-model="form.englishLevel" label="英语等级" density="comfortable" placeholder="请填写雅思/托福/英语四级/英语六级成绩" required />
+        <v-text-field v-model="form.englishLevel" label="英语等级（填写考试名称和分数）" density="comfortable" placeholder="请填写雅思/托福/英语四级/英语六级成绩" required />
         <v-text-field
           v-model.number="form.gpaOfAllCourses"
           type="number"
           step="0.01"
           min="0"
-          label="总课程绩点"
+          label="总课程均绩"
           density="comfortable"
-          placeholder="填写总课程绩点，例如 3.75"
+          placeholder="填写总课程均绩，例如 3.75"
           required
         />
-        <v-text-field
-          v-model.number="form.gpaOfMajorCourses"
-          type="number"
-          step="0.01"
-          min="0"
-          label="专业课程绩点"
-          density="comfortable"
-          placeholder="填写专业课程绩点，例如 3.82"
-          required
-        />
-        <v-text-field v-model.number="form.rank" type="number" label="排名" density="comfortable" required />
-        <v-text-field v-model.number="form.collegeNumber" type="number" label="学院人数" density="comfortable" required @keyup.enter="submitForm" />
+        <v-text-field v-model.number="form.rank" type="number" label="专业（大类）综合排名" density="comfortable" required />
+        <v-text-field v-model.number="form.collegeNumber" type="number" label="本专业（大类）人数" density="comfortable" required @keyup.enter="submitForm" />
       </v-form>
 
       <div id="register-complete-message" :class="noticeType" v-if="noticeMessage">{{ noticeMessage }}</div>
@@ -82,7 +62,7 @@ import axios from "~/ts/request";
 import { animate, spring } from "animejs";
 import { useMainStore } from "~/store/mainStore";
 import { AddUserDetailDto, LoginCredientialDto } from "~/types";
-import { EthnicGroup, PoliticalStatus } from "~/enums";
+import { EthnicGroup } from "~/enums";
 
 const route = useRoute();
 const router = useRouter();
@@ -102,13 +82,6 @@ const ethnicGroupOptions = Object.keys(EthnicGroup)
   .map((key) => ({
     title: key,
     value: EthnicGroup[key as keyof typeof EthnicGroup] as number,
-  }));
-
-const politicalStatusOptions = Object.keys(PoliticalStatus)
-  .filter((key) => Number.isNaN(Number(key)) && key !== "Null")
-  .map((key) => ({
-    title: key,
-    value: PoliticalStatus[key as keyof typeof PoliticalStatus] as number,
   }));
 
 function getTokenFromQuery(): string {
@@ -177,9 +150,7 @@ function validateForm(): boolean {
   if (
     !Number.isFinite(form.value.gender) ||
     !Number.isFinite(form.value.ethnicGroup) ||
-    !Number.isFinite(form.value.politicalStatus) ||
     !Number.isFinite(form.value.gpaOfAllCourses) ||
-    !Number.isFinite(form.value.gpaOfMajorCourses) ||
     !Number.isFinite(form.value.rank) ||
     !Number.isFinite(form.value.collegeNumber)
   ) {
@@ -188,7 +159,7 @@ function validateForm(): boolean {
     return false;
   }
 
-  if (form.value.gpaOfAllCourses < 0 || form.value.gpaOfMajorCourses < 0) {
+  if (form.value.gpaOfAllCourses < 0) {
     noticeType.value = "error";
     noticeMessage.value = "绩点不能为负数";
     return false;
@@ -216,11 +187,12 @@ async function submitForm(): Promise<void> {
       class: form.value.class.trim(),
       seniorHigh: form.value.seniorHigh.trim(),
       dormitory: form.value.dormitory.trim(),
-      politicalStatus: Number(form.value.politicalStatus),
+      // politicalStatus form input is temporarily disabled; use default value.
+      politicalStatus: 1,
       homeAddress: form.value.homeAddress.trim(),
       englishLevel: form.value.englishLevel.trim(),
       gpaOfAllCourses: Number(form.value.gpaOfAllCourses),
-      gpaOfMajorCourses: Number(form.value.gpaOfMajorCourses),
+      gpaOfMajorCourses:0,
       rank: Number(form.value.rank),
       collegeNumber: Number(form.value.collegeNumber),
     };

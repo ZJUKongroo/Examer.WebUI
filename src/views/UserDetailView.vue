@@ -35,19 +35,20 @@
             <v-select v-model="editForm.gender" :items="genderOptions" label="性别" density="comfortable" item-title="title" item-value="value" />
             <v-select v-model="editForm.ethnicGroup" :items="ethnicGroupOptions" label="民族" density="comfortable" item-title="title" item-value="value" />
             <v-text-field v-model="editForm.dateOfBirth" type="date" label="出生日期" density="comfortable" />
-            <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
-            <v-text-field v-model="editForm.college" label="学院" density="comfortable" />
+            <v-text-field v-model="editForm.college" label="学院（园）" density="comfortable" />
+            <v-text-field v-model="editForm.homeAddress" label="大类" density="comfortable" />
             <v-text-field v-model="editForm.major" label="专业" density="comfortable" />
             <v-text-field v-model="editForm.class" label="班级" density="comfortable" />
+              <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
             <v-text-field v-model="editForm.seniorHigh" label="高中" density="comfortable" />
             <v-text-field v-model="editForm.dormitory" label="宿舍" density="comfortable" />
-            <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌" density="comfortable" item-title="title" item-value="value" />
-            <v-text-field v-model="editForm.homeAddress" label="家庭住址" density="comfortable" />
-            <v-text-field v-model="editForm.englishLevel" label="英语等级" density="comfortable" />
-            <v-text-field v-model.number="editForm.gpaOfAllCourses" type="number" step="0.01" min="0" label="总课程绩点" density="comfortable" />
-            <v-text-field v-model.number="editForm.gpaOfMajorCourses" type="number" step="0.01" min="0" label="专业课程绩点" density="comfortable" />
-            <v-text-field v-model.number="editForm.rank" type="number" label="排名" density="comfortable" />
-            <v-text-field v-model.number="editForm.collegeNumber" type="number" label="学院人数" density="comfortable" />
+            <!-- <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌" density="comfortable" item-title="title" item-value="value" /> -->
+
+            <v-text-field v-model="editForm.englishLevel" label="英语等级（填写考试名称和分数）" density="comfortable" />
+            <v-text-field v-model.number="editForm.gpaOfAllCourses" type="number" step="0.01" min="0" label="总课程均绩" density="comfortable" />
+            <!-- <v-text-field v-model.number="editForm.gpaOfMajorCourses" type="number" step="0.01" min="0" label="专业课程绩点" density="comfortable" /> -->
+            <v-text-field v-model.number="editForm.rank" type="number" label="专业（大类）综合排名" density="comfortable" />
+            <v-text-field v-model.number="editForm.collegeNumber" type="number" label="本专业（大类）人数" density="comfortable" />
           </v-form>
         </v-card-text>
         <v-card-actions class="justify-end">
@@ -141,19 +142,19 @@ const detailFields = computed(() => [
   { label: "性别", value: genderName(detail.value?.gender) },
   { label: "民族", value: ethnicGroupName(detail.value?.ethnicGroup) },
   { label: "出生日期", value: detail.value?.dateOfBirth },
-  { label: "学院", value: detail.value?.college },
+  { label: "学院（园）", value: detail.value?.college },
+  { label: "大类", value: detail.value?.homeAddress },
   { label: "专业", value: detail.value?.major },
   { label: "班级", value: detail.value?.class },
   { label: "手机号", value: detail.value?.phoneNumber },
   { label: "高中", value: detail.value?.seniorHigh },
   { label: "宿舍", value: detail.value?.dormitory },
-  { label: "政治面貌", value: politicalStatusName(detail.value?.politicalStatus) },
-  { label: "家庭住址", value: detail.value?.homeAddress },
-  { label: "英语等级", value: detail.value?.englishLevel },
-  { label: "总课程绩点", value: detail.value?.gpaOfAllCourses },
-  { label: "专业课程绩点", value: detail.value?.gpaOfMajorCourses },
-  { label: "排名", value: detail.value?.rank },
-  { label: "学院人数", value: detail.value?.collegeNumber },
+  // { label: "政治面貌", value: politicalStatusName(detail.value?.politicalStatus) },
+  { label: "英语等级（填写考试名称和分数）", value: detail.value?.englishLevel },
+  { label: "总课程均绩", value: detail.value?.gpaOfAllCourses },
+  // { label: "专业课程绩点", value: detail.value?.gpaOfMajorCourses },
+  { label: "专业（大类）综合排名", value: detail.value?.rank },
+  { label: "本专业（大类）人数", value: detail.value?.collegeNumber },
 ]);
 
 async function fetchDetail(): Promise<void> {
@@ -186,14 +187,14 @@ function openEditDialog(): void {
     phoneNumber: user.phoneNumber ?? "",
     college: user.college ?? "",
     major: user.major ?? "",
+    homeAddress: user.homeAddress ?? "",
     class: user.class ?? "",
     seniorHigh: user.seniorHigh ?? "",
     dormitory: user.dormitory ?? "",
-    politicalStatus: user.politicalStatus ?? 1,
-    homeAddress: user.homeAddress ?? "",
+    // politicalStatus: user.politicalStatus ?? 1,
     englishLevel: user.englishLevel ?? "",
     gpaOfAllCourses: user.gpaOfAllCourses ?? 0,
-    gpaOfMajorCourses: user.gpaOfMajorCourses ?? 0,
+    // gpaOfMajorCourses: user.gpaOfMajorCourses ?? 0,
     rank: user.rank ?? 1,
     collegeNumber: user.collegeNumber ?? 1,
   };
@@ -213,11 +214,12 @@ async function saveEdit(): Promise<void> {
       class: editForm.value.class.trim(),
       seniorHigh: editForm.value.seniorHigh.trim(),
       dormitory: editForm.value.dormitory.trim(),
-      politicalStatus: Number(editForm.value.politicalStatus),
+      // politicalStatus: Number(editForm.value.politicalStatus),
+      politicalStatus: 1,
       homeAddress: editForm.value.homeAddress.trim(),
       englishLevel: editForm.value.englishLevel.trim(),
       gpaOfAllCourses: Number(editForm.value.gpaOfAllCourses),
-      gpaOfMajorCourses: Number(editForm.value.gpaOfMajorCourses),
+      gpaOfMajorCourses:0,
       rank: Number(editForm.value.rank),
       collegeNumber: Number(editForm.value.collegeNumber),
     };
