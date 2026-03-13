@@ -51,10 +51,13 @@ import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
 import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
+import { LoginCredientialDto } from "~/types";
+import { useMainStore } from "~/store/mainStore";
 
 const route = useRoute();
 const router = useRouter();
 
+const store = useMainStore();
 const loading = ref(false);
 const resetToken = ref("");
 const pageNotice = ref("");
@@ -62,6 +65,10 @@ const form = ref({
   password: "",
   confirmPassword: "",
 });
+
+function goToLogin(): void {
+  router.push("/login");
+}
 
 function checkPayload(): boolean {
   const passwordPattern = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).{8,}$/;
@@ -90,10 +97,6 @@ function checkPayload(): boolean {
   return true;
 }
 
-function goToLogin(): void {
-  router.push("/login");
-}
-
 async function submit(): Promise<void> {
   if (!checkPayload()) {
     return;
@@ -101,16 +104,17 @@ async function submit(): Promise<void> {
 
   loading.value = true;
   try {
-    const res = await axios.post(`/authentication/reset-password`, {
-      token: resetToken.value,
-      newPassword: form.value.password,
+    const res = await axios.put<LoginCredientialDto>(`/authentication/password`, {
+      passwordResetToken: resetToken.value,
+      password: form.value.password,
     });
     if (res.status === 200) {
       ElMessage({
         type: "success",
-        message: "密码重置成功，请重新登录",
+        message: "密码重置成功",
       });
-      goToLogin();
+      store.login(res.data);
+      router.push("/user/detail");
     }
   } catch (error) {
     console.log(error);

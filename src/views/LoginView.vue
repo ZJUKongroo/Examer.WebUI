@@ -183,7 +183,7 @@ function goToRegister(): void {
     email: `${studentNumber}@zju.edu.cn`
   }
   axios.post(`/authentication/register`, payload).then(res => {
-    if (res.status === 200) {
+    if (200 <= res.status && res.status <= 299) {
       pageNotice.value = "注册成功，请查看校内邮箱内的验证码";
       toggleRegister();
     }
@@ -201,12 +201,8 @@ function goToRecover(): void {
     return;
   }
 
-  const payload = {
-    studentNumber: form.value.studentNumber.trim(),
-  };
-
-  axios.post(`/authentication/forgot-password`, payload).then((res) => {
-    if (res.status === 200) {
+  axios.post(`/authentication/reset/${form.value.studentNumber.trim()}`).then((res) => {
+    if (200 <= res.status && res.status <= 299) {
       pageNotice.value = "找回密码邮件已发送，请查收邮箱并按提示重置密码";
       toggleRecover();
     }

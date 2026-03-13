@@ -11,6 +11,14 @@
                     <span>个人赛</span>
                 </template>
             </v-switch>
+            <v-switch v-model="form.isPublic" :true-value="true" :false-value="false">
+                <template #label>
+                    <span>公开赛</span>
+                </template>
+                <template #prepend>
+                    <span>内部赛</span>
+                </template>
+            </v-switch>
             <div class="exam-create-time-picker">
                 <v-menu v-model="menuVisible.startDate" :close-on-content-click="false" transition="scale-transition"
                     offset-y min-width="290px">
@@ -78,6 +86,7 @@ const form = ref({
     endTime: "00:00",
     endDate: new Date(),
     examType: ExamType.UserExam,
+    isPublic: true,
 });
 
 function mergeDateAndTime(date: Date, timeString: string): string {
@@ -98,6 +107,7 @@ const submitForm = () => {
         examType: form.value.examType,
         startTime: mergeDateAndTime(form.value.startDate, form.value.startTime),
         endTime: mergeDateAndTime(form.value.endDate, form.value.endTime),
+        isPublic: form.value.isPublic,
     };
     axios
         .post<Exam>("/Exam", newExam)
