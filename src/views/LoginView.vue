@@ -74,6 +74,7 @@ const toggleRegister = () => {
   if (isRegistering.value) {
     isRecovering.value = false;
   }
+  form.value.studentNumber = "";
   form.value.password = "";
   form.value.name = "";
   form.value.repeatPassword = "";
@@ -192,6 +193,12 @@ function goToRegister(): void {
     if (200 <= res.status && res.status <= 299) {
       pageNotice.value = "注册成功，请查看校内邮箱内的验证码";
       toggleRegister();
+    }
+    else if (res.status === 409) {
+      ElMessage({
+        type: "warning",
+        message: "该学号已被注册",
+      });
     }
   }).catch(error => {
     console.log(error);
