@@ -43,7 +43,7 @@
 import type { User } from "~/types";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import axios from "~/ts/request";
+import { getUserList } from "~/api/modules/user.api";
 import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
 
@@ -61,14 +61,17 @@ function openDetail(userId: string): void {
 async function fetchUserList(): Promise<void> {
   loading.value = true;
   try {
-    const res = await axios.get<User[]>("/user", {
-      params: { PageNumber: page.value, PageSize: pageSize },
+    const result = await getUserList({
+      pageNumber: page.value,
+      pageSize,
     });
-    const data = res.data;
-    userList.value = data;
-
-    const total = Number(res.headers["x-total-count"] ?? res.headers["x-pagination-totalcount"] ?? 0);
-    totalPages.value = total > 0 ? Math.ceil(total / pageSize) : data.length === pageSize ? page.value + 1 : page.value;
+    userList.value = result.items;
+    totalPages.value =
+      result.totalCount > 0
+        ? Math.ceil(result.totalCount / pageSize)
+        : result.items.length === pageSize
+          ? page.value + 1
+          : page.value;
   } catch (error) {
     console.error(error);
     ElMessage({ type: "error", message: "获取用户列表失败" });

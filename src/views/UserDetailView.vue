@@ -64,7 +64,7 @@
 import type { AddUserDetailDto, UserDetailDto } from "~/types";
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "~/ts/request";
+import { getUserDetail, updateUserDetail } from "~/api";
 import { useMainStore } from "~/store/mainStore";
 import { UserRole, EthnicGroup } from "~/enums";
 import { ElMessage } from "element-plus";
@@ -165,9 +165,7 @@ async function fetchDetail(): Promise<void> {
 
   loading.value = true;
   try {
-    const path = viewingUserId.value ? `/user/detail/${viewingUserId.value}` : "/user/detail/me";
-    const res = await axios.get<UserDetailDto>(path);
-    detail.value = res.data;
+    detail.value = await getUserDetail(viewingUserId.value || undefined);
   } catch (error) {
     console.error(error);
     ElMessage({ type: "error", message: "获取用户信息失败" });
@@ -224,8 +222,7 @@ async function saveEdit(): Promise<void> {
       collegeNumber: Number(editForm.value.collegeNumber),
     };
 
-    const updatePath = isViewingSelf.value ? "/user/detail/me" : `/user/detail/${viewingUserId.value}`;
-    await axios.put(updatePath, payload);
+    await updateUserDetail(payload, isViewingSelf.value ? undefined : viewingUserId.value);
     ElMessage({ type: "success", message: "用户信息更新成功" });
     editDialog.value = false;
     await fetchDetail();
