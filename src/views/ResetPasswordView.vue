@@ -48,10 +48,10 @@
 <script lang="ts" setup>
 import { ref, onMounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "~/ts/request";
+import { resetPassword } from "~/api";
+import { handleApiError } from "~/api/error";
 import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
-import type { LoginCredientialDto } from "~/types";
 import { useMainStore } from "~/store/mainStore";
 
 const route = useRoute();
@@ -104,7 +104,7 @@ async function submit(): Promise<void> {
 
   loading.value = true;
   try {
-    const res = await axios.put<LoginCredientialDto>(`/authentication/password`, {
+    const res = await resetPassword({
       passwordResetToken: resetToken.value,
       password: form.value.password,
     });
@@ -117,11 +117,7 @@ async function submit(): Promise<void> {
       router.push("/user/detail");
     }
   } catch (error) {
-    console.log(error);
-    ElMessage({
-      type: "error",
-      message: "密码重置失败，请重新获取邮件链接",
-    });
+    handleApiError(error, { fallbackMessage: "密码重置失败，请重新获取邮件链接" });
   } finally {
     loading.value = false;
   }

@@ -1,6 +1,7 @@
 import type { AddUserDetailDto, User, UserDetailDto } from "~/types";
-import { put, get } from "~/api/http/request";
+import { put, get, post } from "~/api/http/request";
 import { usePagination } from "~/composables/usePagination";
+import { validateUserDetailPayload, validateUserId } from "~/api/validation/user.validation";
 
 export interface GetUserListParams {
   pageNumber: number;
@@ -27,13 +28,16 @@ export async function getUserList(params: GetUserListParams): Promise<UserListRe
 }
 
 export async function getUserDetail(userId?: string): Promise<UserDetailDto> {
-  const path = userId ? `/user/detail/${userId}` : "/user/detail/me";
+  const path = userId ? `/user/detail/${validateUserId(userId)}` : "/user/detail/me";
   const response = await get<UserDetailDto>(path);
-    return response.data;
+  return response.data;
 }
 
 export async function updateUserDetail(payload: AddUserDetailDto, userId?: string): Promise<void> {
-  const path = userId ? `/user/detail/${userId}` : "/user/detail/me";
-  await put<void, AddUserDetailDto>(path, payload);
-    return;
+  const path = userId ? `/user/detail/${validateUserId(userId)}` : "/user/detail/me";
+  await put<void, AddUserDetailDto>(path, validateUserDetailPayload(payload));
+}
+
+export async function createUserDetail(payload: AddUserDetailDto): Promise<void> {
+  await post<void, AddUserDetailDto>("/user/detail", validateUserDetailPayload(payload));
 }

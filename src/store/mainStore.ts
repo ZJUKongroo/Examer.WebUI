@@ -1,11 +1,11 @@
-import axios from '~/ts/request';
 import { defineStore } from 'pinia';
 import { ref, computed} from 'vue';
 import { UserRole } from '~/enums';
 import type { Exam, LoginCredientialDto } from '~/types';
-import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { getSecureItem, setSecureItem } from '~/ts/encrypt';
+import { getExamList } from '~/api';
+import { handleApiError } from '~/api/error';
 
 export const useMainStore = defineStore('main', () => {
   const token = ref<string>(getSecureItem('token') || '');
@@ -57,13 +57,10 @@ export const useMainStore = defineStore('main', () => {
     if(isLoggedIn.value) {
       loading.value = true;
       try {
-        const response = await axios.get('/Exam');
+        const response = await getExamList();
         examData.value = response.data;
       } catch (error) {
-        ElMessage({
-          type: "error",
-          message: "获取考试数据失败"
-        })
+        handleApiError(error, { fallbackMessage: "获取考试数据失败" });
       }finally{
         loading.value = false;
       }

@@ -58,10 +58,11 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "~/ts/request";
+import { activateAccount, createUserDetail } from "~/api";
+import { getApiErrorMessage } from "~/api/error";
 import { animate, spring } from "animejs";
 import { useMainStore } from "~/store/mainStore";
-import type { AddUserDetailDto, LoginCredientialDto } from "~/types";
+import type { AddUserDetailDto } from "~/types";
 import { EthnicGroup } from "~/enums";
 
 const route = useRoute();
@@ -174,7 +175,7 @@ async function submitForm(): Promise<void> {
   submitting.value = true;
   try {
     const emailActivateToken = getTokenFromQuery();
-    let credientials = await axios.post<LoginCredientialDto>(`/authentication/activate/${encodeURIComponent(emailActivateToken)}`);
+    const credientials = await activateAccount(emailActivateToken);
     store.login(credientials.data);
 
     const payload: AddUserDetailDto = {
@@ -197,12 +198,13 @@ async function submitForm(): Promise<void> {
       collegeNumber: Number(form.value.collegeNumber),
     };
 
-    await axios.post("/user/detail", payload);
+    await createUserDetail(payload);
     router.push("/user/detail");
   } catch (error) {
-    console.error(error);
     noticeType.value = "error";
-    noticeMessage.value = "提交失败，请检查 token 与表单信息后重试";
+    noticeMessage.value = getApiErrorMessage(error, {
+      fallbackMessage: "提交失败，请检查 token 与表单信息后重试",
+    });
   } finally {
     submitting.value = false;
   }

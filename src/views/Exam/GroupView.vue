@@ -124,9 +124,20 @@ import { computed, nextTick, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import type { ExamType } from "~/enums";
-import axios from '~/ts/request';
-import type { Group, Pagination, User } from '~/types';
+import {
+  addGroupMembers,
+  assignExamMembers,
+  createGroup,
+  deleteGroup as removeGroup,
+  getExamGroups,
+  getGroupList,
+  getUsers,
+  removeGroupMembers,
+  updateGroup,
+} from '~/api';
+import { handleApiError } from '~/api/error';
+import { usePagination } from '~/composables/usePagination';
+import type { Group, User } from '~/types';
 
 const users = ref<User[]>([]);
 const groups = ref<Group[]>([]);
@@ -213,17 +224,15 @@ const onDrop = async (group: Group) => {
   if (user && from?.id !== group.id) {
     try {
       if (from) {
-        await axios.delete(`/group/distribution/${from.id}`, {
-          data: [user.id]
-        }); // Remove from Group
+        await removeGroupMembers(from.id, [user.id]); // Remove from Group
         from.users = from.users.filter((u) => u.id !== user.id);
       }
       else users.value = users.value.filter((u) => u.id !== user.id);
       group.users.push(user);
-      await axios.post(`/group/distribution/${group.id}`, [user.id]); // Assign to Group
+      await addGroupMembers(group.id, [user.id]); // Assign to Group
     }
     catch (error) {
-      ElMessage.error("分配组失败");
+      handleApiError(error, { fallbackMessage: "分配组失败" });
     }
   }
   draggingInfo.value = null;
@@ -236,13 +245,11 @@ const onDropUndistributed = async () => {
   if (user && from) {
     try {
       users.value.push(user);
-      await axios.delete(`/group/distribution/${from.id}`, {
-        data: [user.id]
-      }); // Remove from Group
+      await removeGroupMembers(from.id, [user.id]); // Remove from Group
       from.users = from.users.filter((u) => u.id !== user.id);
     }
     catch (error) {
-      ElMessage.error("移出组失败");
+      handleApiError(error, { fallbackMessage: "移出组失败" });
     }
   }
   draggingInfo.value = null;
@@ -264,7 +271,7 @@ const handleNewGroup = async () => {
 
     // 1. 如果用户来自某个组，先从原组移除
     if (from) {
-      await axios.delete(`/group/distribution/${from.id}`, { data: [user.id] });
+      await removeGroupMembers(from.id, [user.id]);
       from.users = from.users.filter(u => u.id !== user.id);
     }
 
@@ -274,17 +281,17 @@ const handleNewGroup = async () => {
 
     try {
       // 2. 创建新组
-      const { data } = await axios.post<Group>(`/group`, {
+      const { data } = await createGroup({
         name: "新组",
         description: ""
       });
       createdGroupId = data.id;
 
       // 3. 分配用户到新组
-      await axios.post(`/group/distribution/${data.id}`, [user.id]);
+      await addGroupMembers(data.id, [user.id]);
 
       // 4. 分配组到考试
-      await axios.post(`/exam/assignment/${examId.value}`, [data.id]);
+      await assignExamMembers(examId.value, [data.id]);
 
       // 5. 更新UI状态
       data.users.push(user);
@@ -300,7 +307,7 @@ const handleNewGroup = async () => {
       // 尝试清理失败的组
       if (createdGroupId) {
         try {
-          await axios.delete(`/group/${createdGroupId}`);
+          await removeGroup(createdGroupId);
         } catch (cleanupError) {
           console.error("清理失败组时出错:", cleanupError);
         }
@@ -309,8 +316,7 @@ const handleNewGroup = async () => {
       throw error; // 向上传递错误
     }
   } catch (error) {
-    console.error("操作失败:", error);
-    ElMessage.error("新建组失败");
+    handleApiError(error, { fallbackMessage: "新建组失败" });
   } finally {
     // 无论成功失败都清理拖拽状态
     draggingInfo.value = null;
@@ -362,7 +368,7 @@ const importGroupsFromFile = async () => {
         let newGroup: Group | null = null;
         try {
           // 1. 创建新组
-          const { data } = await axios.post<Group>('/group', {
+          const { data } = await createGroup({
             name: groupName,
             description: ""
           });
@@ -383,7 +389,7 @@ const importGroupsFromFile = async () => {
           if (member.length > 0) {
             // 3. 分配用户到新组
             const memberId = member.map(user => user.id);
-            await axios.post(`/group/distribution/${newGroup.id}`, memberId);
+            await addGroupMembers(newGroup.id, memberId);
             newGroup.users = member;
             createdGroups.push(newGroup);
             // 从未分配列表移除
@@ -394,12 +400,12 @@ const importGroupsFromFile = async () => {
         } catch (error) {
           if (newGroup) {
             // 清理失败的组
-            await axios.delete(`/group/${newGroup.id}`);
+            await removeGroup(newGroup.id);
           }
           console.error(`创建组 "${groupName}" 失败:`, error);
         }
       }
-      await axios.post(`/exam/assignment/${examId.value}`, createdGroups.map(group => group.id));
+      await assignExamMembers(examId.value, createdGroups.map(group => group.id));
       examGroup.value = examGroup.value.concat(createdGroups);
 
       ElMessage.success(`成功导入 ${importStatus.value.current} 个分组`);
@@ -439,12 +445,12 @@ async function handleAutoGroup(groupSize: number, nameFormat: string, force = fa
     const groupPromises = Array.from({ length: numberOfGroups }, async (_, i) => {
       const groupUsers = users.value.slice(i * groupSize, (i + 1) * groupSize);
       const groupName = nameFormat.replace('%number%', (i + 1).toString());
-      const { data } = await axios.post<Group>(`/group`, {
+      const { data } = await createGroup({
         name: groupName,
         description: ""
       });
-      await axios.post(`/group/distribution/${data.id}`, groupUsers.map(user => user.id));
-      await axios.post(`/exam/assignment/${examId.value}`, [data.id]);
+      await addGroupMembers(data.id, groupUsers.map(user => user.id));
+      await assignExamMembers(examId.value, [data.id]);
       data.users = groupUsers;
       newGroups.push(data);
       autoGroupingStatus.value.current++;
@@ -465,7 +471,7 @@ async function handleAutoGroup(groupSize: number, nameFormat: string, force = fa
     autoGroupFormVisible.value = false;
     ElMessage.success("自动分组成功");
   } catch (error) {
-    ElMessage.error("新建组失败");
+    handleApiError(error, { fallbackMessage: "新建组失败" });
   }
 }
 
@@ -474,11 +480,11 @@ const deleteGroup = (id: string) => {
   const groupIndex = examGroup.value.findIndex((group) => group.id === id);
   const [group] = examGroup.value.splice(groupIndex, 1);
   if (group) {
-    axios.delete(`/group/${group.id}`).then(() => {
+    removeGroup(group.id).then(() => {
       users.value = users.value.concat(group.users);
       ElMessage.success("删除组成功");
-    }).catch(() => {
-      ElMessage.error("删除组失败");
+    }).catch((error) => {
+      handleApiError(error, { fallbackMessage: "删除组失败" });
     });
   }
 };
@@ -494,56 +500,48 @@ const changeGroupName = (id: string) => {
 const confirmChangeGroupName = async (id: string) => {
   const group = examGroup.value.find((group) => group.id === id)
   if (group) try {
-    await axios.put(`/group/${group.id}`, {
+    await updateGroup(group.id, {
       name: newName.value,
-      description: null
+      description: ""
     });
     group.name = newName.value;
     editingGroup.value = "";
     ElMessage.success("修改组名成功");
   }
     catch (error) {
-      ElMessage.error("修改组名失败");
+      handleApiError(error, { fallbackMessage: "修改组名失败" });
     }
 };
 
 async function getAllUser() {
-  let res = await axios.get<User[]>(`/user`, {
-    params: {
-      pagenumber: 1,
-      pagesize: defaultPageSize
-    }
+  let res = await getUsers({
+    pageNumber: 1,
+    pageSize: defaultPageSize,
   });
-  const pagination: Pagination = JSON.parse(res.headers['x-pagination']);
+  const totalCount = usePagination(res.headers);
   // 后端的分页不能清除
   // 先用小的分页大小获取totalCount, 再获取所有用户
-  if (pagination.totalCount > defaultPageSize) {
-    res = await axios.get<User[]>(`/user`, {
-      params: {
-        pagenumber: 1,
-        pagesize: pagination.totalCount
-      }
+  if (totalCount > defaultPageSize) {
+    res = await getUsers({
+      pageNumber: 1,
+      pageSize: totalCount,
     });
   }
   users.value = res.data;
 }
 
 async function getAllGroup() {
-  let res = await axios.get<Group[]>(`/group`, {
-    params: {
-      pagenumber: 1,
-      pagesize: defaultPageSize
-    }
+  let res = await getGroupList({
+    pageNumber: 1,
+    pageSize: defaultPageSize,
   });
-  const pagination: Pagination = JSON.parse(res.headers['x-pagination']);
+  const totalCount = usePagination(res.headers);
   // 后端的分页不能清除
   // 先用小的分页大小获取totalCount, 再获取所有组
-  if (pagination.totalCount > defaultPageSize) {
-    res = await axios.get<Group[]>(`/group`, {
-      params: {
-        pagenumber: 1,
-        pagesize: pagination.totalCount
-      }
+  if (totalCount > defaultPageSize) {
+    res = await getGroupList({
+      pageNumber: 1,
+      pageSize: totalCount,
     });
   }
   groups.value = res.data;
@@ -551,15 +549,7 @@ async function getAllGroup() {
 // 上面的都是非常低效的代码，前后端一定要做好沟通！
 
 async function getExamGroup() {
-  interface ExamGroupResponse {
-    id: string,
-    name: string,
-    examType: ExamType,
-    startTime: string,
-    endTime: string,
-    users: string[]
-  }
-  const res = await axios.get<ExamGroupResponse>(`/exam/groups/${examId.value.trim()}`);
+  const res = await getExamGroups(examId.value.trim());
   examGroup.value = groups.value.filter(group =>
     res.data.users.includes(group.id)
   );

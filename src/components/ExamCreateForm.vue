@@ -67,8 +67,8 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ExamType } from '~/enums';
 import { useMainStore } from '~/store/mainStore';
-import axios from '~/ts/request';
-import type { Exam } from '~/types';
+import { createExam } from '~/api';
+import { handleApiError } from '~/api/error';
 import { VTimePicker } from 'vuetify/labs/VTimePicker'
 
 const menuVisible = ref({
@@ -101,7 +101,7 @@ function mergeDateAndTime(date: Date, timeString: string): string {
     return result.toISOString();
 }
 
-const submitForm = () => {
+const submitForm = async () => {
     const newExam = {
         name: form.value.name,
         examType: form.value.examType,
@@ -109,19 +109,18 @@ const submitForm = () => {
         endTime: mergeDateAndTime(form.value.endDate, form.value.endTime),
         isPublic: form.value.isPublic,
     };
-    axios
-        .post<Exam>("/Exam", newExam)
-        .then(({ data }) => {
-            store.refreshExamData();
-            ElMessage.success("已新建考试");
-            if (form.value.examType === ExamType.GroupExam) {
-                openPath("/exam/group", { id: data.id });
-            }
-            else openPath("/exam/candidate", { id: data.id });
-        })
-        .catch(() => {
-            ElMessage.error("新建考试失败");
-        });
+    try {
+        const response = await createExam(newExam);
+        const data = response.data;
+        store.refreshExamData();
+        ElMessage.success("已新建考试");
+        if (form.value.examType === ExamType.GroupExam) {
+            openPath("/exam/group", { id: data.id });
+        }
+        else openPath("/exam/candidate", { id: data.id });
+    } catch (error) {
+        handleApiError(error, { fallbackMessage: "新建考试失败" });
+    }
 };
 
 function openPath(path: string, query?: any) {

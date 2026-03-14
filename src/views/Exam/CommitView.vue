@@ -91,9 +91,10 @@ import { useRouter } from "vue-router";
 // import TeamCell from "~/components/TeamCell.vue";
 import { ExamType } from "~/enums";
 import { useMainStore } from "~/store/mainStore";
-import type { Commit, Exam, Group, Problem } from "~/types";
+import type { Commit, Exam, Problem } from "~/types";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import axios from '~/ts/request'
+import { getCommitList, getUserGroups } from '~/api';
+import { handleApiError } from '~/api/error';
 import CRMenu from "~/components/UI/CRMenu.vue";
 import CRMenuCell from "~/components/UI/CRMenuCell.vue";
 import CDialog from "~/components/UI/CDialog.vue";
@@ -159,26 +160,22 @@ function openProblem(problem: Problem) {
 async function getCommitStatus(exam: Exam) {
   let userId = store.userId;
   if(exam.examType === ExamType.GroupExam){
-    const groupInfo = (await axios.get<Group[]>(`/user/groups/${store.userId}`,{
-      params:{
-        examId: examId.value
-      }
-    })).data;
+    const groupInfo = (await getUserGroups(store.userId, examId.value)).data;
     if(groupInfo.length>0) userId = groupInfo[0].id;
   }
-  for (const problem of exam.problems) {
-    axios.get<Commit[]>(`/Commit`, {
-      params: {
+  try {
+    await Promise.all(exam.problems.map(async (problem) => {
+      const { data } = await getCommitList({
         examId: exam.id,
         problemId: problem.id,
         userId: userId
+      });
+      if (data.length > 0) {
+        commitStatus.value[problem.id] = data[0];
       }
-    })
-      .then(({ data }) => {
-        if (data.length > 0) {
-          commitStatus.value[problem.id] = data[0];
-        }
-      })
+    }));
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "获取提交状态失败" });
   }
 }
 

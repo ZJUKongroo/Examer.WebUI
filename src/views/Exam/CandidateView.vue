@@ -54,9 +54,10 @@ import { ElMessage } from 'element-plus';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import UniversalHeader from '~/components/UniversalHeader.vue';
-import type { ExamType } from '~/enums';
-import axios from '~/ts/request';
-import type { Pagination, User } from '~/types';
+import { assignExamMembers, getExamUsers, getUsers, unassignExamMembers } from '~/api';
+import { handleApiError } from '~/api/error';
+import { usePagination } from '~/composables/usePagination';
+import type { User } from '~/types';
 
 const route = useRoute();
 const searchQuery = ref({
@@ -103,62 +104,57 @@ const totalPages = computed(()=>{
 // 非常繁复的代码 :(
 
 // 添加参试人员
-function handleParticipate(candidate: User, index: number) {
-  axios.post(`/exam/assignment/${examId.value}`, [candidate.id]).then(() => {
+async function handleParticipate(candidate: User, index: number) {
+  try {
+    await assignExamMembers(examId.value, [candidate.id]);
     participants.value = participants.value.concat(candidates.value.splice(index, 1));
-    ElMessage.success("操作成功")
-  });
+    ElMessage.success("操作成功");
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "操作失败" });
+  }
 }
 // 添加所有参试人员
-function handleAllParticipate() {
-  axios.post(`/exam/assignment/${examId.value}`, candidates.value.map(candidate => candidate.id)).then(() => {
+async function handleAllParticipate() {
+  try {
+    await assignExamMembers(examId.value, candidates.value.map(candidate => candidate.id));
     participants.value = participants.value.concat(candidates.value);
     candidates.value = [];
-    ElMessage.success("操作成功")
-  });
+    ElMessage.success("操作成功");
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "操作失败" });
+  }
 }
 // 删除参试人员
-function handleCandidate(participant: User, index: number) {
-  axios.delete(`/exam/assignment/${examId.value}`, {
-    data: [participant.id]
-  }).then(() => {
+async function handleCandidate(participant: User, index: number) {
+  try {
+    await unassignExamMembers(examId.value, [participant.id]);
     candidates.value = candidates.value.concat(participants.value.splice(index, 1));
-    ElMessage.success("操作成功")
-  });
+    ElMessage.success("操作成功");
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "操作失败" });
+  }
 }
 
 async function getAllUser() {
-  let res = await axios.get<User[]>(`/user`,{
-    params: {
-      pagenumber: 1,
-      pagesize: defaultPageSize
-    }
+  let res = await getUsers({
+    pageNumber: 1,
+    pageSize: defaultPageSize,
   });
-  const pagination:Pagination = JSON.parse(res.headers['x-pagination']);
+  const totalCount = usePagination(res.headers);
   // 后端的分页不能清除
   // 先用小的分页大小获取totalCount, 再获取所有用户
-  if(pagination.totalCount > defaultPageSize) {
-    res = await axios.get<User[]>(`/user`,{
-      params: {
-        pagenumber: 1,
-        pagesize: pagination.totalCount
-      }
+  if(totalCount > defaultPageSize) {
+    res = await getUsers({
+      pageNumber: 1,
+      pageSize: totalCount,
     });
   }
   candidates.value = res.data;
 }
 
 async function getExamUser() {
-  interface ExamUserResponse {
-    id: string,
-    name: string,
-    examType: ExamType,
-    startTime: string,
-    endTime: string,
-    users: string[]
-  }
   // 获取到的只有 Id，所以要根据所有用户的信息筛选
-  const res = await axios.get<ExamUserResponse>(`/exam/users/${examId.value}`);
+  const res = await getExamUsers(examId.value);
   const examUsers = new Set(res.data.users);
   participants.value = candidates.value.filter(candidate => examUsers.has(candidate.id));
   candidates.value = candidates.value.filter(candidate => !examUsers.has(candidate.id));

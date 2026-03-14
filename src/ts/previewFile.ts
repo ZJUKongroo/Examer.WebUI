@@ -1,5 +1,6 @@
 import type { CommitFile } from "~/types";
-import axios from './request'
+import { openCommitFileBlob } from '~/api';
+import { handleApiError } from '~/api/error';
 import { renderAsync } from 'docx-preview';
 import { ElMessage, ElMessageBox, type Action } from "element-plus";
 
@@ -12,7 +13,7 @@ export function openFile(file: CommitFile) {
     type: 'info',
     message: '正在获取文件...'
   })
-  axios.get(`/file/blob/${file.id.trim()}`, { responseType: 'blob' }).then((response) => {
+  openCommitFileBlob(file).then((response) => {
     const blob: Blob = response.data;
     const url = URL.createObjectURL(new Blob([blob], {
       type: response.headers["content-type"] as string
@@ -48,6 +49,8 @@ export function openFile(file: CommitFile) {
       link.click();
       window.URL.revokeObjectURL(url);
     }
+  }).catch((error) => {
+    handleApiError(error, { fallbackMessage: '文件获取失败' });
   });
 }
 

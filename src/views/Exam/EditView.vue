@@ -52,7 +52,8 @@ import CDialog from "~/components/UI/CDialog.vue";
 import { useMainStore } from "~/store/mainStore";
 import deleteConfirm from "~/ts/deleteConfirm";
 import { animate, spring, stagger } from "animejs";
-import axios from "~/ts/request";
+import { deleteExam as removeExam, updateExam } from "~/api";
+import { handleApiError } from "~/api/error";
 import { ElMessage } from "element-plus";
 import { ExamType } from "~/enums/index";
 import type { Exam } from "~/types";
@@ -70,21 +71,19 @@ function changeExamName(exam: Exam) {
   editingExam.value = exam.id;
 }
 
-function confirmChangeExamName(exam: Exam) {
-  axios
-    .put(`/Exam/${exam.id}`, {
+async function confirmChangeExamName(exam: Exam) {
+  try {
+    await updateExam(exam.id, {
       name: newName.value,
       startTime: exam.startTime,
       endTime: exam.endTime,
-    })
-    .then(() => {
-      store.refreshExamData();
-      editingExam.value = "";
-      ElMessage.success("已修改考试名");
-    })
-    .catch(() => {
-      ElMessage.error("修改考试名失败");
     });
+    store.refreshExamData();
+    editingExam.value = "";
+    ElMessage.success("已修改考试名");
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "修改考试名失败" });
+  }
 }
 
 const createExam = () => {
@@ -94,14 +93,13 @@ const createExam = () => {
 const deleteExam = (index: number) => {
   deleteConfirm("确认删除考试？", false).then((res) => {
     if (res) {
-      axios
-        .delete(`/Exam/${exams.value[index].id}`)
+      removeExam(exams.value[index].id)
         .then(() => {
           store.refreshExamData();
           ElMessage.success("已删除考试");
         })
-        .catch(() => {
-          ElMessage.error("删除考试失败");
+        .catch((error) => {
+          handleApiError(error, { fallbackMessage: "删除考试失败" });
         });
     }
   });

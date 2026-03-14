@@ -50,12 +50,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { LoginCredientialDto, LoginDto } from "~/types";
+import type { LoginDto } from "~/types";
 import { ref, onMounted } from "vue";
 import { entry, leave, fadeOut, fadeIn } from "~/ts/entry";
 import { useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
-import axios from '~/ts/request';
+import { login as loginApi, register as registerApi, sendResetEmail } from "~/api";
+import { getApiErrorMessage, handleApiError } from "~/api/error";
 import { ElMessage } from "element-plus";
 
 const form = ref({
@@ -178,7 +179,7 @@ function checkRegisterPayload(): boolean {
   return true;
 }
 
-function goToRegister(): void {
+async function goToRegister(): Promise<void> {
   if (!checkRegisterPayload()) {
     return;
   }
@@ -189,43 +190,41 @@ function goToRegister(): void {
     password: form.value.password,
     email: `${studentNumber}@zju.edu.cn`
   }
-  axios.post(`/authentication/register`, payload).then(res => {
-    if (200 <= res.status && res.status <= 299) {
+  try {
+    const res = await registerApi(payload);
+    if (res.status >= 200 && res.status <= 299) {
       pageNotice.value = "注册成功，请查看校内邮箱内的验证码";
       toggleRegister();
     }
-    else if (res.status === 409) {
-      ElMessage({
-        type: "warning",
-        message: "该学号已被注册",
-      });
-    }
-  }).catch(error => {
-    console.log(error);
-    ElMessage({
-      type: "error",
-      message: "注册失败",
+  } catch (error) {
+    const message = getApiErrorMessage(error, {
+      fallbackMessage: "注册失败",
+      statusMessages: {
+        409: "该学号已被注册",
+      },
     });
-  });
+    if (message === "该学号已被注册") {
+      ElMessage.warning(message);
+    } else {
+      ElMessage.error(message);
+    }
+  }
 }
 
-function goToRecover(): void {
+async function goToRecover(): Promise<void> {
   if (!checkRecoverPayload()) {
     return;
   }
 
-  axios.post(`/authentication/reset/${form.value.studentNumber.trim()}`).then((res) => {
-    if (200 <= res.status && res.status <= 299) {
+  try {
+    const res = await sendResetEmail(form.value.studentNumber.trim());
+    if (res.status >= 200 && res.status <= 299) {
       pageNotice.value = "找回密码邮件已发送，请查收邮箱并按提示重置密码";
       toggleRecover();
     }
-  }).catch((error) => {
-    console.log(error);
-    ElMessage({
-      type: "error",
-      message: "发送找回密码邮件失败",
-    });
-  });
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "发送找回密码邮件失败" });
+  }
 }
 
 async function login(): Promise<void> {
@@ -244,7 +243,7 @@ async function login(): Promise<void> {
 
   loading.value = true;
   try {
-    const res = await axios.post<LoginCredientialDto>(`/authentication/login`, payload);
+    const res = await loginApi(payload);
     if (res.status === 200) {
       ElMessage({
         type: "success",
@@ -267,11 +266,7 @@ async function login(): Promise<void> {
       }
     }
   } catch (error) {
-    console.log(error);
-    ElMessage({
-      type: "error",
-      message: "登录失败",
-    });
+    handleApiError(error, { fallbackMessage: "登录失败" });
   } finally {
     loading.value = false;
   }
