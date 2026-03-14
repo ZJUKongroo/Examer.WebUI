@@ -3,8 +3,13 @@
     <div id="login-sidebar">
       <!-- 登录页面侧边栏背景 -->
       <div id="login-sidebar-title">
-        <strong>2026<br>Enrollment<br></strong>
-        <strong>ACEE</strong> 试题提交系统
+        <div class="subtitle">
+          <span>2026</span><br>
+          <span>Enrollment</span>
+        </div>
+        <div class="main-title">
+          <strong>ACEE</strong> 试题提交系统
+        </div>
       </div>
     </div>
     <div class="rowbox" id="login-main" :class="{ registering: isRegistering }">
@@ -309,11 +314,30 @@ onMounted(() => {
 /* 侧边栏标题样式 */
 #login-sidebar-title {
   position: absolute;
-  bottom: 20px;
+  bottom: 50px;
   left: 50px;
-  font-size: 56px;
   color: white;
+  text-align: left;
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-size: 32px;
+  font-weight: 300;
+  opacity: 0.8;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+.main-title {
+  font-size: 56px;
+  font-weight: bold;
   text-shadow: 8px 5px 0px rgba(239, 239, 239, 0.2);
+}
+
+@media (max-width: 1200px) {
+  .subtitle { font-size: 24px; }
+  .main-title { font-size: 40px; }
 }
 
 /* 登录主区域样式 */
