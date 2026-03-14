@@ -24,6 +24,9 @@ export default defineConfig({
       '~': resolve(__dirname, 'src/'),
     },
   },
+  build:{
+    outDir: "wwwroot"
+  },
   server: {
     port: 3000,
     proxy: {
