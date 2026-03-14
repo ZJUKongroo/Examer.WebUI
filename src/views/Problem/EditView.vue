@@ -39,7 +39,7 @@
         <h1 class="mb-4">编辑题目</h1>
         <v-form @submit.prevent="confirmEditProblem">
           <v-text-field v-model="editForm.name" label="题目名称" required></v-text-field>
-          <v-text-field v-model="form.score" label="题目分数" type="number"></v-text-field>
+          <v-text-field v-model="editForm.score" label="题目分数" type="number"></v-text-field>
           <v-textarea v-model="editForm.description" label="题目描述" required></v-textarea>
           <v-btn variants="tonal" type="submit">提交</v-btn>
         </v-form>
@@ -76,21 +76,102 @@ const examId = computed(() => {
 
 watch(examId, () => init());
 
-interface ProblemForm {
+interface ProblemFormValue {
   examId: string;
   name: string;
   description: string;
   problemType: number;
+  score: number | string;
+}
+
+interface UpdateProblemDto {
+  name: string;
+  description: string;
   score: number;
 }
 
-const default_form_value = {
-  examId: "",
-  name: "",
-  description: "",
-  problemType: 1,
-  score: 100
-};
+interface CreateProblemDto extends UpdateProblemDto {
+  examId: string;
+  problemType: number;
+}
+
+function createDefaultProblemForm(): ProblemFormValue {
+  return {
+    examId: "",
+    name: "",
+    description: "",
+    problemType: 1,
+    score: 100,
+  };
+}
+
+function checkProblemPayload(payload: {
+  name: string;
+  description: string;
+  score: number | string;
+}): payload is UpdateProblemDto {
+  const name = payload.name.trim();
+  const description = payload.description.trim();
+  const score = Number(payload.score);
+
+  if (!name) {
+    ElMessage.error("题目名称不能为空");
+    return false;
+  }
+
+  if (!description) {
+    ElMessage.error("题目描述不能为空");
+    return false;
+  }
+
+  if (!Number.isFinite(score) || score <= 0) {
+    ElMessage.error("题目分数需为大于0的数字");
+    return false;
+  }
+
+  return true;
+}
+
+function buildUpdateProblemPayload(payload: {
+  name: string;
+  description: string;
+  score: number | string;
+}): UpdateProblemDto | null {
+  if (!checkProblemPayload(payload)) {
+    return null;
+  }
+
+  return {
+    name: payload.name.trim(),
+    description: payload.description.trim(),
+    score: Number(payload.score),
+  };
+}
+
+function buildCreateProblemPayload(form: ProblemFormValue): CreateProblemDto | null {
+  const examId = form.examId.trim();
+
+  if (!examId) {
+    ElMessage.error("缺少考试信息，无法创建题目");
+    return null;
+  }
+
+  if (!Number.isInteger(form.problemType) || form.problemType <= 0) {
+    ElMessage.error("题目类型无效");
+    return null;
+  }
+
+  const payload = buildUpdateProblemPayload(form);
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    examId,
+    problemType: form.problemType,
+    ...payload,
+  };
+}
 
 function editProblem(problem: Problem) {
   editForm.value = Object.assign({}, problem);
@@ -98,11 +179,12 @@ function editProblem(problem: Problem) {
 }
 
 function confirmEditProblem() {
-  axios.put(`/Problem/${editForm.value.id}`, {
-    name: editForm.value.name,
-    description: editForm.value.description,
-    score: editForm.value.score,
-  }).then(() => {
+  const payload = buildUpdateProblemPayload(editForm.value);
+  if (!payload) {
+    return;
+  }
+
+  axios.put(`/Problem/${editForm.value.id}`, payload).then(() => {
     getProblems();
     problemEditVisible.value = false;
     ElMessage.success("编辑题目成功");
@@ -111,14 +193,21 @@ function confirmEditProblem() {
   });
 }
 
-const form = ref<ProblemForm>(Object.assign({}, default_form_value));
+const form = ref<ProblemFormValue>(createDefaultProblemForm());
 
 const submitForm = () => {
-  form.value.examId = route.query.id as string;
-  axios.post("/Problem", form.value).then(() => {
+  const payload = buildCreateProblemPayload({
+    ...form.value,
+    examId: route.query.id as string,
+  });
+  if (!payload) {
+    return;
+  }
+
+  axios.post("/Problem", payload).then(() => {
     getProblems();
     problemCreateVisible.value = false;
-    form.value = Object.assign({}, default_form_value);
+    form.value = createDefaultProblemForm();
     ElMessage.success("新建题目成功");
   }).catch(() => {
     ElMessage.error("新建题目失败");

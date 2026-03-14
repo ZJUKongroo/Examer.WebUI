@@ -18,7 +18,7 @@
             v-for="(problem, index) in problems" :key="index" class="exam-commit-second-in exam-commit-card" :class="[
               { completed: commitStatus[problem.id] != undefined },
             ]">
-            <div class="exam-commit-number">试题 {{ problem.name }}</div>
+            <div class="exam-commit-number">{{ problem.name }}</div>
             <div v-if="commitStatus[problem.id]" class="exam-commit-status">
               上次提交 <br />
               {{ (new Date(commitStatus[problem.id].commitTime)).toLocaleString() }}
@@ -248,14 +248,15 @@ onMounted(async () => {
 }
 
 .exam-commit-card {
-  width: 140px;
+  width: 200px;
   height: 140px;
+  padding: 0 15px 0 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
   text-align: center;
-  font-size: 16px;
+  font-size: 13px;
   border-radius: 8px;
   box-sizing: border-box;
   background-color: var(--bg-color-darker);
@@ -277,7 +278,7 @@ onMounted(async () => {
 }
 
 .exam-commit-number {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
 }
 
