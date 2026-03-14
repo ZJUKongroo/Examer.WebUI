@@ -66,7 +66,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
 import { useMainStore } from "~/store/mainStore";
-import { UserRole, EthnicGroup, PoliticalStatus } from "~/enums";
+import { UserRole, EthnicGroup } from "~/enums";
 import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
 
@@ -91,12 +91,12 @@ const ethnicGroupOptions = Object.keys(EthnicGroup)
     value: EthnicGroup[key as keyof typeof EthnicGroup] as number,
   }));
 
-const politicalStatusOptions = Object.keys(PoliticalStatus)
-  .filter((key) => Number.isNaN(Number(key)) && key !== "Null")
-  .map((key) => ({
-    title: key,
-    value: PoliticalStatus[key as keyof typeof PoliticalStatus] as number,
-  }));
+// const politicalStatusOptions = Object.keys(PoliticalStatus)
+//   .filter((key) => Number.isNaN(Number(key)) && key !== "Null")
+//   .map((key) => ({
+//     title: key,
+//     value: PoliticalStatus[key as keyof typeof PoliticalStatus] as number,
+//   }));
 
 const editForm = ref<AddUserDetailDto>({
   gender: 1,
@@ -126,10 +126,10 @@ function ethnicGroupName(code?: number): string {
   return EthnicGroup[code] ?? "—";
 }
 
-function politicalStatusName(code?: number): string {
-  if (!code) return "—";
-  return PoliticalStatus[code] ?? "—";
-}
+// function politicalStatusName(code?: number): string {
+//   if (!code) return "—";
+//   return PoliticalStatus[code] ?? "—";
+// }
 
 function genderName(code?: number): string {
   if (!code) return "—";
@@ -191,10 +191,10 @@ function openEditDialog(): void {
     class: user.class ?? "",
     seniorHigh: user.seniorHigh ?? "",
     dormitory: user.dormitory ?? "",
-    // politicalStatus: user.politicalStatus ?? 1,
+    politicalStatus: user.politicalStatus ?? 1,
     englishLevel: user.englishLevel ?? "",
     gpaOfAllCourses: user.gpaOfAllCourses ?? 0,
-    // gpaOfMajorCourses: user.gpaOfMajorCourses ?? 0,
+    gpaOfMajorCourses: user.gpaOfMajorCourses ?? 0,
     rank: user.rank ?? 1,
     collegeNumber: user.collegeNumber ?? 1,
   };

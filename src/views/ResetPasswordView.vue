@@ -51,7 +51,7 @@ import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
 import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
-import { LoginCredientialDto } from "~/types";
+import type { LoginCredientialDto } from "~/types";
 import { useMainStore } from "~/store/mainStore";
 
 const route = useRoute();

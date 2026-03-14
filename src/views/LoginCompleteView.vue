@@ -61,7 +61,7 @@ import { useRoute, useRouter } from "vue-router";
 import axios from "~/ts/request";
 import { animate, spring } from "animejs";
 import { useMainStore } from "~/store/mainStore";
-import { AddUserDetailDto, LoginCredientialDto } from "~/types";
+import type { AddUserDetailDto, LoginCredientialDto } from "~/types";
 import { EthnicGroup } from "~/enums";
 
 const route = useRoute();
