@@ -3,6 +3,7 @@
     <div id="login-sidebar">
       <!-- 登录页面侧边栏背景 -->
       <div id="login-sidebar-title">
+        <strong>2026<br>Enrollment<br></strong>
         <strong>ACEE</strong> 试题提交系统
       </div>
     </div>
