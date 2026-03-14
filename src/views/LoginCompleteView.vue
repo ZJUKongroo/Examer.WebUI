@@ -22,8 +22,8 @@
           required
         />
         <v-text-field v-model="form.dateOfBirth" type="date" label="出生日期" density="comfortable" placeholder="请选择出生日期" required />
-        <v-text-field v-model="form.college" label="学院（园）" density="comfortable" placeholder="例如：计算机科学与技术学院" required />
-        <v-text-field v-model="form.homeAddress" label="大类" density="comfortable" placeholder="例如：云峰学园" required />
+        <v-text-field v-model="form.college" label="学院（园）" density="comfortable" placeholder="例如：云峰学园" required />
+        <v-text-field v-model="form.homeAddress" label="大类" density="comfortable" placeholder="例如：工科试验班（信息）" required />
         <v-text-field v-model="form.major" label="专业" density="comfortable" placeholder="例如：软件工程" required />
         <v-text-field v-model="form.class" label="班级" density="comfortable" placeholder="例如：软工2301" required />
         <v-text-field v-model="form.phoneNumber" label="手机号" density="comfortable" placeholder="例如：13800138000" required />
