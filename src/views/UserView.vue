@@ -1,8 +1,7 @@
 <template>
-  <div id="user-page">
-    <div id="user-page-header" class="user-page-animation">
-      <div id="user-page-title">用户管理</div>
-    </div>
+  <div id="user-page" class="global-container">
+    <UniversalHeader title="用户管理" hide-back-button id="user-page-header" class="user-page-animation">
+    </UniversalHeader>
 
     <div class="user-page-animation">
       <div v-if="loading" class="text-center py-6">
@@ -46,6 +45,7 @@ import { useRouter } from "vue-router";
 import { getUserList } from "~/api/modules/user.api";
 import { animate, spring, stagger } from "animejs";
 import { handleApiError } from "~/api/error";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 
 const router = useRouter();
 const loading = ref(false);
@@ -87,24 +87,7 @@ onMounted(async () => {
 
 <style lang="scss">
 #user-page {
-  max-width: 1000px;
   margin: 0 auto;
-  padding: 28px 20px;
-}
-
-#user-page-header {
-  margin-bottom: 16px;
-}
-
-#user-page-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text-color);
-}
-
-#user-page-subtitle {
-  margin-top: 4px;
-  color: var(--text-color-tip);
 }
 
 #user-page-table {

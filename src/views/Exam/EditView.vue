@@ -1,9 +1,10 @@
 <template>
   <div class="exam-edit-container global-container">
-    <div id="exam-edit-header">
-      <h1>考试列表</h1>
-      <v-btn variants="tonal" @click="createExam">新建考试</v-btn>
-    </div>
+    <UniversalHeader title="考试列表" hide-back-button id="exam-edit-header">
+      <template #append>
+        <v-btn variants="tonal" @click="createExam">新建考试</v-btn>
+      </template>
+    </UniversalHeader>
     <div id="exam-edit-content">
       <div class="exam-edit-card" v-for="(exam, index) in exams" :key="exam.id">
         <v-card class="mb-2" :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
@@ -49,6 +50,7 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useMainStore } from "~/store/mainStore";
 import { confirmDialog } from "~/services/dialog.service";
 import { animate, spring, stagger } from "animejs";

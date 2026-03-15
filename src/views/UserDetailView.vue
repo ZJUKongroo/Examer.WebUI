@@ -1,14 +1,15 @@
 <template>
-  <div id="user-detail-page">
-    <div id="user-detail-header">
+  <div id="user-detail-page" class="global-container">
+    <UniversalHeader title="用户信息" hide-back-button id="user-page-header" class="user-page-animation">
+    </UniversalHeader>
+
+    <div id="user-detail-header" class="mb-8" >
       <v-icon size="48" color="primary">mdi-account-circle</v-icon>
       <div>
         <div id="user-detail-name">{{ detail?.user?.name ?? "加载中..." }}</div>
         <div id="user-detail-studentno">学号：{{ detail?.user?.studentNumber ?? "—" }}</div>
       </div>
     </div>
-
-    <v-divider class="my-4" />
 
     <div v-if="loading" class="text-center py-8">
       <v-progress-circular indeterminate color="primary" />
@@ -39,7 +40,7 @@
             <v-text-field v-model="editForm.homeAddress" label="大类" density="comfortable" />
             <v-text-field v-model="editForm.major" label="专业" density="comfortable" />
             <v-text-field v-model="editForm.class" label="班级" density="comfortable" />
-              <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
+            <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
             <v-text-field v-model="editForm.seniorHigh" label="高中" density="comfortable" />
             <v-text-field v-model="editForm.dormitory" label="宿舍" density="comfortable" />
             <!-- <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌" density="comfortable" item-title="title" item-value="value" /> -->
@@ -71,6 +72,7 @@ import { UserRole, EthnicGroup } from "~/enums";
 import { animate, spring, stagger } from "animejs";
 import { handleApiError } from "~/api/error";
 import appMessage from "~/services/message.service";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -140,7 +142,7 @@ function genderName(code?: number): string {
 
 const detailFields = computed(() => [
   { label: "姓名", value: detail.value?.user?.name },
-  { label: "学号", value: detail.value?.user?.studentNumber },
+  // { label: "学号", value: detail.value?.user?.studentNumber },
   { label: "性别", value: genderName(detail.value?.gender) },
   { label: "民族", value: ethnicGroupName(detail.value?.ethnicGroup) },
   { label: "出生日期", value: detail.value?.dateOfBirth },
@@ -226,9 +228,7 @@ onMounted(async () => {
 
 <style lang="scss">
 #user-detail-page {
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 20px;
 }
 
 #user-detail-header {
