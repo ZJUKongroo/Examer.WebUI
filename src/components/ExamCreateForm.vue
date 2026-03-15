@@ -62,13 +62,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ExamType } from '~/enums';
 import { useMainStore } from '~/store/mainStore';
 import { createExam } from '~/api';
 import { handleApiError } from '~/api/error';
+import appMessage from '~/services/message.service';
 
 const menuVisible = ref({
     startDate: false,
@@ -112,7 +112,7 @@ const submitForm = async () => {
         const response = await createExam(newExam);
         const data = response.data;
         store.refreshExamData();
-        ElMessage.success("已新建考试");
+        appMessage.success("已新建考试");
         if (form.value.examType === ExamType.GroupExam) {
             openPath("/exam/group", { id: data.id });
         }

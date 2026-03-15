@@ -1,5 +1,5 @@
 <template>
-  <div class="exam-group-container">
+  <div class="exam-group-container global-container">
     <UniversalHeader title="分组管理" class="exam-group-header exam-group-view-anime" />
     <div class="exam-group-flex-container">
       <template v-if="loading">
@@ -119,7 +119,6 @@
 
 <script lang="ts" setup>
 import { animate, spring, stagger } from "animejs";
-import { ElMessage } from "element-plus";
 import { computed, nextTick, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
@@ -138,6 +137,7 @@ import {
 import { handleApiError } from '~/api/error';
 import { fetchAllPaginatedItems } from '~/services/pagination.service';
 import type { Group, User } from '~/types';
+import appMessage from "~/services/message.service";
 
 const users = ref<User[]>([]);
 const groups = ref<Group[]>([]);
@@ -297,7 +297,7 @@ const handleNewGroup = async () => {
       data.users.push(user);
       examGroup.value.push(data);
 
-      ElMessage.success("新建组成功");
+      appMessage.success("新建组成功");
     } catch (error) {
       // 恢复本地状态
       if (removedUser) {
@@ -353,7 +353,7 @@ const importGroupsFromFile = async () => {
 
       // 检查数据格式
       if (typeof groupData !== 'object' || groupData === null) {
-        ElMessage.error("无效的JSON格式");
+        appMessage.error("无效的JSON格式");
         return;
       }
 
@@ -408,10 +408,10 @@ const importGroupsFromFile = async () => {
       await assignExamMembers(examId.value, createdGroups.map(group => group.id));
       examGroup.value = examGroup.value.concat(createdGroups);
 
-      ElMessage.success(`成功导入 ${importStatus.value.current} 个分组`);
+      appMessage.success(`成功导入 ${importStatus.value.current} 个分组`);
     } catch (error) {
       console.error('导入分组失败:', error);
-      ElMessage.error(`导入分组失败，找不到 ${FailName}`);
+      appMessage.error(`导入分组失败，找不到 ${FailName}`);
     }
   };
 
@@ -430,7 +430,7 @@ const importGroupsFromFile = async () => {
  */
 async function handleAutoGroup(groupSize: number, nameFormat: string, force = false) {
   if (users.value.length % groupSize !== 0 && !force) {
-    ElMessage.error("未分配的用户数量不能被指定的组大小整除");
+    appMessage.error("未分配的用户数量不能被指定的组大小整除");
     return;
   }
 
@@ -469,7 +469,7 @@ async function handleAutoGroup(groupSize: number, nameFormat: string, force = fa
       total: 0
     };
     autoGroupFormVisible.value = false;
-    ElMessage.success("自动分组成功");
+    appMessage.success("自动分组成功");
   } catch (error) {
     handleApiError(error, { fallbackMessage: "新建组失败" });
   }
@@ -482,7 +482,7 @@ const deleteGroup = (id: string) => {
   if (group) {
     removeGroup(group.id).then(() => {
       users.value = users.value.concat(group.users);
-      ElMessage.success("删除组成功");
+      appMessage.success("删除组成功");
     }).catch((error) => {
       handleApiError(error, { fallbackMessage: "删除组失败" });
     });
@@ -506,7 +506,7 @@ const confirmChangeGroupName = async (id: string) => {
     });
     group.name = newName.value;
     editingGroup.value = "";
-    ElMessage.success("修改组名成功");
+    appMessage.success("修改组名成功");
   }
     catch (error) {
       handleApiError(error, { fallbackMessage: "修改组名失败" });
@@ -565,10 +565,6 @@ onMounted(async () => {
 </script>
 
 <style>
-.exam-group-container {
-  padding: 40px;
-}
-
 .exam-group-flex-container {
   display: flex;
   gap: 20px;

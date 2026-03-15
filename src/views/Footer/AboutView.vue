@@ -1,5 +1,5 @@
 <template>
-  <div id="about-container">
+  <div class="container global-container" id="about-container">
     <section>
       <h1 class="mb-4">关于我们</h1>
       <h2 class="mb-2">ACEE</h2>
@@ -61,11 +61,9 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 #about-container {
   font-size: 16px;
-  padding: 40px;
-  width: 100%;
   padding-left: 20%;
   padding-right: 20%;
 }
@@ -78,10 +76,10 @@ onMounted(() => {
 }
 
 #about-container h1,
-h2,
-h3,
-h4,
-p {
+#about-container h2,
+#about-container h3,
+#about-container h4,
+#about-container p {
   margin-bottom: 10px;
 }
 </style>

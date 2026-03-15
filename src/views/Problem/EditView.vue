@@ -1,5 +1,5 @@
 <template>
-  <div class="problem-edit-container">
+  <div class="problem-edit-container global-container">
     <UniversalHeader title="题目列表" id="problem-edit-header">
       <template #append>
         <v-btn variants="tonal" @click="createProblem">新建题目</v-btn>
@@ -59,7 +59,7 @@ import { handleApiError } from "~/api/error";
 import { buildCreateProblemPayload as mapCreateProblemPayload, buildProblemPayload } from "~/mappers";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import type { Problem } from "~/types";
-import { ElMessage } from "element-plus";
+import appMessage from "~/services/message.service";
 
 const problems = ref<Problem[]>([]);
 const route = useRoute();
@@ -115,17 +115,17 @@ function checkProblemPayload(payload: {
   const sanitized = buildProblemPayload(payload);
 
   if (!sanitized.name) {
-    ElMessage.error("题目名称不能为空");
+    appMessage.error("题目名称不能为空");
     return false;
   }
 
   if (!sanitized.description) {
-    ElMessage.error("题目描述不能为空");
+    appMessage.error("题目描述不能为空");
     return false;
   }
 
   if (!Number.isFinite(sanitized.score) || sanitized.score <= 0) {
-    ElMessage.error("题目分数需为大于0的数字");
+    appMessage.error("题目分数需为大于0的数字");
     return false;
   }
 
@@ -154,12 +154,12 @@ function buildCreatePayload(form: ProblemFormValue): CreateProblemDto | null {
   });
 
   if (!sanitized.examId) {
-    ElMessage.error("缺少考试信息，无法创建题目");
+    appMessage.error("缺少考试信息，无法创建题目");
     return null;
   }
 
   if (!Number.isInteger(sanitized.problemType) || sanitized.problemType <= 0) {
-    ElMessage.error("题目类型无效");
+    appMessage.error("题目类型无效");
     return null;
   }
 
@@ -189,7 +189,7 @@ function confirmEditProblem() {
   updateProblem(editForm.value.id, payload).then(() => {
     getProblems();
     problemEditVisible.value = false;
-    ElMessage.success("编辑题目成功");
+    appMessage.success("编辑题目成功");
   }).catch((error) => {
     handleApiError(error, { fallbackMessage: "编辑题目失败" });
   });
@@ -210,7 +210,7 @@ const submitForm = () => {
     getProblems();
     problemCreateVisible.value = false;
     form.value = createDefaultProblemForm();
-    ElMessage.success("新建题目成功");
+    appMessage.success("新建题目成功");
   }).catch((error) => {
     handleApiError(error, { fallbackMessage: "新建题目失败" });
   });
@@ -224,7 +224,7 @@ const deleteProblem = (problem: Problem) => {
   deleteConfirm(`${problem.name}`, false).then((res) => {
     if (res) {
       removeProblem(problem.id).then(() => {
-        ElMessage.success("已删除题目");
+        appMessage.success("已删除题目");
         getProblems();
       }).catch((error) => {
         handleApiError(error, { fallbackMessage: "删除题目失败" });
@@ -260,10 +260,6 @@ onMounted(() => init());
 </script>
 
 <style>
-.problem-edit-container {
-  padding: 40px;
-}
-
 #exam-create-dialog-container {
   padding: 20px;
   box-sizing: border-box;

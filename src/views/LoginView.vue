@@ -58,7 +58,7 @@ import { useMainStore } from "~/store/mainStore";
 import { login as loginApi, register as registerApi, sendResetEmail } from "~/api";
 import { getApiErrorMessage, handleApiError } from "~/api/error";
 import { buildLoginPayload, buildRecoverStudentNumber, buildRegisterPayload } from "~/mappers";
-import { ElMessage } from "element-plus";
+import appMessage from "~/services/message.service";
 
 const form = ref({
   studentNumber: "",
@@ -125,9 +125,9 @@ async function goToRegister(): Promise<void> {
       },
     });
     if (message === "该学号已被注册") {
-      ElMessage.warning(message);
+      appMessage.warning(message);
     } else {
-      ElMessage.error(message);
+      appMessage.error(message);
     }
   }
 }
@@ -154,10 +154,7 @@ async function login(): Promise<void> {
   try {
     const res = await loginApi(payload);
     if (res.status === 200) {
-      ElMessage({
-        type: "success",
-        message: "登录成功",
-      });
+      appMessage.success("登录成功");
       const data = res.data;
       store.login(data);
       store.refreshExamData();

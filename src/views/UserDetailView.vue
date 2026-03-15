@@ -68,8 +68,9 @@ import { getUserDetail, updateUserDetail } from "~/api";
 import { buildUserDetailPayload, cloneUserDetailToEditForm } from "~/mappers";
 import { useMainStore } from "~/store/mainStore";
 import { UserRole, EthnicGroup } from "~/enums";
-import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
+import { handleApiError } from "~/api/error";
+import appMessage from "~/services/message.service";
 
 const route = useRoute();
 const router = useRouter();
@@ -168,8 +169,7 @@ async function fetchDetail(): Promise<void> {
   try {
     detail.value = await getUserDetail(viewingUserId.value || undefined);
   } catch (error) {
-    console.error(error);
-    ElMessage({ type: "error", message: "获取用户信息失败" });
+    handleApiError(error, { fallbackMessage: "获取用户信息失败" });
     detail.value = null;
   } finally {
     loading.value = false;
@@ -188,12 +188,11 @@ async function saveEdit(): Promise<void> {
     const payload = buildUserDetailPayload(editForm.value);
 
     await updateUserDetail(payload, isViewingSelf.value ? undefined : viewingUserId.value);
-    ElMessage({ type: "success", message: "用户信息更新成功" });
+    appMessage.success("用户信息更新成功");
     editDialog.value = false;
     await fetchDetail();
   } catch (error) {
-    console.error(error);
-    ElMessage({ type: "error", message: "更新失败，请重试" });
+    handleApiError(error, { fallbackMessage: "用户信息更新失败" });
   } finally {
     savingEdit.value = false;
   }

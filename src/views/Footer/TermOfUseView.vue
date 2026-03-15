@@ -1,5 +1,5 @@
 <template>
-  <div id="terms-container">
+  <div id="terms-container" class="container global-container">
     <section>
       <h1>使用条款</h1>
       <p>欢迎使用 ACEE 试题提交系统。在使用本网站之前，请仔细阅读以下使用条款。</p>
@@ -45,23 +45,21 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 #terms-container {
   font-size: 16px;
   box-sizing: border-box;
-  padding: 40px;
-  width: 100%;
   padding-left: 20%;
   padding-right: 20%;
 }
 
 #terms-container h1,
-h2,
-h3,
-h4,
-p,
-ul,
-li {
+#terms-container h2,
+#terms-container h3,
+#terms-container h4,
+#terms-container p,
+#terms-container ul,
+#terms-container li {
   margin-bottom: 10px;
 }
 

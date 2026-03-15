@@ -1,5 +1,5 @@
 <template>
-  <div class="exam-edit-container">
+  <div class="exam-edit-container global-container">
     <div id="exam-edit-header">
       <h1>考试列表</h1>
       <v-btn variants="tonal" @click="createExam">新建考试</v-btn>
@@ -54,10 +54,10 @@ import deleteConfirm from "~/services/dialog.service";
 import { animate, spring, stagger } from "animejs";
 import { deleteExam as removeExam, updateExam } from "~/api";
 import { handleApiError } from "~/api/error";
-import { ElMessage } from "element-plus";
 import { ExamType } from "~/enums/index";
 import type { Exam } from "~/types";
 import ExamCreateForm from "~/components/ExamCreateForm.vue";
+import appMessage from "~/services/message.service";
 
 const store = useMainStore();
 const exams = computed(() => store.examData);
@@ -80,7 +80,7 @@ async function confirmChangeExamName(exam: Exam) {
     });
     store.refreshExamData();
     editingExam.value = "";
-    ElMessage.success("已修改考试名");
+    appMessage.success("已修改考试名");
   } catch (error) {
     handleApiError(error, { fallbackMessage: "修改考试名失败" });
   }
@@ -96,7 +96,7 @@ const deleteExam = (index: number) => {
       removeExam(exams.value[index].id)
         .then(() => {
           store.refreshExamData();
-          ElMessage.success("已删除考试");
+          appMessage.success("已删除考试");
         })
         .catch((error) => {
           handleApiError(error, { fallbackMessage: "删除考试失败" });
@@ -138,10 +138,6 @@ onMounted(() => {
 </script>
 
 <style>
-.exam-edit-container {
-  padding: 40px;
-}
-
 #exam-edit-header {
   display: flex;
   justify-content: space-between;

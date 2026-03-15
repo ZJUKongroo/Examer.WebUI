@@ -1,5 +1,5 @@
-import { ElMessage } from "element-plus";
 import type { HttpError } from "~/api/http/request";
+import appMessage from "~/services/message.service";
 
 export interface HandleApiErrorOptions {
   fallbackMessage?: string;
@@ -49,7 +49,7 @@ export function handleApiError(
 ): string {
   const message = getApiErrorMessage(error, options);
   if (!options?.silent) {
-    ElMessage.error(message);
+    appMessage.error(message)
   }
   return message;
 }

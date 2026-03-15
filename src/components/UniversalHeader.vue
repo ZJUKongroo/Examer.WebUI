@@ -31,7 +31,6 @@ function back() {
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  margin-bottom: 20px;
   width: 100%;
 }
 

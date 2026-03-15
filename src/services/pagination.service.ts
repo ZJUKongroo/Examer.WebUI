@@ -1,7 +1,7 @@
 import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
-import { ElMessage } from "element-plus";
 import type { HttpResponse } from "~/api/http/request";
 import type { PaginationMetadata } from "~/types";
+import appMessage from "./message.service";
 
 const emptyPaginationMetadata: PaginationMetadata = {
   totalCount: 0,
@@ -26,7 +26,7 @@ export function usePagination(headers: RawAxiosResponseHeaders | AxiosResponseHe
         nextPageLink: pagination.nextPageLink ?? null,
       };
     } catch {
-      ElMessage.error("解析分页信息失败");
+      appMessage.error("解析分页信息失败");
     }
   }
 

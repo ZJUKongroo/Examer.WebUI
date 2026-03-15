@@ -4,8 +4,8 @@ import App from "./App.vue";
 import router from "./router";
 import { syncSystemTheme } from "./services/theme.service";
 import "./style/basic.scss";
+import "./style/global.scss"
 import 'element-plus/dist/index.css'
-syncSystemTheme();
 
 import "vuetify/dist/vuetify.min.css";
 import { createVuetify } from "vuetify";
@@ -28,6 +28,8 @@ const pinia = createPinia();
 app.use(pinia);
 app.use(router);
 app.use(vuetify);
+
+syncSystemTheme();
 
 export const context = app._context;
 

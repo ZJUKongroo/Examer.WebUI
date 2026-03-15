@@ -1,5 +1,5 @@
 <template>
-  <div class="exam-candidate-container">
+  <div class="exam-candidate-container global-container">
     <UniversalHeader title="参试人员管理" class="exam-candidate-header">
     </UniversalHeader>
     <div class="exam-candidate-flex-container">
@@ -50,7 +50,6 @@
 
 <script setup lang="ts">
 import { animate, spring, stagger } from 'animejs';
-import { ElMessage } from 'element-plus';
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import UniversalHeader from '~/components/UniversalHeader.vue';
@@ -58,6 +57,7 @@ import { assignExamMembers, getExamUsers, getUsers, unassignExamMembers } from '
 import { handleApiError } from '~/api/error';
 import { fetchAllPaginatedItems } from '~/services/pagination.service';
 import type { User } from '~/types';
+import appMessage from '~/services/message.service';
 
 const route = useRoute();
 const searchQuery = ref({
@@ -108,7 +108,7 @@ async function handleParticipate(candidate: User, index: number) {
   try {
     await assignExamMembers(examId.value, [candidate.id]);
     participants.value = participants.value.concat(candidates.value.splice(index, 1));
-    ElMessage.success("操作成功");
+    appMessage.success("操作成功");
   } catch (error) {
     handleApiError(error, { fallbackMessage: "操作失败" });
   }
@@ -119,7 +119,7 @@ async function handleAllParticipate() {
     await assignExamMembers(examId.value, candidates.value.map(candidate => candidate.id));
     participants.value = participants.value.concat(candidates.value);
     candidates.value = [];
-    ElMessage.success("操作成功");
+    appMessage.success("操作成功");
   } catch (error) {
     handleApiError(error, { fallbackMessage: "操作失败" });
   }
@@ -129,7 +129,7 @@ async function handleCandidate(participant: User, index: number) {
   try {
     await unassignExamMembers(examId.value, [participant.id]);
     candidates.value = candidates.value.concat(participants.value.splice(index, 1));
-    ElMessage.success("操作成功");
+    appMessage.success("操作成功");
   } catch (error) {
     handleApiError(error, { fallbackMessage: "操作失败" });
   }
@@ -172,10 +172,6 @@ onMounted(async () => {
 </script>
 
 <style>
-.exam-candidate-container {
-  padding: 40px;
-}
-
 .exam-candidate-flex-container {
   display: flex;
   gap: 20px;

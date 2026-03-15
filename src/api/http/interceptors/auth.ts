@@ -1,6 +1,6 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import router from "~/router";
-import { ElMessage } from "element-plus";
+import appMessage from "~/services/message.service";
 import { useMainStore } from "~/store/mainStore";
 
 function isAuthEndpoint(url?: string): boolean {
@@ -22,10 +22,7 @@ export function setupAuthInterceptor(client: AxiosInstance): void {
       if (!hasValidToken && !isAuthEndpoint(config.url)) {
         store.logout();
         router.push("/login");
-        ElMessage({
-          type: "warning",
-          message: "登录状态已过期",
-        });
+        appMessage.warning("登录状态已过期");
         return Promise.reject(new Error("Token expired"));
       }
 

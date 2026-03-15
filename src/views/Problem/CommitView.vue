@@ -6,10 +6,10 @@ import { useRoute, useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
 import { confirmCommit, createCommit, getCommitList, getUserGroups } from "~/api";
 import { handleApiError } from "~/api/error";
-import { ElMessage } from "element-plus";
 import CDialog from "~/components/UI/CDialog.vue";
 import { ExamType } from "~/enums";
 import { fileUploadAsync } from "~/services/upload.service";
+import appMessage from "~/services/message.service";
 
 // 用户要提交的文件
 const files = ref<File[]>([]);
@@ -80,7 +80,7 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 async function submit() {
   // 如果没有选择文件，则提示警告
   if (files.value.length === 0) {
-    ElMessage.warning("请先选择文件");
+    appMessage.warning("请先选择文件");
     return;
   }
 
@@ -124,7 +124,7 @@ async function submit() {
     if(currentCommitId){
       await confirmCommit(commitId);
       }
-    ElMessage.success("提交成功");
+    appMessage.success("提交成功");
     router.back(); // 上传成功后返回上一个页面
   } catch (error) {
     // 基本提交失败时提示错误
@@ -142,7 +142,7 @@ async function submit() {
 </script>
 
 <template>
-  <div class="problem-commit-container">
+  <div class="problem-commit-container global-container">
     <UniversalHeader :title="`试题 ${problem ? problem.name : ''}`" class="problem-commit-animation">
       <template #append>
         <v-btn @click="submit">提交</v-btn>
@@ -211,10 +211,6 @@ async function submit() {
 </template>
 
 <style>
-.problem-commit-container {
-  padding: 40px;
-}
-
 #problem-commit-info {
   margin-bottom: 20px;
 }

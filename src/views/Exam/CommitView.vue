@@ -1,5 +1,5 @@
 <template>
-  <div id="exam-container">
+  <div id="exam-container" class="container global-container">
     <UniversalHeader :title="exam ? exam.name : ''" class="exam-commit-header exam-commit-second-in" />
     <div v-if="exam?.examType === ExamType.GroupExam" class="exam-commit-second-in mb-2">
       <v-alert variant="tonal" show-icon :closable="false" type="info">
@@ -194,9 +194,6 @@ onMounted(async () => {
 
 <style>
 #exam-container {
-  width: 100%;
-  height: 100%;
-  padding: 40px;
   box-sizing: border-box;
 }
 

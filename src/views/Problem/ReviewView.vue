@@ -1,5 +1,5 @@
 <template>
-  <div class="problem-review-container">
+  <div class="problem-review-container global-container">
     <UniversalHeader title="题目A" class="problem-review-header">
       <template #append>
         <v-btn @click="submitReview">提交</v-btn>
@@ -84,8 +84,8 @@ import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useRoute, useRouter } from "vue-router";
 import type { Commit } from "~/types";
 import { useMainStore } from "~/store/mainStore";
-import { ElMessage} from "element-plus";
 import { openFile } from "~/services/preview.service";
+import appMessage from "~/services/message.service";
 
 const route = useRoute();
 const router = useRouter();
@@ -144,14 +144,14 @@ const submitReview = () => {
       comment: comment.value
     }).then(() => {
       // 提交成功
-      ElMessage.success("提交成功");
+      appMessage.success("提交成功");
       init()
     }).catch((error) => {
       handleApiError(error, { fallbackMessage: "提交失败" });
     });
   }
   else {
-    ElMessage.error("分数不合法");
+    appMessage.error("分数不合法");
   }
 };
 
@@ -183,9 +183,6 @@ onMounted(() => init())
   display: flex;
   flex-direction: row;
   gap: 10px;
-}
-.problem-review-container {
-  padding: 40px;
 }
 
 .problem-review-content-wrapper {

@@ -1,5 +1,5 @@
 <template>
-  <div class="exam-review-container">
+  <div class="exam-review-container global-container">
     <UniversalHeader title="提交记录" class="exam-review-header">
       <template #append>
         <v-btn @click="refreshCommits">刷新</v-btn>
@@ -194,10 +194,6 @@ onMounted(() => init(examId.value));
 </script>
 
 <style>
-.exam-review-container {
-  padding: 40px;
-}
-
 #exam-review-filter {
   margin-top: 10px;
 }

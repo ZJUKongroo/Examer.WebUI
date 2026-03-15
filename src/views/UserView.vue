@@ -44,8 +44,8 @@ import type { User } from "~/types";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { getUserList } from "~/api/modules/user.api";
-import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
+import { handleApiError } from "~/api/error";
 
 const router = useRouter();
 const loading = ref(false);
@@ -68,8 +68,7 @@ async function fetchUserList(): Promise<void> {
     userList.value = result.items;
     totalPages.value = Math.ceil(result.pagination.totalCount / pageSize);
   } catch (error) {
-    console.error(error);
-    ElMessage({ type: "error", message: "获取用户列表失败" });
+    handleApiError(error, { fallbackMessage: "获取用户列表失败" });
   } finally {
     loading.value = false;
   }

@@ -51,9 +51,9 @@ import { useRoute, useRouter } from "vue-router";
 import { resetPassword } from "~/api";
 import { handleApiError } from "~/api/error";
 import { buildResetPasswordPayload } from "~/mappers";
-import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
 import { useMainStore } from "~/store/mainStore";
+import appMessage from "~/services/message.service";
 
 const route = useRoute();
 const router = useRouter();
@@ -76,10 +76,7 @@ async function submit(): Promise<void> {
   try {
     const res = await resetPassword(buildResetPasswordPayload(resetToken.value, form.value.password));
     if (res.status === 200) {
-      ElMessage({
-        type: "success",
-        message: "密码重置成功",
-      });
+      appMessage.success("密码重置成功");
       store.login(res.data);
       router.push("/user/detail");
     }
