@@ -85,7 +85,7 @@ import { useRoute, useRouter } from "vue-router";
 import type { Commit } from "~/types";
 import { useMainStore } from "~/store/mainStore";
 import { ElMessage} from "element-plus";
-import { openFile } from "~/ts/previewFile";
+import { openFile } from "~/services/preview.service";
 
 const route = useRoute();
 const router = useRouter();

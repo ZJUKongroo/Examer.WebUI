@@ -53,7 +53,7 @@ import { animate, spring, stagger } from "animejs";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute} from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
-import deleteConfirm from "~/ts/deleteConfirm";
+import deleteConfirm from "~/services/dialog.service";
 import { createProblem as createProblemApi, deleteProblem as removeProblem, getExamById, updateProblem } from "~/api";
 import { handleApiError } from "~/api/error";
 import { buildCreateProblemPayload as mapCreateProblemPayload, buildProblemPayload } from "~/mappers";

@@ -3,7 +3,7 @@ import { ref, computed} from 'vue';
 import { UserRole } from '~/enums';
 import type { Exam, LoginCredientialDto } from '~/types';
 import { useRouter } from 'vue-router';
-import { getSecureItem, setSecureItem } from '~/ts/encrypt';
+import { getSecureItem, setSecureItem } from '~/services/storage.service';
 import { getExamList } from '~/api';
 import { handleApiError } from '~/api/error';
 

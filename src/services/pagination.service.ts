@@ -12,9 +12,7 @@ const emptyPaginationMetadata: PaginationMetadata = {
   nextPageLink: null,
 };
 
-export function usePagination(
-  headers: RawAxiosResponseHeaders | AxiosResponseHeaders
-): PaginationMetadata {
+export function usePagination(headers: RawAxiosResponseHeaders | AxiosResponseHeaders): PaginationMetadata {
   const rawPagination = headers["x-pagination"];
   if (rawPagination && typeof rawPagination === "string") {
     try {

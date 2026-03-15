@@ -1,10 +1,10 @@
-import { createVNode, render } from 'vue';
-import DeleteConfirm from '@/components/DeleteConfirm.vue';
-import { context } from '~/main';
+import { createVNode, render } from "vue";
+import DeleteConfirm from "@/components/DeleteConfirm.vue";
+import { context } from "~/main";
 
 function deleteConfirm(name: string, input: boolean): Promise<boolean> {
   return new Promise((resolve) => {
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     document.body.appendChild(container);
     const vnode = createVNode(DeleteConfirm, {
       name,
@@ -20,6 +20,7 @@ function deleteConfirm(name: string, input: boolean): Promise<boolean> {
     });
     vnode.appContext = context;
     render(vnode, container);
+
     function cleanup() {
       render(null, container);
       document.body.removeChild(container);
@@ -27,4 +28,5 @@ function deleteConfirm(name: string, input: boolean): Promise<boolean> {
   });
 }
 
+export const confirmDelete = deleteConfirm;
 export default deleteConfirm;

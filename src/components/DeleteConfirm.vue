@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage} from 'element-plus'
-import { entry } from '@/ts/entry'
+import { entry } from '@/services/transition.service'
 import "@/style/cui.scss"
 const visible = ref(true);
 const props = defineProps({

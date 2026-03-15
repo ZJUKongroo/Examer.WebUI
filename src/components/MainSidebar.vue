@@ -29,7 +29,7 @@ import { useRouter } from 'vue-router';
 import SidebarCell from './SidebarCell.vue';
 import ExamCell from './ExamCell.vue';
 import { useMainStore } from '~/store/mainStore';
-import { entry } from '~/ts/entry';
+import { entry } from '~/services/transition.service';
 import SidebarFooter from './SidebarFooter.vue';
 import '~/style/sidebar.css';
 

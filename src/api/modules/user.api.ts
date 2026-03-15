@@ -1,6 +1,6 @@
 import type { AddUserDetailDto, PaginationMetadata, User, UserDetailDto } from "~/types";
 import { put, get, post } from "~/api/http/request";
-import { usePagination } from "~/composables/usePagination";
+import { usePagination } from "~/services/pagination.service";
 import { validateUserDetailPayload, validateUserId } from "~/api/validation/user.validation";
 
 export interface GetUserListParams {

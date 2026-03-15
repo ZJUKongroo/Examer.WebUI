@@ -98,7 +98,7 @@ import { handleApiError } from '~/api/error';
 import CRMenu from "~/components/UI/CRMenu.vue";
 import CRMenuCell from "~/components/UI/CRMenuCell.vue";
 import CDialog from "~/components/UI/CDialog.vue";
-import { openFile } from "~/ts/previewFile";
+import { openFile } from "~/services/preview.service";
 
 const router = useRouter();
 const store = useMainStore();

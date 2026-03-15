@@ -136,7 +136,7 @@ import {
   updateGroup,
 } from '~/api';
 import { handleApiError } from '~/api/error';
-import { fetchAllPaginatedItems } from '~/composables/usePagination';
+import { fetchAllPaginatedItems } from '~/services/pagination.service';
 import type { Group, User } from '~/types';
 
 const users = ref<User[]>([]);

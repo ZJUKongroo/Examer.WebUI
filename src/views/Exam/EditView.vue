@@ -50,7 +50,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import { useMainStore } from "~/store/mainStore";
-import deleteConfirm from "~/ts/deleteConfirm";
+import deleteConfirm from "~/services/dialog.service";
 import { animate, spring, stagger } from "animejs";
 import { deleteExam as removeExam, updateExam } from "~/api";
 import { handleApiError } from "~/api/error";

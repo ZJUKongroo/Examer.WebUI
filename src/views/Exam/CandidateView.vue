@@ -56,7 +56,7 @@ import { useRoute } from 'vue-router';
 import UniversalHeader from '~/components/UniversalHeader.vue';
 import { assignExamMembers, getExamUsers, getUsers, unassignExamMembers } from '~/api';
 import { handleApiError } from '~/api/error';
-import { fetchAllPaginatedItems } from '~/composables/usePagination';
+import { fetchAllPaginatedItems } from '~/services/pagination.service';
 import type { User } from '~/types';
 
 const route = useRoute();

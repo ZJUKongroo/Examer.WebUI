@@ -1,4 +1,4 @@
-import type { Commit, Marking, Problem } from "~/types";
+import type { Commit, Marking } from "~/types";
 import { get, post } from "~/api/http/request";
 import {
   validateCommitId,

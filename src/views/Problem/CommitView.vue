@@ -9,7 +9,7 @@ import { handleApiError } from "~/api/error";
 import { ElMessage } from "element-plus";
 import CDialog from "~/components/UI/CDialog.vue";
 import { ExamType } from "~/enums";
-import { fileUploadAsync } from "~/ts/fileUpload";
+import { fileUploadAsync } from "~/services/upload.service";
 
 // 用户要提交的文件
 const files = ref<File[]>([]);

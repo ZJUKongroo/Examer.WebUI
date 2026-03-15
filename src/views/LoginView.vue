@@ -52,7 +52,7 @@
 <script lang="ts" setup>
 import type { LoginDto } from "~/types";
 import { ref, onMounted } from "vue";
-import { entry, leave, fadeOut, fadeIn } from "~/ts/entry";
+import { entry, leave, fadeOut, fadeIn } from "~/services/transition.service";
 import { useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
 import { login as loginApi, register as registerApi, sendResetEmail } from "~/api";

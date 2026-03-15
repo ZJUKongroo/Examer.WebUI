@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useBonus } from './composables/useBonus';
-import { useVuetifyDarkmode } from './composables/useVuetifyDarkmode';
+import { registerBonusDebugHook } from './services/bonus.service';
+import { syncVuetifyTheme } from './services/theme.service';
 import { useMainStore } from './store/mainStore';
 
-useVuetifyDarkmode();
+syncVuetifyTheme();
 // 启用 Vuetify 深色模式
 useMainStore().refreshExamData();
 // 刷新当前考试数据
-useBonus();
+registerBonusDebugHook();
 </script>
 
 <template>

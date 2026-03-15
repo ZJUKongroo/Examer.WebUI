@@ -20,7 +20,7 @@ import MainSidebar from "~/components/MainSidebar.vue";
 import AdminSidebar from "~/components/AdminSidebar.vue";
 import SuperAdminSidebar from "~/components/SuperAdminSidebar.vue";
 import { useMainStore } from "~/store/mainStore";
-import { entry } from "~/ts/entry";
+import { entry } from "~/services/transition.service";
 import { UserRole } from "~/enums";
 import { ElWatermark} from "element-plus";
 
