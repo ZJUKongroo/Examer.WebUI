@@ -48,11 +48,12 @@
 <script lang="ts" setup>
 import { ref, onMounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "~/ts/request";
-import { ElMessage } from "element-plus";
+import { resetPassword } from "~/api";
+import { handleApiError } from "~/api/error";
+import { buildResetPasswordPayload } from "~/mappers";
 import { animate, spring, stagger } from "animejs";
-import type { LoginCredientialDto } from "~/types";
 import { useMainStore } from "~/store/mainStore";
+import appMessage from "~/services/message.service";
 
 const route = useRoute();
 const router = useRouter();
@@ -70,58 +71,17 @@ function goToLogin(): void {
   router.push("/login");
 }
 
-function checkPayload(): boolean {
-  const passwordPattern = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).{8,}$/;
-
-  if (!resetToken.value) {
-    pageNotice.value = "重置链接无效，请重新发起找回密码";
-    return false;
-  }
-
-  if (!form.value.password || !passwordPattern.test(form.value.password)) {
-    ElMessage({
-      type: "error",
-      message: "密码需包含大写字母、小写字母、数字和特殊字符，且不少于8位",
-    });
-    return false;
-  }
-
-  if (form.value.password !== form.value.confirmPassword) {
-    ElMessage({
-      type: "error",
-      message: "两次输入的密码不一致",
-    });
-    return false;
-  }
-
-  return true;
-}
-
 async function submit(): Promise<void> {
-  if (!checkPayload()) {
-    return;
-  }
-
   loading.value = true;
   try {
-    const res = await axios.put<LoginCredientialDto>(`/authentication/password`, {
-      passwordResetToken: resetToken.value,
-      password: form.value.password,
-    });
+    const res = await resetPassword(buildResetPasswordPayload(resetToken.value, form.value.password));
     if (res.status === 200) {
-      ElMessage({
-        type: "success",
-        message: "密码重置成功",
-      });
+      appMessage.success("密码重置成功");
       store.login(res.data);
       router.push("/user/detail");
     }
   } catch (error) {
-    console.log(error);
-    ElMessage({
-      type: "error",
-      message: "密码重置失败，请重新获取邮件链接",
-    });
+    handleApiError(error, { fallbackMessage: "密码重置失败，请重新获取邮件链接" });
   } finally {
     loading.value = false;
   }

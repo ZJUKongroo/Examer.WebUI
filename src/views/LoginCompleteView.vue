@@ -58,10 +58,12 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "~/ts/request";
+import { activateAccount, createUserDetail } from "~/api";
+import { getApiErrorMessage } from "~/api/error";
+import { buildUserDetailPayload } from "~/mappers";
 import { animate, spring } from "animejs";
 import { useMainStore } from "~/store/mainStore";
-import type { AddUserDetailDto, LoginCredientialDto } from "~/types";
+import type { AddUserDetailDto } from "~/types";
 import { EthnicGroup } from "~/enums";
 
 const route = useRoute();
@@ -70,7 +72,6 @@ const submitting = ref(false);
 const noticeMessage = ref("");
 const noticeType = ref<"success" | "error">("success");
 const store = useMainStore();
-
 
 const genderOptions = [
   { title: "男", value: 1 },
@@ -122,87 +123,22 @@ onMounted(() => {
   });
 });
 
-function validateForm(): boolean {
-  noticeMessage.value = "";
-
-  if (!getTokenFromQuery()) {
-    noticeType.value = "error";
-    noticeMessage.value = "链接缺少 token 参数，请从邮箱中的激活链接进入";
-    return false;
-  }
-
-  if (
-    !form.value.dateOfBirth ||
-    form.value.phoneNumber.trim().length <= 5 ||
-    form.value.college.trim().length <= 1 ||
-    form.value.major.trim().length <= 1 ||
-    form.value.class.trim().length <= 1 ||
-    form.value.seniorHigh.trim().length <= 0 ||
-    form.value.dormitory.trim().length <= 0 ||
-    form.value.homeAddress.trim().length <= 1 ||
-    form.value.englishLevel.trim().length <= 0
-  ) {
-    noticeType.value = "error";
-    noticeMessage.value = "请完整填写表单中的必填信息";
-    return false;
-  }
-
-  if (
-    !Number.isFinite(form.value.gender) ||
-    !Number.isFinite(form.value.ethnicGroup) ||
-    !Number.isFinite(form.value.gpaOfAllCourses) ||
-    !Number.isFinite(form.value.rank) ||
-    !Number.isFinite(form.value.collegeNumber)
-  ) {
-    noticeType.value = "error";
-    noticeMessage.value = "数字字段格式不正确";
-    return false;
-  }
-
-  if (form.value.gpaOfAllCourses < 0) {
-    noticeType.value = "error";
-    noticeMessage.value = "绩点不能为负数";
-    return false;
-  }
-
-  return true;
-}
-
 async function submitForm(): Promise<void> {
-  if (!validateForm()) return;
-
   submitting.value = true;
   try {
     const emailActivateToken = getTokenFromQuery();
-    let credientials = await axios.post<LoginCredientialDto>(`/authentication/activate/${encodeURIComponent(emailActivateToken)}`);
+    const credientials = await activateAccount(emailActivateToken);
     store.login(credientials.data);
 
-    const payload: AddUserDetailDto = {
-      gender: Number(form.value.gender),
-      ethnicGroup: Number(form.value.ethnicGroup),
-      dateOfBirth: form.value.dateOfBirth,
-      phoneNumber: form.value.phoneNumber.trim(),
-      college: form.value.college.trim(),
-      major: form.value.major.trim(),
-      class: form.value.class.trim(),
-      seniorHigh: form.value.seniorHigh.trim(),
-      dormitory: form.value.dormitory.trim(),
-      // politicalStatus form input is temporarily disabled; use default value.
-      politicalStatus: 1,
-      homeAddress: form.value.homeAddress.trim(),
-      englishLevel: form.value.englishLevel.trim(),
-      gpaOfAllCourses: Number(form.value.gpaOfAllCourses),
-      gpaOfMajorCourses:0,
-      rank: Number(form.value.rank),
-      collegeNumber: Number(form.value.collegeNumber),
-    };
+    const payload: AddUserDetailDto = buildUserDetailPayload(form.value);
 
-    await axios.post("/user/detail", payload);
+    await createUserDetail(payload);
     router.push("/user/detail");
   } catch (error) {
-    console.error(error);
     noticeType.value = "error";
-    noticeMessage.value = "提交失败，请检查 token 与表单信息后重试";
+    noticeMessage.value = getApiErrorMessage(error, {
+      fallbackMessage: "提交失败，请检查 token 与表单信息后重试",
+    });
   } finally {
     submitting.value = false;
   }

@@ -1,9 +1,10 @@
 <template>
-  <div class="exam-edit-container">
-    <div id="exam-edit-header">
-      <h1>考试列表</h1>
-      <v-btn variants="tonal" @click="createExam">新建考试</v-btn>
-    </div>
+  <div class="exam-edit-container global-container">
+    <UniversalHeader title="考试列表" hide-back-button id="exam-edit-header">
+      <template #append>
+        <v-btn variants="tonal" @click="createExam">新建考试</v-btn>
+      </template>
+    </UniversalHeader>
     <div id="exam-edit-content">
       <div class="exam-edit-card" v-for="(exam, index) in exams" :key="exam.id">
         <v-card class="mb-2" :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
@@ -49,14 +50,16 @@
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useMainStore } from "~/store/mainStore";
-import deleteConfirm from "~/ts/deleteConfirm";
+import { confirmDialog } from "~/services/dialog.service";
 import { animate, spring, stagger } from "animejs";
-import axios from "~/ts/request";
-import { ElMessage } from "element-plus";
+import { deleteExam as removeExam, updateExam } from "~/api";
+import { handleApiError } from "~/api/error";
 import { ExamType } from "~/enums/index";
 import type { Exam } from "~/types";
 import ExamCreateForm from "~/components/ExamCreateForm.vue";
+import appMessage from "~/services/message.service";
 
 const store = useMainStore();
 const exams = computed(() => store.examData);
@@ -70,21 +73,19 @@ function changeExamName(exam: Exam) {
   editingExam.value = exam.id;
 }
 
-function confirmChangeExamName(exam: Exam) {
-  axios
-    .put(`/Exam/${exam.id}`, {
+async function confirmChangeExamName(exam: Exam) {
+  try {
+    await updateExam(exam.id, {
       name: newName.value,
       startTime: exam.startTime,
       endTime: exam.endTime,
-    })
-    .then(() => {
-      store.refreshExamData();
-      editingExam.value = "";
-      ElMessage.success("已修改考试名");
-    })
-    .catch(() => {
-      ElMessage.error("修改考试名失败");
     });
+    store.refreshExamData();
+    editingExam.value = "";
+    appMessage.success("已修改考试名");
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "修改考试名失败" });
+  }
 }
 
 const createExam = () => {
@@ -92,16 +93,22 @@ const createExam = () => {
 };
 
 const deleteExam = (index: number) => {
-  deleteConfirm("确认删除考试？", false).then((res) => {
+  confirmDialog({
+    title: "删除考试",
+    message: "删除是危险行为，请点击确认以执行。",
+    warningText: "请谨慎操作",
+    confirmText: "确认",
+    cancelText: "取消",
+    confirmColor: "error",
+  }).then((res) => {
     if (res) {
-      axios
-        .delete(`/Exam/${exams.value[index].id}`)
+      removeExam(exams.value[index].id)
         .then(() => {
           store.refreshExamData();
-          ElMessage.success("已删除考试");
+          appMessage.success("已删除考试");
         })
-        .catch(() => {
-          ElMessage.error("删除考试失败");
+        .catch((error) => {
+          handleApiError(error, { fallbackMessage: "删除考试失败" });
         });
     }
   });
@@ -140,10 +147,6 @@ onMounted(() => {
 </script>
 
 <style>
-.exam-edit-container {
-  padding: 40px;
-}
-
 #exam-edit-header {
   display: flex;
   justify-content: space-between;

@@ -25,10 +25,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits, defineProps, onMounted } from 'vue'
-import { ElMessage} from 'element-plus'
-import { entry } from '@/ts/entry'
+import { ref, onMounted } from 'vue'
+import { entry } from '@/services/transition.service'
 import "@/style/cui.scss"
+import appMessage from '~/services/message.service';
 const visible = ref(true);
 const props = defineProps({
     name: {
@@ -61,10 +61,7 @@ function confirm_delete() {
     if (confirm_delete_name.value == props.name) {
         emit("confirm")
     }
-    else ElMessage({
-        type: "error",
-        message: "请输入名称"
-    })
+    else appMessage.error("请输入名称");
 }
 </script>
 

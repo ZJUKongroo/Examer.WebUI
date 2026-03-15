@@ -4,12 +4,12 @@ import UniversalHeader from "~/components/UniversalHeader.vue";
 import { computed, nextTick, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
-import axios from '~/ts/request'
-import { ElMessage } from "element-plus";
-import type { Commit, Group } from "~/types";
+import { confirmCommit, createCommit, getCommitList, getUserGroups } from "~/api";
+import { handleApiError } from "~/api/error";
 import CDialog from "~/components/UI/CDialog.vue";
 import { ExamType } from "~/enums";
-import { fileUploadAsync } from "~/ts/fileUpload";
+import { fileUploadAsync } from "~/services/upload.service";
+import appMessage from "~/services/message.service";
 
 // 用户要提交的文件
 const files = ref<File[]>([]);
@@ -80,27 +80,21 @@ const fileInputRef = ref<HTMLInputElement | null>(null);
 async function submit() {
   // 如果没有选择文件，则提示警告
   if (files.value.length === 0) {
-    ElMessage.warning("请先选择文件");
+    appMessage.warning("请先选择文件");
     return;
   }
 
   let userId = store.userId;
 
   if(exam.value?.examType === ExamType.GroupExam){
-    const groupInfo = (await axios.get<Group[]>(`/user/groups/${store.userId}`,{
-      params:{
-        examId: examId.value
-      }
-    })).data;
+    const groupInfo = (await getUserGroups(store.userId, examId.value)).data;
     if(groupInfo.length>0) userId = groupInfo[0].id;
   }
-  const currentCommit = (await axios.get<Commit[]>(`/Commit`, {
-      params: {
-        examId: examId.value,
-        problemId: problemId.value,
-        userId
-      }
-    })).data;
+  const currentCommit = (await getCommitList({
+    examId: examId.value,
+    problemId: problemId.value,
+    userId
+  })).data;
   let currentCommitId = "";
   if(currentCommit.length > 0){
     currentCommitId = currentCommit[0].id;
@@ -110,7 +104,7 @@ async function submit() {
 
   try {
     // 提交基本的提交信息，获取提交记录 ID
-    const { data: commit } = await axios.post<Commit>("/commit", {
+    const { data: commit } = await createCommit({
       examId: examId.value,
       problemId: problemId.value,
       userId: userId
@@ -128,16 +122,16 @@ async function submit() {
     // 等待所有文件上传完成
     await Promise.all(uploadPromises);
     if(currentCommitId){
-        await axios.post(`/commit/confirmation/${commitId}`);
+      await confirmCommit(commitId);
       }
-    ElMessage.success("提交成功");
+    appMessage.success("提交成功");
     router.back(); // 上传成功后返回上一个页面
   } catch (error) {
     // 基本提交失败时提示错误
     if(currentCommitId){
-      await axios.post(`/commit/confirmation/${currentCommitId}`);
+      await confirmCommit(currentCommitId);
     }
-    ElMessage.error("提交失败");
+    handleApiError(error, { fallbackMessage: "提交失败" });
   } finally {
     // 重置上传状态和进度
     uploading.value = false;
@@ -148,7 +142,7 @@ async function submit() {
 </script>
 
 <template>
-  <div class="problem-commit-container">
+  <div class="problem-commit-container global-container">
     <UniversalHeader :title="`试题 ${problem ? problem.name : ''}`" class="problem-commit-animation">
       <template #append>
         <v-btn @click="submit">提交</v-btn>
@@ -217,10 +211,6 @@ async function submit() {
 </template>
 
 <style>
-.problem-commit-container {
-  padding: 40px;
-}
-
 #problem-commit-info {
   margin-bottom: 20px;
 }

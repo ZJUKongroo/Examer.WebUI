@@ -1,14 +1,15 @@
 <template>
-  <div id="user-detail-page">
-    <div id="user-detail-header">
+  <div id="user-detail-page" class="global-container">
+    <UniversalHeader title="用户信息" hide-back-button id="user-page-header" class="user-page-animation">
+    </UniversalHeader>
+
+    <div id="user-detail-header" class="mb-8" >
       <v-icon size="48" color="primary">mdi-account-circle</v-icon>
       <div>
         <div id="user-detail-name">{{ detail?.user?.name ?? "加载中..." }}</div>
         <div id="user-detail-studentno">学号：{{ detail?.user?.studentNumber ?? "—" }}</div>
       </div>
     </div>
-
-    <v-divider class="my-4" />
 
     <div v-if="loading" class="text-center py-8">
       <v-progress-circular indeterminate color="primary" />
@@ -39,7 +40,7 @@
             <v-text-field v-model="editForm.homeAddress" label="大类" density="comfortable" />
             <v-text-field v-model="editForm.major" label="专业" density="comfortable" />
             <v-text-field v-model="editForm.class" label="班级" density="comfortable" />
-              <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
+            <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
             <v-text-field v-model="editForm.seniorHigh" label="高中" density="comfortable" />
             <v-text-field v-model="editForm.dormitory" label="宿舍" density="comfortable" />
             <!-- <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌" density="comfortable" item-title="title" item-value="value" /> -->
@@ -64,11 +65,14 @@
 import type { AddUserDetailDto, UserDetailDto } from "~/types";
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "~/ts/request";
+import { getUserDetail, updateUserDetail } from "~/api";
+import { buildUserDetailPayload, cloneUserDetailToEditForm } from "~/mappers";
 import { useMainStore } from "~/store/mainStore";
 import { UserRole, EthnicGroup } from "~/enums";
-import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
+import { handleApiError } from "~/api/error";
+import appMessage from "~/services/message.service";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -138,7 +142,7 @@ function genderName(code?: number): string {
 
 const detailFields = computed(() => [
   { label: "姓名", value: detail.value?.user?.name },
-  { label: "学号", value: detail.value?.user?.studentNumber },
+  // { label: "学号", value: detail.value?.user?.studentNumber },
   { label: "性别", value: genderName(detail.value?.gender) },
   { label: "民族", value: ethnicGroupName(detail.value?.ethnicGroup) },
   { label: "出生日期", value: detail.value?.dateOfBirth },
@@ -165,12 +169,9 @@ async function fetchDetail(): Promise<void> {
 
   loading.value = true;
   try {
-    const path = viewingUserId.value ? `/user/detail/${viewingUserId.value}` : "/user/detail/me";
-    const res = await axios.get<UserDetailDto>(path);
-    detail.value = res.data;
+    detail.value = await getUserDetail(viewingUserId.value || undefined);
   } catch (error) {
-    console.error(error);
-    ElMessage({ type: "error", message: "获取用户信息失败" });
+    handleApiError(error, { fallbackMessage: "获取用户信息失败" });
     detail.value = null;
   } finally {
     loading.value = false;
@@ -179,59 +180,21 @@ async function fetchDetail(): Promise<void> {
 
 function openEditDialog(): void {
   if (!detail.value) return;
-  const user = detail.value;
-  editForm.value = {
-    gender: user.gender ?? 1,
-    ethnicGroup: user.ethnicGroup ?? 1,
-    dateOfBirth: user.dateOfBirth ?? "",
-    phoneNumber: user.phoneNumber ?? "",
-    college: user.college ?? "",
-    major: user.major ?? "",
-    homeAddress: user.homeAddress ?? "",
-    class: user.class ?? "",
-    seniorHigh: user.seniorHigh ?? "",
-    dormitory: user.dormitory ?? "",
-    politicalStatus: user.politicalStatus ?? 1,
-    englishLevel: user.englishLevel ?? "",
-    gpaOfAllCourses: user.gpaOfAllCourses ?? 0,
-    gpaOfMajorCourses: user.gpaOfMajorCourses ?? 0,
-    rank: user.rank ?? 1,
-    collegeNumber: user.collegeNumber ?? 1,
-  };
+  editForm.value = cloneUserDetailToEditForm(detail.value);
   editDialog.value = true;
 }
 
 async function saveEdit(): Promise<void> {
   savingEdit.value = true;
   try {
-    const payload = {
-      gender: Number(editForm.value.gender),
-      ethnicGroup: Number(editForm.value.ethnicGroup),
-      dateOfBirth: editForm.value.dateOfBirth,
-      phoneNumber: editForm.value.phoneNumber.trim(),
-      college: editForm.value.college.trim(),
-      major: editForm.value.major.trim(),
-      class: editForm.value.class.trim(),
-      seniorHigh: editForm.value.seniorHigh.trim(),
-      dormitory: editForm.value.dormitory.trim(),
-      // politicalStatus: Number(editForm.value.politicalStatus),
-      politicalStatus: 1,
-      homeAddress: editForm.value.homeAddress.trim(),
-      englishLevel: editForm.value.englishLevel.trim(),
-      gpaOfAllCourses: Number(editForm.value.gpaOfAllCourses),
-      gpaOfMajorCourses:0,
-      rank: Number(editForm.value.rank),
-      collegeNumber: Number(editForm.value.collegeNumber),
-    };
+    const payload = buildUserDetailPayload(editForm.value);
 
-    const updatePath = isViewingSelf.value ? "/user/detail/me" : `/user/detail/${viewingUserId.value}`;
-    await axios.put(updatePath, payload);
-    ElMessage({ type: "success", message: "用户信息更新成功" });
+    await updateUserDetail(payload, isViewingSelf.value ? undefined : viewingUserId.value);
+    appMessage.success("用户信息更新成功");
     editDialog.value = false;
     await fetchDetail();
   } catch (error) {
-    console.error(error);
-    ElMessage({ type: "error", message: "更新失败，请重试" });
+    handleApiError(error, { fallbackMessage: "用户信息更新失败" });
   } finally {
     savingEdit.value = false;
   }
@@ -265,9 +228,7 @@ onMounted(async () => {
 
 <style lang="scss">
 #user-detail-page {
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 20px;
 }
 
 #user-detail-header {

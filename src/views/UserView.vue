@@ -1,8 +1,7 @@
 <template>
-  <div id="user-page">
-    <div id="user-page-header" class="user-page-animation">
-      <div id="user-page-title">用户管理</div>
-    </div>
+  <div id="user-page" class="global-container">
+    <UniversalHeader title="用户管理" hide-back-button id="user-page-header" class="user-page-animation">
+    </UniversalHeader>
 
     <div class="user-page-animation">
       <div v-if="loading" class="text-center py-6">
@@ -43,9 +42,10 @@
 import type { User } from "~/types";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import axios from "~/ts/request";
-import { ElMessage } from "element-plus";
+import { getUserList } from "~/api/modules/user.api";
 import { animate, spring, stagger } from "animejs";
+import { handleApiError } from "~/api/error";
+import UniversalHeader from "~/components/UniversalHeader.vue";
 
 const router = useRouter();
 const loading = ref(false);
@@ -61,17 +61,14 @@ function openDetail(userId: string): void {
 async function fetchUserList(): Promise<void> {
   loading.value = true;
   try {
-    const res = await axios.get<User[]>("/user", {
-      params: { PageNumber: page.value, PageSize: pageSize },
+    const result = await getUserList({
+      pageNumber: page.value,
+      pageSize,
     });
-    const data = res.data;
-    userList.value = data;
-
-    const total = Number(res.headers["x-total-count"] ?? res.headers["x-pagination-totalcount"] ?? 0);
-    totalPages.value = total > 0 ? Math.ceil(total / pageSize) : data.length === pageSize ? page.value + 1 : page.value;
+    userList.value = result.items;
+    totalPages.value = Math.ceil(result.pagination.totalCount / pageSize);
   } catch (error) {
-    console.error(error);
-    ElMessage({ type: "error", message: "获取用户列表失败" });
+    handleApiError(error, { fallbackMessage: "获取用户列表失败" });
   } finally {
     loading.value = false;
   }
@@ -90,24 +87,7 @@ onMounted(async () => {
 
 <style lang="scss">
 #user-page {
-  max-width: 1000px;
   margin: 0 auto;
-  padding: 28px 20px;
-}
-
-#user-page-header {
-  margin-bottom: 16px;
-}
-
-#user-page-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text-color);
-}
-
-#user-page-subtitle {
-  margin-top: 4px;
-  color: var(--text-color-tip);
 }
 
 #user-page-table {

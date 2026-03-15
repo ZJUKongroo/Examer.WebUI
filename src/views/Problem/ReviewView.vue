@@ -1,5 +1,5 @@
 <template>
-  <div class="problem-review-container">
+  <div class="problem-review-container global-container">
     <UniversalHeader title="题目A" class="problem-review-header">
       <template #append>
         <v-btn @click="submitReview">提交</v-btn>
@@ -77,15 +77,15 @@
 
 <script lang="ts" setup>
 import { animate, spring, stagger } from "animejs";
-import axios from '~/ts/request';
+import { createMarking, getCommitById } from "~/api";
+import { handleApiError } from "~/api/error";
 import { onMounted, ref, computed, watch, nextTick } from "vue";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import { useRoute, useRouter } from "vue-router";
-import type { Commit,Marking } from "~/types";
+import type { Commit } from "~/types";
 import { useMainStore } from "~/store/mainStore";
-import { ElMessage} from "element-plus";
-import { openFile } from "~/ts/previewFile";
-
+import { openFile } from "~/services/preview.service";
+import appMessage from "~/services/message.service";
 
 const route = useRoute();
 const router = useRouter();
@@ -137,19 +137,21 @@ const submitReview = () => {
   // 提交评测逻辑
   const judge_score = Number(score.value);
   if (judge_score > 0 && answerInfo.value && judge_score <= answerInfo.value.problem.score) {
-    axios.post<Marking>(`/marking`, {
+    createMarking({
       commitId: commitId.value,
       reviewUserId: store.userId,
       score: judge_score,
       comment: comment.value
     }).then(() => {
       // 提交成功
-      ElMessage.success("提交成功");
+      appMessage.success("提交成功");
       init()
+    }).catch((error) => {
+      handleApiError(error, { fallbackMessage: "提交失败" });
     });
   }
   else {
-    ElMessage.error("分数不合法");
+    appMessage.error("分数不合法");
   }
 };
 
@@ -163,13 +165,15 @@ function toUserDetail(userId: string) {
 async function getCommits() {
   // 获取提交记录
   return new Promise<void>((resolve,) => {
-    axios.get<Commit>(`/commit/${commitId.value.trim()}`).then((res) => {
+    getCommitById(commitId.value.trim()).then((res) => {
       answerInfo.value = res.data;
       resolve()
+    }).catch((error) => {
+      handleApiError(error, { fallbackMessage: "获取提交记录失败" });
+      resolve();
     });
   })
 }
-
 
 onMounted(() => init())
 </script>
@@ -179,9 +183,6 @@ onMounted(() => init())
   display: flex;
   flex-direction: row;
   gap: 10px;
-}
-.problem-review-container {
-  padding: 40px;
 }
 
 .problem-review-content-wrapper {

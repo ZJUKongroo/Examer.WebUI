@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps,type PropType } from "vue";
+import { type PropType } from "vue";
 import { ExamType } from "~/enums";
 import type { Exam } from "~/types";
 

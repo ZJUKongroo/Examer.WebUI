@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
-import axios from "~/ts/request";
 import type { Commit } from "~/types";
 import Loki from "lokijs";
-import { ElMessage } from "element-plus";
+import { getCommitList } from "~/api";
+import { handleApiError } from "~/api/error";
 
 export const useCommitStore = defineStore("commit", () => {
   // state
@@ -10,11 +10,7 @@ export const useCommitStore = defineStore("commit", () => {
 
   async function fetchCommits(examId:string) {
     try {
-      const { data } = await axios.get<Commit[]>("/commit",{
-        params:{
-          examId
-        }
-      });
+      const { data } = await getCommitList({ examId });
       // 如果集合不存在，则添加集合并插入数据
       let commitCollection = db.getCollection<Commit>(examId);
       if (!commitCollection) {
@@ -25,7 +21,7 @@ export const useCommitStore = defineStore("commit", () => {
       }
       commitCollection.insert(data);
     } catch (e) {
-      ElMessage.error("获取提交数据失败");
+      handleApiError(e, { fallbackMessage: "获取提交数据失败" });
     }
   }
 

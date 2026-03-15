@@ -1,5 +1,5 @@
 <template>
-    <div class="container" id="license-container">
+    <div class="container global-container" id="license-container">
         <h1 class="mb-4 license-anime-element">ACEE 试题提交系统</h1>
         <p class="mb-2 license-anime-element">By ZJUKongroo 工作室</p>
         <h2 class="mb-2 license-anime-element">Developers 开发者</h2>
@@ -158,12 +158,9 @@ const usedProjects = ref<Project[]>([{
 }])
 </script>
 
-<style>
+<style scoped>
 #license-container {
-    width: 100%;
-    height: 100%;
     box-sizing: border-box;
-    padding: 40px;
     overflow: hidden auto;
     width: 100%;
     padding-left: 10%;

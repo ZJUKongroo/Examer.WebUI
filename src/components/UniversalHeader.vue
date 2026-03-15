@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 
 defineProps<{
   title: string;
+  hideBackButton?: boolean;
 }>();
 const router = useRouter();
 function back() {
@@ -13,6 +14,7 @@ function back() {
 <template>
     <div class="universal-header">
       <v-btn
+        v-if="!hideBackButton"
         @click="back"
         icon="mdi-arrow-left"
         variant="text"
@@ -31,13 +33,12 @@ function back() {
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  margin-bottom: 20px;
   width: 100%;
 }
 
 .universal-header-title {
-  font-size: 22px;
-  font-weight: bold;
+  font-size: 25px;
+  font-weight: 800;
   margin-left: 12px;
   flex-grow: 1;
 }

@@ -1,5 +1,5 @@
 <template>
-  <div id="exam-container">
+  <div id="exam-container" class="container global-container">
     <UniversalHeader :title="exam ? exam.name : ''" class="exam-commit-header exam-commit-second-in" />
     <div v-if="exam?.examType === ExamType.GroupExam" class="exam-commit-second-in mb-2">
       <v-alert variant="tonal" show-icon :closable="false" type="info">
@@ -18,7 +18,7 @@
             v-for="(problem, index) in problems" :key="index" class="exam-commit-second-in exam-commit-card" :class="[
               { completed: commitStatus[problem.id] != undefined },
             ]">
-            <div class="exam-commit-number">试题 {{ problem.name }}</div>
+            <div class="exam-commit-number">{{ problem.name }}</div>
             <div v-if="commitStatus[problem.id]" class="exam-commit-status">
               上次提交 <br />
               {{ (new Date(commitStatus[problem.id].commitTime)).toLocaleString() }}
@@ -91,13 +91,14 @@ import { useRouter } from "vue-router";
 // import TeamCell from "~/components/TeamCell.vue";
 import { ExamType } from "~/enums";
 import { useMainStore } from "~/store/mainStore";
-import type { Commit, Exam, Group, Problem } from "~/types";
+import type { Commit, Exam, Problem } from "~/types";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import axios from '~/ts/request'
+import { getCommitList, getUserGroups } from '~/api';
+import { handleApiError } from '~/api/error';
 import CRMenu from "~/components/UI/CRMenu.vue";
 import CRMenuCell from "~/components/UI/CRMenuCell.vue";
 import CDialog from "~/components/UI/CDialog.vue";
-import { openFile } from "~/ts/previewFile";
+import { openFile } from "~/services/preview.service";
 
 const router = useRouter();
 const store = useMainStore();
@@ -159,26 +160,22 @@ function openProblem(problem: Problem) {
 async function getCommitStatus(exam: Exam) {
   let userId = store.userId;
   if(exam.examType === ExamType.GroupExam){
-    const groupInfo = (await axios.get<Group[]>(`/user/groups/${store.userId}`,{
-      params:{
-        examId: examId.value
-      }
-    })).data;
-    if(groupInfo.length>0) userId = groupInfo[0].id;
+    const groupInfo = (await getUserGroups(store.userId, examId.value)).data;
+    if(groupInfo.length > 0) userId = groupInfo[0].id;
   }
-  for (const problem of exam.problems) {
-    axios.get<Commit[]>(`/Commit`, {
-      params: {
+  try {
+    await Promise.all(exam.problems.map(async (problem) => {
+      const { data } = await getCommitList({
         examId: exam.id,
         problemId: problem.id,
         userId: userId
+      });
+      if (data.length > 0) {
+        commitStatus.value[problem.id] = data[0];
       }
-    })
-      .then(({ data }) => {
-        if (data.length > 0) {
-          commitStatus.value[problem.id] = data[0];
-        }
-      })
+    }));
+  } catch (error) {
+    handleApiError(error, { fallbackMessage: "获取提交状态失败" });
   }
 }
 
@@ -197,9 +194,6 @@ onMounted(async () => {
 
 <style>
 #exam-container {
-  width: 100%;
-  height: 100%;
-  padding: 40px;
   box-sizing: border-box;
 }
 
@@ -248,14 +242,15 @@ onMounted(async () => {
 }
 
 .exam-commit-card {
-  width: 140px;
+  width: 200px;
   height: 140px;
+  padding: 0 15px 0 15px;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
   text-align: center;
-  font-size: 16px;
+  font-size: 13px;
   border-radius: 8px;
   box-sizing: border-box;
   background-color: var(--bg-color-darker);
@@ -277,7 +272,7 @@ onMounted(async () => {
 }
 
 .exam-commit-number {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
 }
 

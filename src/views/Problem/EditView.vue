@@ -1,5 +1,5 @@
 <template>
-  <div class="problem-edit-container">
+  <div class="problem-edit-container global-container">
     <UniversalHeader title="题目列表" id="problem-edit-header">
       <template #append>
         <v-btn variants="tonal" @click="createProblem">新建题目</v-btn>
@@ -39,7 +39,7 @@
         <h1 class="mb-4">编辑题目</h1>
         <v-form @submit.prevent="confirmEditProblem">
           <v-text-field v-model="editForm.name" label="题目名称" required></v-text-field>
-          <v-text-field v-model="form.score" label="题目分数" type="number"></v-text-field>
+          <v-text-field v-model="editForm.score" label="题目分数" type="number"></v-text-field>
           <v-textarea v-model="editForm.description" label="题目描述" required></v-textarea>
           <v-btn variants="tonal" type="submit">提交</v-btn>
         </v-form>
@@ -53,11 +53,13 @@ import { animate, spring, stagger } from "animejs";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute} from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
-import deleteConfirm from "~/ts/deleteConfirm";
-import axios from "~/ts/request";
+import { confirmDialog } from "~/services/dialog.service";
+import { createProblem as createProblemApi, deleteProblem as removeProblem, getExamById, updateProblem } from "~/api";
+import { handleApiError } from "~/api/error";
+import { buildCreateProblemPayload as mapCreateProblemPayload, buildProblemPayload } from "~/mappers";
 import UniversalHeader from "~/components/UniversalHeader.vue";
-import type { Exam, Problem } from "~/types";
-import { ElMessage } from "element-plus";
+import type { Problem } from "~/types";
+import appMessage from "~/services/message.service";
 
 const problems = ref<Problem[]>([]);
 const route = useRoute();
@@ -76,21 +78,102 @@ const examId = computed(() => {
 
 watch(examId, () => init());
 
-interface ProblemForm {
+interface ProblemFormValue {
   examId: string;
   name: string;
   description: string;
   problemType: number;
+  score: number | string;
+}
+
+interface UpdateProblemDto {
+  name: string;
+  description: string;
   score: number;
 }
 
-const default_form_value = {
-  examId: "",
-  name: "",
-  description: "",
-  problemType: 1,
-  score: 100
-};
+interface CreateProblemDto extends UpdateProblemDto {
+  examId: string;
+  problemType: number;
+}
+
+function createDefaultProblemForm(): ProblemFormValue {
+  return {
+    examId: "",
+    name: "",
+    description: "",
+    problemType: 1,
+    score: 100,
+  };
+}
+
+function checkProblemPayload(payload: {
+  name: string;
+  description: string;
+  score: number | string;
+}): payload is UpdateProblemDto {
+  const sanitized = buildProblemPayload(payload);
+
+  if (!sanitized.name) {
+    appMessage.error("题目名称不能为空");
+    return false;
+  }
+
+  if (!sanitized.description) {
+    appMessage.error("题目描述不能为空");
+    return false;
+  }
+
+  if (!Number.isFinite(sanitized.score) || sanitized.score <= 0) {
+    appMessage.error("题目分数需为大于0的数字");
+    return false;
+  }
+
+  return true;
+}
+
+function buildUpdateProblemPayload(payload: {
+  name: string;
+  description: string;
+  score: number | string;
+}): UpdateProblemDto | null {
+  if (!checkProblemPayload(payload)) {
+    return null;
+  }
+
+  return buildProblemPayload(payload);
+}
+
+function buildCreatePayload(form: ProblemFormValue): CreateProblemDto | null {
+  const sanitized = mapCreateProblemPayload({
+    examId: form.examId,
+    problemType: form.problemType,
+    name: form.name,
+    description: form.description,
+    score: form.score,
+  });
+
+  if (!sanitized.examId) {
+    appMessage.error("缺少考试信息，无法创建题目");
+    return null;
+  }
+
+  if (!Number.isInteger(sanitized.problemType) || sanitized.problemType <= 0) {
+    appMessage.error("题目类型无效");
+    return null;
+  }
+
+  const payload = buildUpdateProblemPayload(sanitized);
+  if (!payload) {
+    return null;
+  }
+
+  return {
+    examId: sanitized.examId,
+    problemType: sanitized.problemType,
+    ...payload,
+  };
+}
 
 function editProblem(problem: Problem) {
   editForm.value = Object.assign({}, problem);
@@ -98,30 +181,38 @@ function editProblem(problem: Problem) {
 }
 
 function confirmEditProblem() {
-  axios.put(`/Problem/${editForm.value.id}`, {
-    name: editForm.value.name,
-    description: editForm.value.description,
-    score: editForm.value.score,
-  }).then(() => {
+  const payload = buildUpdateProblemPayload(editForm.value);
+  if (!payload) {
+    return;
+  }
+
+  updateProblem(editForm.value.id, payload).then(() => {
     getProblems();
     problemEditVisible.value = false;
-    ElMessage.success("编辑题目成功");
-  }).catch(() => {
-    ElMessage.error("编辑题目失败");
+    appMessage.success("编辑题目成功");
+  }).catch((error) => {
+    handleApiError(error, { fallbackMessage: "编辑题目失败" });
   });
 }
 
-const form = ref<ProblemForm>(Object.assign({}, default_form_value));
+const form = ref<ProblemFormValue>(createDefaultProblemForm());
 
 const submitForm = () => {
-  form.value.examId = route.query.id as string;
-  axios.post("/Problem", form.value).then(() => {
+  const payload = buildCreatePayload({
+    ...form.value,
+    examId: route.query.id as string,
+  });
+  if (!payload) {
+    return;
+  }
+
+  createProblemApi(payload).then(() => {
     getProblems();
     problemCreateVisible.value = false;
-    form.value = Object.assign({}, default_form_value);
-    ElMessage.success("新建题目成功");
-  }).catch(() => {
-    ElMessage.error("新建题目失败");
+    form.value = createDefaultProblemForm();
+    appMessage.success("新建题目成功");
+  }).catch((error) => {
+    handleApiError(error, { fallbackMessage: "新建题目失败" });
   });
 };
 
@@ -130,13 +221,20 @@ const createProblem = () => {
 };
 
 const deleteProblem = (problem: Problem) => {
-  deleteConfirm(`${problem.name}`, false).then((res) => {
+  confirmDialog({
+    title: `删除 ${problem.name}`,
+    message: "删除是危险行为，请点击确认以执行。",
+    warningText: "请谨慎操作",
+    confirmText: "确认",
+    cancelText: "取消",
+    confirmColor: "error",
+  }).then((res) => {
     if (res) {
-      axios.delete(`/Problem/${problem.id}`).then(() => {
-        ElMessage.success("已删除题目");
+      removeProblem(problem.id).then(() => {
+        appMessage.success("已删除题目");
         getProblems();
-      }).catch(() => {
-        ElMessage.error("删除题目失败");
+      }).catch((error) => {
+        handleApiError(error, { fallbackMessage: "删除题目失败" });
       });
     }
   });
@@ -144,7 +242,7 @@ const deleteProblem = (problem: Problem) => {
 
 async function getProblems() {
   const id = route.query.id;
-  problems.value = (await axios.get<Exam>(`/Exam/${id}`)).data.problems;
+  problems.value = (await getExamById(String(id))).data.problems;
 }
 
 function init() {
@@ -169,10 +267,6 @@ onMounted(() => init());
 </script>
 
 <style>
-.problem-edit-container {
-  padding: 40px;
-}
-
 #exam-create-dialog-container {
   padding: 20px;
   box-sizing: border-box;

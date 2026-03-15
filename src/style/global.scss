@@ -58,7 +58,6 @@ body {
       "Liberation Sans", /* Linux 系统的替代字体 */
       sans-serif; /* 默认字体 */
 }
-  
 
 .rowbox {
     display: flex;
@@ -73,6 +72,11 @@ body {
 .container {
     height: 100%;
     width: 100%;
+}
+
+.global-container{
+    padding: 40px;
+    padding-top: 10px;
 }
 
 .wrapper {
