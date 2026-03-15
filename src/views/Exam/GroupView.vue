@@ -136,7 +136,7 @@ import {
   updateGroup,
 } from '~/api';
 import { handleApiError } from '~/api/error';
-import { usePagination } from '~/composables/usePagination';
+import { fetchAllPaginatedItems } from '~/composables/usePagination';
 import type { Group, User } from '~/types';
 
 const users = ref<User[]>([]);
@@ -514,37 +514,17 @@ const confirmChangeGroupName = async (id: string) => {
 };
 
 async function getAllUser() {
-  let res = await getUsers({
-    pageNumber: 1,
-    pageSize: defaultPageSize,
-  });
-  const totalCount = usePagination(res.headers);
-  // 后端的分页不能清除
-  // 先用小的分页大小获取totalCount, 再获取所有用户
-  if (totalCount > defaultPageSize) {
-    res = await getUsers({
-      pageNumber: 1,
-      pageSize: totalCount,
-    });
-  }
-  users.value = res.data;
+  users.value = await fetchAllPaginatedItems(
+    (pageSize) => getUsers({ pageNumber: 1, pageSize }),
+    defaultPageSize
+  );
 }
 
 async function getAllGroup() {
-  let res = await getGroupList({
-    pageNumber: 1,
-    pageSize: defaultPageSize,
-  });
-  const totalCount = usePagination(res.headers);
-  // 后端的分页不能清除
-  // 先用小的分页大小获取totalCount, 再获取所有组
-  if (totalCount > defaultPageSize) {
-    res = await getGroupList({
-      pageNumber: 1,
-      pageSize: totalCount,
-    });
-  }
-  groups.value = res.data;
+  groups.value = await fetchAllPaginatedItems(
+    (pageSize) => getGroupList({ pageNumber: 1, pageSize }),
+    defaultPageSize
+  );
 }
 // 上面的都是非常低效的代码，前后端一定要做好沟通！
 

@@ -1,4 +1,4 @@
-import type { AddUserDetailDto, User, UserDetailDto } from "~/types";
+import type { AddUserDetailDto, PaginationMetadata, User, UserDetailDto } from "~/types";
 import { put, get, post } from "~/api/http/request";
 import { usePagination } from "~/composables/usePagination";
 import { validateUserDetailPayload, validateUserId } from "~/api/validation/user.validation";
@@ -10,7 +10,7 @@ export interface GetUserListParams {
 
 export interface UserListResult {
   items: User[];
-  totalCount: number;
+  pagination: PaginationMetadata;
 }
 
 export async function getUserList(params: GetUserListParams): Promise<UserListResult> {
@@ -23,7 +23,7 @@ export async function getUserList(params: GetUserListParams): Promise<UserListRe
 
   return {
     items: response.data,
-    totalCount: usePagination(response.headers),
+    pagination: usePagination(response.headers),
   };
 }
 

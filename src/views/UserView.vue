@@ -66,12 +66,7 @@ async function fetchUserList(): Promise<void> {
       pageSize,
     });
     userList.value = result.items;
-    totalPages.value =
-      result.totalCount > 0
-        ? Math.ceil(result.totalCount / pageSize)
-        : result.items.length === pageSize
-          ? page.value + 1
-          : page.value;
+    totalPages.value = Math.ceil(result.pagination.totalCount / pageSize);
   } catch (error) {
     console.error(error);
     ElMessage({ type: "error", message: "获取用户列表失败" });

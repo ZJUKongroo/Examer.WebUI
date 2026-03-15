@@ -57,6 +57,7 @@ import { useRouter } from "vue-router";
 import { useMainStore } from "~/store/mainStore";
 import { login as loginApi, register as registerApi, sendResetEmail } from "~/api";
 import { getApiErrorMessage, handleApiError } from "~/api/error";
+import { buildLoginPayload, buildRecoverStudentNumber, buildRegisterPayload } from "~/mappers";
 import { ElMessage } from "element-plus";
 
 const form = ref({
@@ -90,13 +91,6 @@ const toggleRecover = () => {
   form.value.name = "";
 };
 
-function checkLoginPayload(payload: LoginDto): boolean {
-  if (payload.password.length <= 1 || payload.studentNumber.length <= 1) {
-    return false;
-  }
-  return true;
-}
-
 const store = useMainStore();
 const router = useRouter();
 
@@ -111,85 +105,12 @@ function submit(): void {
   }
 }
 
-function checkRecoverPayload(): boolean {
-  const studentNumberPattern = /^\d{10}$/;
-  const { studentNumber } = form.value;
-
-  if (!studentNumber || !studentNumberPattern.test(studentNumber)) {
-    ElMessage({
-      type: "error",
-      message: "学号需为10位数字",
-    });
-    return false;
-  }
-
-  return true;
-}
-
-function checkRegisterPayload(): boolean {
-  const namePattern = /^[\u4e00-\u9fa5]{2,4}$/;
-  const passwordPattern = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).{8,}$/;
-  const studentNumberPattern = /^\d{10}$/;
-
-  const { name, password, studentNumber, repeatPassword } = form.value;
-
-  if (
-    !name ||
-    !namePattern.test(name) ||
-    name.length < 2 ||
-    name.length > 4
-  ) {
-    ElMessage({
-      type: "error",
-      message: "姓名需为2-4位中文字符",
-    });
-    return false;
-  }
-
-  if (
-    !studentNumber ||
-    !studentNumberPattern.test(studentNumber)
-  ) {
-    ElMessage({
-      type: "error",
-      message: "学号需为10位数字",
-    });
-    return false;
-  }
-
-  if (
-    !password ||
-    !passwordPattern.test(password)
-  ) {
-    ElMessage({
-      type: "error",
-      message: "密码需包含大写字母、小写字母、数字和特殊字符，且不少于8位",
-    });
-    return false;
-  }
-
-  if (password !== repeatPassword) {
-    ElMessage({
-      type: "error",
-      message: "两次输入的密码不一致",
-    });
-    return false;
-  }
-
-  return true;
-}
-
 async function goToRegister(): Promise<void> {
-  if (!checkRegisterPayload()) {
-    return;
-  }
-  const studentNumber = form.value.studentNumber.trim();
-  const payload = {
-    studentNumber: studentNumber,
-    name: form.value.name.trim(),
+  const payload = buildRegisterPayload({
+    studentNumber: form.value.studentNumber,
+    name: form.value.name,
     password: form.value.password,
-    email: `${studentNumber}@zju.edu.cn`
-  }
+  });
   try {
     const res = await registerApi(payload);
     if (res.status >= 200 && res.status <= 299) {
@@ -212,12 +133,8 @@ async function goToRegister(): Promise<void> {
 }
 
 async function goToRecover(): Promise<void> {
-  if (!checkRecoverPayload()) {
-    return;
-  }
-
   try {
-    const res = await sendResetEmail(form.value.studentNumber.trim());
+    const res = await sendResetEmail(buildRecoverStudentNumber(form.value.studentNumber));
     if (res.status >= 200 && res.status <= 299) {
       pageNotice.value = "找回密码邮件已发送，请查收邮箱并按提示重置密码";
       toggleRecover();
@@ -228,18 +145,10 @@ async function goToRecover(): Promise<void> {
 }
 
 async function login(): Promise<void> {
-  const payload: LoginDto = {
+  const payload: LoginDto = buildLoginPayload({
     studentNumber: form.value.studentNumber,
     password: form.value.password,
-  };
-
-  if (!checkLoginPayload(payload)) {
-    ElMessage({
-      type: "error",
-      message: "用户名或密码格式错误",
-    });
-    return;
-  }
+  });
 
   loading.value = true;
   try {

@@ -3,9 +3,13 @@ import type { RegisterPayload, ResetPasswordPayload } from "~/api/modules/auth.a
 import { assertNonEmptyString, assertRegex } from "~/api/validation/common";
 
 const STUDENT_NUMBER_PATTERN = /^\d{10}$/;
-const PASSWORD_PATTERN = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).{8,}$/;
+const PASSWORD_PATTERN = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[:!@#$%^&*? ]).{8,}$/;
 const NAME_PATTERN = /^[\u4e00-\u9fa5]{2,4}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function assertPasswordComplexity(password: string): void {
+  assertRegex(password, PASSWORD_PATTERN, "密码需包含大写字母、小写字母、数字和特殊字符，且不少于8位");
+}
 
 export function validateLoginPayload(payload: LoginDto): LoginDto {
   const studentNumber = validateStudentNumber(payload.studentNumber);
@@ -26,7 +30,7 @@ export function validateRegisterPayload(payload: RegisterPayload): RegisterPaylo
   const email = assertNonEmptyString(payload.email, "邮箱");
 
   assertRegex(name, NAME_PATTERN, "姓名需为2-4位中文字符");
-  assertRegex(password, PASSWORD_PATTERN, "密码需包含大写字母、小写字母、数字和特殊字符，且不少于8位");
+  assertPasswordComplexity(password);
   assertRegex(email, EMAIL_PATTERN, "邮箱格式不正确");
 
   return { studentNumber, name, password, email };
@@ -39,6 +43,6 @@ export function validatePasswordResetToken(token: string): string {
 export function validateResetPasswordPayload(payload: ResetPasswordPayload): ResetPasswordPayload {
   const passwordResetToken = validatePasswordResetToken(payload.passwordResetToken);
   const password = assertNonEmptyString(payload.password, "密码");
-  assertRegex(password, PASSWORD_PATTERN, "密码需包含大写字母、小写字母、数字和特殊字符，且不少于8位");
+  assertPasswordComplexity(password);
   return { passwordResetToken, password };
 }

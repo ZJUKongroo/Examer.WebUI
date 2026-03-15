@@ -56,7 +56,7 @@ import { useRoute } from 'vue-router';
 import UniversalHeader from '~/components/UniversalHeader.vue';
 import { assignExamMembers, getExamUsers, getUsers, unassignExamMembers } from '~/api';
 import { handleApiError } from '~/api/error';
-import { usePagination } from '~/composables/usePagination';
+import { fetchAllPaginatedItems } from '~/composables/usePagination';
 import type { User } from '~/types';
 
 const route = useRoute();
@@ -136,20 +136,10 @@ async function handleCandidate(participant: User, index: number) {
 }
 
 async function getAllUser() {
-  let res = await getUsers({
-    pageNumber: 1,
-    pageSize: defaultPageSize,
-  });
-  const totalCount = usePagination(res.headers);
-  // 后端的分页不能清除
-  // 先用小的分页大小获取totalCount, 再获取所有用户
-  if(totalCount > defaultPageSize) {
-    res = await getUsers({
-      pageNumber: 1,
-      pageSize: totalCount,
-    });
-  }
-  candidates.value = res.data;
+  candidates.value = await fetchAllPaginatedItems(
+    (pageSize) => getUsers({ pageNumber: 1, pageSize }),
+    defaultPageSize
+  );
 }
 
 async function getExamUser() {

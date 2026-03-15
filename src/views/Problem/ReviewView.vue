@@ -87,7 +87,6 @@ import { useMainStore } from "~/store/mainStore";
 import { ElMessage} from "element-plus";
 import { openFile } from "~/ts/previewFile";
 
-
 const route = useRoute();
 const router = useRouter();
 const commitId = computed(() => route.query.id as string);
@@ -175,7 +174,6 @@ async function getCommits() {
     });
   })
 }
-
 
 onMounted(() => init())
 </script>

@@ -4,7 +4,7 @@ import { ElMessage } from "element-plus";
 import { useMainStore } from "~/store/mainStore";
 
 function isAuthEndpoint(url?: string): boolean {
-  return !!url && url.startsWith("/authentication");
+  return !!url && url.toLowerCase().startsWith("/authentication");
 }
 
 export function setupAuthInterceptor(client: AxiosInstance): void {

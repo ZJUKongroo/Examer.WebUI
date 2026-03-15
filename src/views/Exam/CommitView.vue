@@ -161,7 +161,7 @@ async function getCommitStatus(exam: Exam) {
   let userId = store.userId;
   if(exam.examType === ExamType.GroupExam){
     const groupInfo = (await getUserGroups(store.userId, examId.value)).data;
-    if(groupInfo.length>0) userId = groupInfo[0].id;
+    if(groupInfo.length > 0) userId = groupInfo[0].id;
   }
   try {
     await Promise.all(exam.problems.map(async (problem) => {

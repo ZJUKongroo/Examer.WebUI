@@ -56,6 +56,7 @@ import CDialog from "~/components/UI/CDialog.vue";
 import deleteConfirm from "~/ts/deleteConfirm";
 import { createProblem as createProblemApi, deleteProblem as removeProblem, getExamById, updateProblem } from "~/api";
 import { handleApiError } from "~/api/error";
+import { buildCreateProblemPayload as mapCreateProblemPayload, buildProblemPayload } from "~/mappers";
 import UniversalHeader from "~/components/UniversalHeader.vue";
 import type { Problem } from "~/types";
 import { ElMessage } from "element-plus";
@@ -111,21 +112,19 @@ function checkProblemPayload(payload: {
   description: string;
   score: number | string;
 }): payload is UpdateProblemDto {
-  const name = payload.name.trim();
-  const description = payload.description.trim();
-  const score = Number(payload.score);
+  const sanitized = buildProblemPayload(payload);
 
-  if (!name) {
+  if (!sanitized.name) {
     ElMessage.error("题目名称不能为空");
     return false;
   }
 
-  if (!description) {
+  if (!sanitized.description) {
     ElMessage.error("题目描述不能为空");
     return false;
   }
 
-  if (!Number.isFinite(score) || score <= 0) {
+  if (!Number.isFinite(sanitized.score) || sanitized.score <= 0) {
     ElMessage.error("题目分数需为大于0的数字");
     return false;
   }
@@ -142,34 +141,36 @@ function buildUpdateProblemPayload(payload: {
     return null;
   }
 
-  return {
-    name: payload.name.trim(),
-    description: payload.description.trim(),
-    score: Number(payload.score),
-  };
+  return buildProblemPayload(payload);
 }
 
-function buildCreateProblemPayload(form: ProblemFormValue): CreateProblemDto | null {
-  const examId = form.examId.trim();
+function buildCreatePayload(form: ProblemFormValue): CreateProblemDto | null {
+  const sanitized = mapCreateProblemPayload({
+    examId: form.examId,
+    problemType: form.problemType,
+    name: form.name,
+    description: form.description,
+    score: form.score,
+  });
 
-  if (!examId) {
+  if (!sanitized.examId) {
     ElMessage.error("缺少考试信息，无法创建题目");
     return null;
   }
 
-  if (!Number.isInteger(form.problemType) || form.problemType <= 0) {
+  if (!Number.isInteger(sanitized.problemType) || sanitized.problemType <= 0) {
     ElMessage.error("题目类型无效");
     return null;
   }
 
-  const payload = buildUpdateProblemPayload(form);
+  const payload = buildUpdateProblemPayload(sanitized);
   if (!payload) {
     return null;
   }
 
   return {
-    examId,
-    problemType: form.problemType,
+    examId: sanitized.examId,
+    problemType: sanitized.problemType,
     ...payload,
   };
 }
@@ -197,7 +198,7 @@ function confirmEditProblem() {
 const form = ref<ProblemFormValue>(createDefaultProblemForm());
 
 const submitForm = () => {
-  const payload = buildCreateProblemPayload({
+  const payload = buildCreatePayload({
     ...form.value,
     examId: route.query.id as string,
   });

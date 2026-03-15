@@ -3,11 +3,11 @@ export interface option {
   title: string;
 }
 
-export interface Pagination {
+export interface PaginationMetadata {
   totalCount: number;
   pageSize: number;
   currentPage: number;
   totalPages: number;
-  previousPageLink: string;
-  nextPageLink: string;
+  previousPageLink: string | null;
+  nextPageLink: string | null;
 }

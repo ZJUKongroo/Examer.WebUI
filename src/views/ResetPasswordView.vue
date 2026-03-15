@@ -50,6 +50,7 @@ import { ref, onMounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { resetPassword } from "~/api";
 import { handleApiError } from "~/api/error";
+import { buildResetPasswordPayload } from "~/mappers";
 import { ElMessage } from "element-plus";
 import { animate, spring, stagger } from "animejs";
 import { useMainStore } from "~/store/mainStore";
@@ -70,44 +71,10 @@ function goToLogin(): void {
   router.push("/login");
 }
 
-function checkPayload(): boolean {
-  const passwordPattern = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*? ]).{8,}$/;
-
-  if (!resetToken.value) {
-    pageNotice.value = "重置链接无效，请重新发起找回密码";
-    return false;
-  }
-
-  if (!form.value.password || !passwordPattern.test(form.value.password)) {
-    ElMessage({
-      type: "error",
-      message: "密码需包含大写字母、小写字母、数字和特殊字符，且不少于8位",
-    });
-    return false;
-  }
-
-  if (form.value.password !== form.value.confirmPassword) {
-    ElMessage({
-      type: "error",
-      message: "两次输入的密码不一致",
-    });
-    return false;
-  }
-
-  return true;
-}
-
 async function submit(): Promise<void> {
-  if (!checkPayload()) {
-    return;
-  }
-
   loading.value = true;
   try {
-    const res = await resetPassword({
-      passwordResetToken: resetToken.value,
-      password: form.value.password,
-    });
+    const res = await resetPassword(buildResetPasswordPayload(resetToken.value, form.value.password));
     if (res.status === 200) {
       ElMessage({
         type: "success",

@@ -65,6 +65,7 @@ import type { AddUserDetailDto, UserDetailDto } from "~/types";
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getUserDetail, updateUserDetail } from "~/api";
+import { buildUserDetailPayload, cloneUserDetailToEditForm } from "~/mappers";
 import { useMainStore } from "~/store/mainStore";
 import { UserRole, EthnicGroup } from "~/enums";
 import { ElMessage } from "element-plus";
@@ -177,50 +178,14 @@ async function fetchDetail(): Promise<void> {
 
 function openEditDialog(): void {
   if (!detail.value) return;
-  const user = detail.value;
-  editForm.value = {
-    gender: user.gender ?? 1,
-    ethnicGroup: user.ethnicGroup ?? 1,
-    dateOfBirth: user.dateOfBirth ?? "",
-    phoneNumber: user.phoneNumber ?? "",
-    college: user.college ?? "",
-    major: user.major ?? "",
-    homeAddress: user.homeAddress ?? "",
-    class: user.class ?? "",
-    seniorHigh: user.seniorHigh ?? "",
-    dormitory: user.dormitory ?? "",
-    politicalStatus: user.politicalStatus ?? 1,
-    englishLevel: user.englishLevel ?? "",
-    gpaOfAllCourses: user.gpaOfAllCourses ?? 0,
-    gpaOfMajorCourses: user.gpaOfMajorCourses ?? 0,
-    rank: user.rank ?? 1,
-    collegeNumber: user.collegeNumber ?? 1,
-  };
+  editForm.value = cloneUserDetailToEditForm(detail.value);
   editDialog.value = true;
 }
 
 async function saveEdit(): Promise<void> {
   savingEdit.value = true;
   try {
-    const payload = {
-      gender: Number(editForm.value.gender),
-      ethnicGroup: Number(editForm.value.ethnicGroup),
-      dateOfBirth: editForm.value.dateOfBirth,
-      phoneNumber: editForm.value.phoneNumber.trim(),
-      college: editForm.value.college.trim(),
-      major: editForm.value.major.trim(),
-      class: editForm.value.class.trim(),
-      seniorHigh: editForm.value.seniorHigh.trim(),
-      dormitory: editForm.value.dormitory.trim(),
-      // politicalStatus: Number(editForm.value.politicalStatus),
-      politicalStatus: 1,
-      homeAddress: editForm.value.homeAddress.trim(),
-      englishLevel: editForm.value.englishLevel.trim(),
-      gpaOfAllCourses: Number(editForm.value.gpaOfAllCourses),
-      gpaOfMajorCourses:0,
-      rank: Number(editForm.value.rank),
-      collegeNumber: Number(editForm.value.collegeNumber),
-    };
+    const payload = buildUserDetailPayload(editForm.value);
 
     await updateUserDetail(payload, isViewingSelf.value ? undefined : viewingUserId.value);
     ElMessage({ type: "success", message: "用户信息更新成功" });
