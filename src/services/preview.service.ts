@@ -2,9 +2,9 @@ import type { CommitFile } from "~/types";
 import { openCommitFileBlob } from "~/api";
 // import { handleApiError } from "~/api/error";
 import { renderAsync } from "docx-preview";
-import { ElMessageBox, type Action } from "element-plus";
 import appMessage from "./message.service";
 import { handleApiError } from "~/api/error";
+import { confirmDialog } from "./dialog.service";
 
 const previewFileType = ["jpg", "jpeg", "png", "pdf", "tiff", "webp", "mp4", "mp3", "txt", "gif", "wav", "docx"];
 
@@ -24,24 +24,23 @@ export function openFile(file: CommitFile): void {
         resolve();
 
         if (fileExtension === "docx") {
-          ElMessageBox.confirm(`是否预览 "${file.fileName}"?`, "预览", {
-            confirmButtonText: "预览",
-            cancelButtonText: "下载",
-            type: "warning",
-            distinguishCancelAndClose: true,
-          })
-            .then(() => {
+          confirmDialog({
+            title: "预览",
+            message: `是否预览 \"${file.fileName}\"？`,
+            confirmText: "预览",
+            cancelText: "下载",
+            confirmColor: "primary",
+          }).then((shouldPreview) => {
+            if (shouldPreview) {
               previewDocxFile(blob, file);
-            })
-            .catch((action: Action) => {
-              if (action === "cancel") {
-                const link = document.createElement("a");
-                link.href = url;
-                link.setAttribute("download", file.fileName);
-                link.click();
-                window.URL.revokeObjectURL(url);
-              }
-            });
+            } else {
+              const link = document.createElement("a");
+              link.href = url;
+              link.setAttribute("download", file.fileName);
+              link.click();
+            }
+            window.URL.revokeObjectURL(url);
+          });
         } else if (fileExtension && previewFileType.includes(fileExtension)) {
           window.open(url, "_blank");
         } else {

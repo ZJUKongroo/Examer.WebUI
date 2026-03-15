@@ -53,7 +53,7 @@ import { animate, spring, stagger } from "animejs";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute} from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
-import deleteConfirm from "~/services/dialog.service";
+import { confirmDialog } from "~/services/dialog.service";
 import { createProblem as createProblemApi, deleteProblem as removeProblem, getExamById, updateProblem } from "~/api";
 import { handleApiError } from "~/api/error";
 import { buildCreateProblemPayload as mapCreateProblemPayload, buildProblemPayload } from "~/mappers";
@@ -221,7 +221,14 @@ const createProblem = () => {
 };
 
 const deleteProblem = (problem: Problem) => {
-  deleteConfirm(`${problem.name}`, false).then((res) => {
+  confirmDialog({
+    title: `删除 ${problem.name}`,
+    message: "删除是危险行为，请点击确认以执行。",
+    warningText: "请谨慎操作",
+    confirmText: "确认",
+    cancelText: "取消",
+    confirmColor: "error",
+  }).then((res) => {
     if (res) {
       removeProblem(problem.id).then(() => {
         appMessage.success("已删除题目");

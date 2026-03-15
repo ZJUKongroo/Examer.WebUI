@@ -50,7 +50,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import { useMainStore } from "~/store/mainStore";
-import deleteConfirm from "~/services/dialog.service";
+import { confirmDialog } from "~/services/dialog.service";
 import { animate, spring, stagger } from "animejs";
 import { deleteExam as removeExam, updateExam } from "~/api";
 import { handleApiError } from "~/api/error";
@@ -91,7 +91,14 @@ const createExam = () => {
 };
 
 const deleteExam = (index: number) => {
-  deleteConfirm("确认删除考试？", false).then((res) => {
+  confirmDialog({
+    title: "删除考试",
+    message: "删除是危险行为，请点击确认以执行。",
+    warningText: "请谨慎操作",
+    confirmText: "确认",
+    cancelText: "取消",
+    confirmColor: "error",
+  }).then((res) => {
     if (res) {
       removeExam(exams.value[index].id)
         .then(() => {

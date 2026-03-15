@@ -12,7 +12,6 @@
     "animejs": "^4.3.6",
     "axios": "^1.13.6",
     "docx-preview": "^0.3.4",
-    "element-plus": "^2.9.3",
     "lokijs": "^1.5.12",
     "pinia": "^3.0.4",
     "vite-plugin-javascript-obfuscator": "^3.1.0",

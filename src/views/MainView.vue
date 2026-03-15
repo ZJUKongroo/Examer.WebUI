@@ -7,9 +7,9 @@
       <!-- 根据用户替换导航条 -->
     </div>
     <div id="main-view-content">
-      <el-watermark id="main-view-wrapper" :font="font" :content="store.userId" :gap="[80,30]">
+      <div id="main-view-wrapper" :style="watermarkStyle">
         <router-view />
-      </el-watermark>
+      </div>
     </div>
   </div>
 </template>
@@ -22,19 +22,37 @@ import SuperAdminSidebar from "~/components/SuperAdminSidebar.vue";
 import { useMainStore } from "~/store/mainStore";
 import { entry } from "~/services/transition.service";
 import { UserRole } from "~/enums";
-import { ElWatermark} from "element-plus";
-
-const font = computed(() => {
-  return{
-    color:store.isDarkMode
-      ? 'rgba(255, 255, 255, .05)'
-      : 'rgba(0, 0, 0, .08)',
-      size: 20,
-      weight: 600,
-  }
-})
 
 const store = useMainStore();
+
+const watermarkStyle = computed(() => {
+  const text = store.userId || "";
+  const canvas = document.createElement("canvas");
+  canvas.width = 320;
+  canvas.height = 180;
+
+  const context = canvas.getContext("2d");
+  if (!context || !text) {
+    return {};
+  }
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate((-20 * Math.PI) / 180);
+  context.fillStyle = store.isDarkMode
+    ? "rgba(255, 255, 255, .05)"
+    : "rgba(0, 0, 0, .08)";
+  context.font = "600 16px sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(text, 0, 0);
+
+  return {
+    backgroundImage: `url(${canvas.toDataURL("image/png")})`,
+    backgroundRepeat: "repeat",
+    backgroundPosition: "0 0",
+  };
+});
 
 onMounted(() => {
   const main = document.getElementById("main-view-content");

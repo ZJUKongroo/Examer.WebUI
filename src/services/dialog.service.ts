@@ -1,14 +1,13 @@
 import { createVNode, render } from "vue";
-import DeleteConfirm from "@/components/DeleteConfirm.vue";
+import ConfirmDialog, { type ConfirmDialogOptions } from "@/components/ConfirmDialog.vue";
 import { context } from "~/main";
 
-function deleteConfirm(name: string, input: boolean): Promise<boolean> {
+function confirm(options: ConfirmDialogOptions): Promise<boolean> {
   return new Promise((resolve) => {
     const container = document.createElement("div");
     document.body.appendChild(container);
-    const vnode = createVNode(DeleteConfirm, {
-      name,
-      input,
+    const vnode = createVNode(ConfirmDialog, {
+      options,
       onConfirm: () => {
         resolve(true);
         cleanup();
@@ -28,5 +27,4 @@ function deleteConfirm(name: string, input: boolean): Promise<boolean> {
   });
 }
 
-export const confirmDelete = deleteConfirm;
-export default deleteConfirm;
+export const confirmDialog = confirm;
