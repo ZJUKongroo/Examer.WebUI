@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineModel, defineExpose } from 'vue';
+import { ref } from 'vue';
 
 const dialogVisible = defineModel<boolean>("visible", { default: false });
 const bg = ref<HTMLElement | null>(null);

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { registerBonusDebugHook } from './services/bonus.service';
+import appMessage from './services/message.service';
 import { syncVuetifyTheme } from './services/theme.service';
 import { useMainStore } from './store/mainStore';
 
@@ -12,5 +13,6 @@ registerBonusDebugHook();
 
 <template>
   <router-view />
+  <v-snackbar-queue v-model="appMessage.messages"></v-snackbar-queue>
 </template>
 

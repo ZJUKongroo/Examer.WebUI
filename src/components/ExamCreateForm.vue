@@ -69,7 +69,6 @@ import { ExamType } from '~/enums';
 import { useMainStore } from '~/store/mainStore';
 import { createExam } from '~/api';
 import { handleApiError } from '~/api/error';
-import { VTimePicker } from 'vuetify/labs/VTimePicker'
 
 const menuVisible = ref({
     startDate: false,
