@@ -3,7 +3,7 @@ import type { RegisterPayload, ResetPasswordPayload } from "~/api/modules/auth.a
 import { assertNonEmptyString, assertRegex } from "~/api/validation/common";
 
 const STUDENT_NUMBER_PATTERN = /^\d{10}$/;
-const PASSWORD_PATTERN = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[:!@#$%^&*? ]).{8,}$/;
+const PASSWORD_PATTERN = /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[^\da-zA-Z\s]).{8,}$/;
 const NAME_PATTERN = /^[\u4e00-\u9fa5]{2,4}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
