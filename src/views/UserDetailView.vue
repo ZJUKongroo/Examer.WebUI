@@ -3,7 +3,7 @@
     <UniversalHeader title="用户信息" hide-back-button id="user-page-header" class="user-page-animation">
     </UniversalHeader>
 
-    <div id="user-detail-header" class="mb-8" >
+    <div id="user-detail-header" class="mb-8">
       <v-icon size="48" color="primary">mdi-account-circle</v-icon>
       <div>
         <div id="user-detail-name">{{ detail?.user?.name ?? "加载中..." }}</div>
@@ -32,25 +32,7 @@
       <v-card>
         <v-card-title>编辑用户信息</v-card-title>
         <v-card-text>
-          <v-form id="user-edit-form" lazy-validation>
-            <v-select v-model="editForm.gender" :items="genderOptions" label="性别" density="comfortable" item-title="title" item-value="value" />
-            <v-select v-model="editForm.ethnicGroup" :items="ethnicGroupOptions" label="民族" density="comfortable" item-title="title" item-value="value" />
-            <v-text-field v-model="editForm.dateOfBirth" type="date" label="出生日期" density="comfortable" />
-            <v-text-field v-model="editForm.college" label="学院（园）" density="comfortable" />
-            <v-text-field v-model="editForm.homeAddress" label="大类" density="comfortable" />
-            <v-text-field v-model="editForm.major" label="专业" density="comfortable" />
-            <v-text-field v-model="editForm.class" label="班级" density="comfortable" />
-            <v-text-field v-model="editForm.phoneNumber" label="手机号" density="comfortable" />
-            <v-text-field v-model="editForm.seniorHigh" label="高中" density="comfortable" />
-            <v-text-field v-model="editForm.dormitory" label="宿舍" density="comfortable" />
-            <!-- <v-select v-model="editForm.politicalStatus" :items="politicalStatusOptions" label="政治面貌" density="comfortable" item-title="title" item-value="value" /> -->
-
-            <v-text-field v-model="editForm.englishLevel" label="英语等级（填写考试名称和分数）" density="comfortable" />
-            <v-text-field v-model.number="editForm.gpaOfAllCourses" type="number" step="0.01" min="0" label="总课程均绩" density="comfortable" />
-            <!-- <v-text-field v-model.number="editForm.gpaOfMajorCourses" type="number" step="0.01" min="0" label="专业课程绩点" density="comfortable" /> -->
-            <v-text-field v-model.number="editForm.rank" type="number" label="专业（大类）综合排名" density="comfortable" />
-            <v-text-field v-model.number="editForm.collegeNumber" type="number" label="本专业（大类）人数" density="comfortable" />
-          </v-form>
+          <UserDetailForm :form="editForm" />
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn variant="text" @click="editDialog = false">取消</v-btn>
@@ -65,7 +47,7 @@
 import type { AddUserDetailDto, UserDetailDto } from "~/types";
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { getUserDetail, updateUserDetail } from "~/api";
+import { getUserDetail, updateUserDetail, createUserDetail } from "~/api";
 import { buildUserDetailPayload, cloneUserDetailToEditForm } from "~/mappers";
 import { useMainStore } from "~/store/mainStore";
 import { UserRole, EthnicGroup } from "~/enums";
@@ -73,6 +55,7 @@ import { animate, spring, stagger } from "animejs";
 import { handleApiError } from "~/api/error";
 import appMessage from "~/services/message.service";
 import UniversalHeader from "~/components/UniversalHeader.vue";
+import UserDetailForm from "~/components/UserDetailForm.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -82,18 +65,7 @@ const detail = ref<UserDetailDto | null>(null);
 const loading = ref(true);
 const editDialog = ref(false);
 const savingEdit = ref(false);
-
-const genderOptions = [
-  { title: "男", value: 1 },
-  { title: "女", value: 2 },
-];
-
-const ethnicGroupOptions = Object.keys(EthnicGroup)
-  .filter((key) => Number.isNaN(Number(key)) && key !== "Null")
-  .map((key) => ({
-    title: key,
-    value: EthnicGroup[key as keyof typeof EthnicGroup] as number,
-  }));
+const creatingDetail = ref(false);
 
 // const politicalStatusOptions = Object.keys(PoliticalStatus)
 //   .filter((key) => Number.isNaN(Number(key)) && key !== "Null")
@@ -102,24 +74,7 @@ const ethnicGroupOptions = Object.keys(EthnicGroup)
 //     value: PoliticalStatus[key as keyof typeof PoliticalStatus] as number,
 //   }));
 
-const editForm = ref<AddUserDetailDto>({
-  gender: 1,
-  ethnicGroup: 1,
-  dateOfBirth: "",
-  phoneNumber: "",
-  college: "",
-  major: "",
-  class: "",
-  seniorHigh: "",
-  dormitory: "",
-  politicalStatus: 1,
-  homeAddress: "",
-  englishLevel: "",
-  gpaOfAllCourses: 0,
-  gpaOfMajorCourses: 0,
-  rank: 1,
-  collegeNumber: 1,
-});
+const editForm = ref<AddUserDetailDto>(cloneUserDetailToEditForm());
 
 const viewingUserId = computed(() => (typeof route.query.id === "string" ? route.query.id : ""));
 const isAdmin = computed(() => store.userRole != UserRole.User);
@@ -129,11 +84,6 @@ function ethnicGroupName(code?: number): string {
   if (!code) return "—";
   return EthnicGroup[code] ?? "—";
 }
-
-// function politicalStatusName(code?: number): string {
-//   if (!code) return "—";
-//   return PoliticalStatus[code] ?? "—";
-// }
 
 function genderName(code?: number): string {
   if (!code) return "—";
@@ -170,9 +120,19 @@ async function fetchDetail(): Promise<void> {
   loading.value = true;
   try {
     detail.value = await getUserDetail(viewingUserId.value || undefined);
+    creatingDetail.value = false;
   } catch (error) {
-    handleApiError(error, { fallbackMessage: "获取用户信息失败" });
     detail.value = null;
+
+    if (isViewingSelf.value) {
+      creatingDetail.value = true;
+      editForm.value = cloneUserDetailToEditForm();
+      editDialog.value = true;
+      appMessage.info("请先完善并创建你的用户信息");
+    } else {
+      creatingDetail.value = false;
+      handleApiError(error, { fallbackMessage: "获取用户信息失败" });
+    }
   } finally {
     loading.value = false;
   }
@@ -180,24 +140,34 @@ async function fetchDetail(): Promise<void> {
 
 function openEditDialog(): void {
   if (!detail.value) return;
+  creatingDetail.value = false;
   editForm.value = cloneUserDetailToEditForm(detail.value);
   editDialog.value = true;
 }
 
 async function saveEdit(): Promise<void> {
   savingEdit.value = true;
-  try {
-    const payload = buildUserDetailPayload(editForm.value);
+  appMessage.queue(creatingDetail.value ? "创建用户信息" : "更新用户信息", new Promise(async (resolve, reject) => {
+    try {
+      const payload = buildUserDetailPayload(editForm.value);
 
-    await updateUserDetail(payload, isViewingSelf.value ? undefined : viewingUserId.value);
-    appMessage.success("用户信息更新成功");
-    editDialog.value = false;
-    await fetchDetail();
-  } catch (error) {
-    handleApiError(error, { fallbackMessage: "用户信息更新失败" });
-  } finally {
-    savingEdit.value = false;
-  }
+      if (creatingDetail.value) {
+        await createUserDetail(payload);
+      } else {
+        await updateUserDetail(payload, isViewingSelf.value ? undefined : viewingUserId.value);
+      }
+
+      resolve();
+      creatingDetail.value = false;
+      editDialog.value = false;
+      await fetchDetail();
+    } catch (error) {
+      reject(error);
+    } finally {
+      savingEdit.value = false;
+    }
+  }));
+
 }
 
 watch(
@@ -208,18 +178,18 @@ watch(
 );
 
 onMounted(async () => {
-  animate('#user-detail-page',{
+  animate('#user-detail-page', {
     translateX: [30, 0],
     opacity: [0, 1],
     delay: stagger(80),
     ease: spring(),
   })
   await fetchDetail();
-  animate('#user-detail-grid .detail-item',{
+  animate('#user-detail-grid .detail-item', {
     translateY: [20, 0],
     opacity: [0, 1],
-    delay: stagger(50,{
-      grid: [3,5]
+    delay: stagger(50, {
+      grid: [3, 5]
     }),
     ease: spring(),
   })
