@@ -1,23 +1,23 @@
 import type { AddUserDetailDto, UserDetailDto } from "~/types";
 
-export function cloneUserDetailToEditForm(detail: UserDetailDto): AddUserDetailDto {
+export function cloneUserDetailToEditForm(detail?: UserDetailDto | null): AddUserDetailDto {
   return {
-    gender: detail.gender ?? 1,
-    ethnicGroup: detail.ethnicGroup ?? 1,
-    dateOfBirth: detail.dateOfBirth ?? "",
-    phoneNumber: detail.phoneNumber ?? "",
-    college: detail.college ?? "",
-    major: detail.major ?? "",
-    class: detail.class ?? "",
-    seniorHigh: detail.seniorHigh ?? "",
-    dormitory: detail.dormitory ?? "",
-    politicalStatus: detail.politicalStatus ?? 1,
-    homeAddress: detail.homeAddress ?? "",
-    englishLevel: detail.englishLevel ?? "",
-    gpaOfAllCourses: detail.gpaOfAllCourses ?? 0,
-    gpaOfMajorCourses: detail.gpaOfMajorCourses ?? 0,
-    rank: detail.rank ?? 1,
-    collegeNumber: detail.collegeNumber ?? 1,
+    gender: detail?.gender ?? 1,
+    ethnicGroup: detail?.ethnicGroup ?? 1,
+    dateOfBirth: detail?.dateOfBirth ?? "",
+    phoneNumber: detail?.phoneNumber ?? "",
+    college: detail?.college ?? "",
+    major: detail?.major ?? "",
+    class: detail?.class ?? "",
+    seniorHigh: detail?.seniorHigh ?? "",
+    dormitory: detail?.dormitory ?? "",
+    politicalStatus: detail?.politicalStatus ?? 1,
+    homeAddress: detail?.homeAddress ?? "",
+    englishLevel: detail?.englishLevel ?? "",
+    gpaOfAllCourses: detail?.gpaOfAllCourses ?? 0,
+    gpaOfMajorCourses: detail?.gpaOfMajorCourses ?? 0,
+    rank: detail?.rank ?? 1,
+    collegeNumber: detail?.collegeNumber ?? 1,
   };
 }
 
