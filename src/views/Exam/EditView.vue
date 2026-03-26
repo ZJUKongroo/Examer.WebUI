@@ -7,7 +7,7 @@
     </UniversalHeader>
     <div id="exam-edit-content">
       <div class="exam-edit-card" v-for="(exam, index) in exams" :key="exam.id">
-        <v-card class="mb-2" :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
+        <v-card class="mb-4" :subtitle="`${new Date(exam.startTime).toLocaleString()} - ${new Date(
           exam.endTime
         ).toLocaleString()}`">
           <template v-slot:title>

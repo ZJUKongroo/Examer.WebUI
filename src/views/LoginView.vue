@@ -172,7 +172,12 @@ async function login(): Promise<void> {
       }
     }
   } catch (error) {
-    handleApiError(error, { fallbackMessage: "登录失败" });
+    handleApiError(error, { 
+      fallbackMessage: "登录失败",
+      statusMessages: {
+        404: "请前往您的校内邮箱查看激活邮件",
+      },
+     });
   } finally {
     loading.value = false;
   }
