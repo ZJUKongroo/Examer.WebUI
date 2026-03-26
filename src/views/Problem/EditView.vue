@@ -3,6 +3,7 @@
     <UniversalHeader title="题目列表" id="problem-edit-header">
       <template #append>
         <v-btn variants="tonal" @click="createProblem">新建题目</v-btn>
+        <v-btn variants="tonal" @click="openReview" class="ml-2">前往批改</v-btn>
       </template>
     </UniversalHeader>
     <div id="problem-edit-content">
@@ -51,7 +52,7 @@
 <script lang="ts" setup>
 import { animate, spring, stagger } from "animejs";
 import { computed, onMounted, ref, watch } from "vue";
-import { useRoute} from "vue-router";
+import { useRoute, useRouter} from "vue-router";
 import CDialog from "~/components/UI/CDialog.vue";
 import { confirmDialog } from "~/services/dialog.service";
 import { createProblem as createProblemApi, deleteProblem as removeProblem, getExamById, updateProblem } from "~/api";
@@ -63,6 +64,7 @@ import appMessage from "~/services/message.service";
 
 const problems = ref<Problem[]>([]);
 const route = useRoute();
+const router = useRouter();
 const problemCreateVisible = ref(false);
 const problemEditVisible = ref(false);
 const editForm = ref<Problem>({
@@ -106,6 +108,15 @@ function createDefaultProblemForm(): ProblemFormValue {
     score: 100,
   };
 }
+
+function openReview(){
+  router.push({
+    path: "/exam/review",
+    query: {
+      id: examId.value,
+    },
+  });
+};
 
 function checkProblemPayload(payload: {
   name: string;
